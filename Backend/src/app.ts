@@ -1,9 +1,11 @@
-import express, { Application, Request, Response, NextFunction } from 'express';
-import mongoose from 'mongoose';
+import express, { Application, Request, Response } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import waitlistRoutes from '@/modules/waitlist/routes/waitlist.routes';
+import { connectDB } from '@/configs/db';
+import { globalErrorHandler } from '@/middlewares/errorHandler';
+import waitlistRoutes from './modules/waitlist/routes/waitlist.routes';
+import apiRouter from '@/routes/api';
 
 dotenv.config();
 
@@ -29,14 +31,12 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/api/v1', apiRouter);
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/nydl';
-
-// Basic connection logic (Note: serverless environments may need connection pooling)
-mongoose.connect(MONGO_URI).catch((err) => console.error('MongoDB connection error:', err));
+// Initialize DB Connection
+connectDB();
 
 // '/' ROUTE with good html + tailwind style.
-// ... existing imports
 app.get('/', (req: Request, res: Response) => {
   res.send(`
     <!DOCTYPE html>
@@ -82,8 +82,7 @@ app.use((req: Request, res: Response) => {
   res.status(404).json({ message: 'Resource not found' });
 });
 
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  res.status(500).json({ message: 'Internal Server Error' });
-});
+// Global Error Handler
+app.use(globalErrorHandler);
 
 export default app;
