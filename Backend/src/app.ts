@@ -6,8 +6,11 @@ import { connectDB } from '@/configs/db';
 import { globalErrorHandler } from '@/middlewares/errorHandler';
 import waitlistRoutes from './modules/waitlist/routes/waitlist.routes';
 import apiRouter from '@/routes/api';
+import tsconfigPaths from 'tsconfig-paths';
+
 
 dotenv.config();
+tsconfigPaths.register();
 
 const app: Application = express();
 
