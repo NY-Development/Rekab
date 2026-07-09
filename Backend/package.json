@@ -2,14 +2,19 @@
   "name": "rekab-backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "ts-node-dev --respawn --transpile-only -r tsconfig-paths/register src/server.ts",
+    "build": "tsc && tsc-alias",
+    "start": "node dist/server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
+  "_moduleAliases": {
+    "@": "dist"
+  },
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "bullmq": "^5.79.1",
@@ -21,7 +26,9 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.5.2",
     "helmet": "^8.2.0",
+    "joi": "^18.2.3",
     "jsonwebtoken": "^9.0.3",
+    "module-alias": "^2.3.4",
     "mongoose": "^9.7.2",
     "morgan": "^1.11.0",
     "multer": "^2.2.0",
@@ -38,7 +45,11 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
     "@types/node": "^26.0.1",
+    "nodemon": "^3.1.14",
+    "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
+    "tsc-alias": "^1.9.0",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^6.0.3"
   }
 }
