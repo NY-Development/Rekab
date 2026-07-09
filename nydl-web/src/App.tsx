@@ -60,7 +60,7 @@ const WaitlistPage: React.FC = () => {
           <button
             type="submit"
             disabled={mutation.isPending}
-            className="w-full bg-[#2563EB] text-white py-4 rounded-xl font-bold shadow-lg shadow-[#2563EB]/20 hover:bg-[#1D4ED8] disabled:opacity-50 active:scale-[0.98] transition-all duration-200"
+            className="w-full bg-primary text-white py-4 rounded-xl font-bold shadow-lg shadow-[#2563EB]/20 hover:bg-[#1D4ED8] disabled:opacity-50 active:scale-[0.98] transition-all duration-200"
           >
             {mutation.isPending ? 'Processing...' : 'Get Early Access'}
           </button>
