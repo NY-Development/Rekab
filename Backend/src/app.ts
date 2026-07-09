@@ -7,7 +7,7 @@ import waitlistRoutes from '@/modules/waitlist/routes/waitlist.routes';
 
 dotenv.config();
 
-export const app: Application = express();
+const app: Application = express();
 
 app.use(helmet());
 app.use(cors({ 
@@ -36,3 +36,5 @@ app.use((req: Request, res: Response) => {
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   res.status(500).json({ message: 'Internal Server Error' });
 });
+
+export default app;
