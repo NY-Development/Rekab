@@ -1,4 +1,5 @@
-import app from './app';
+import 'tsconfig-paths/register';
+import app from '@/app';
 
 const PORT = process.env.PORT || 3000;
 
@@ -10,7 +11,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 const server = app.listen(PORT, () => {
-  console.log(`NYDL Server running on port ${PORT}`);
+  console.log(`NYDL Server running on port ${PORT}`); 
 });
 
 // Graceful Shutdown
