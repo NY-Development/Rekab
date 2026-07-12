@@ -64,7 +64,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 const REGISTRATION_LINK =
-  "https://forms.gle/REPLACE_WITH_YOUR_GOOGLE_FORM";
+  "https://nydev-form-generation.vercel.app/f/nydev-learning-nydl-summer-cohort-registration-2026";
 
 export default function RegistrationForm() {
   const handleRegister = () => {
