@@ -43,7 +43,7 @@ export default function LandingPage() {
                   <Star className="h-4 w-4 fill-current" />
                   <Star className="h-4 w-4 fill-current" />
                 </div>
-                <span className="text-xs text-muted-foreground mt-0.5">4.9/5 from 500+ graduates</span>
+                <span className="text-xs text-muted-foreground mt-0.5">4.9/5 from 50+ graduates</span>
               </div>
             </div>
           </div>

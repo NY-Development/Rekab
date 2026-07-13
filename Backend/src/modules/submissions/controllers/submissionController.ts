@@ -6,12 +6,12 @@ export class SubmissionController {
   constructor(private submissionService: SubmissionService) {}
 
   async submitAssignment(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
-    const { assignmentId, cohortId, repoUrl, notes } = req.body;
+    const { assignmentId, repoUrl, content, notes } = req.body;
     try {
       const submission = await this.submissionService.submitAssignment(
         req.user!.id,
         req.user!.name,
-        { assignmentId, cohortId, repoUrl, notes }
+        { assignmentId, repoUrl, content, notes }
       );
       res.status(201).json({
         status: 'success',

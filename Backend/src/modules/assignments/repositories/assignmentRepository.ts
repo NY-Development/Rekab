@@ -63,6 +63,7 @@ export class AssignmentRepository {
     page: number;
     limit: number;
     cohortId?: string;
+    cohortIds?: string[];
     courseId?: string;
     moduleId?: string;
     assignmentType?: string;
@@ -73,10 +74,11 @@ export class AssignmentRepository {
       return { docs: [], total: 0 };
     }
 
-    const { page, limit, cohortId, courseId, moduleId, assignmentType, sortBy, sortOrder } = filters;
+    const { page, limit, cohortId, cohortIds, courseId, moduleId, assignmentType, sortBy, sortOrder } = filters;
     const query: Record<string, any> = {};
 
     if (cohortId) query.cohortId = cohortId;
+    if (cohortIds && cohortIds.length > 0) query.cohortId = { $in: cohortIds };
     if (courseId) query.courseId = courseId;
     if (moduleId) query.moduleId = moduleId;
     if (assignmentType) query.assignmentType = assignmentType;

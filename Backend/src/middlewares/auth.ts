@@ -50,10 +50,12 @@ export async function requireAuthenticated(
   } catch (error) {
     if (error instanceof AppError) {
       next(error);
+    } else if (error instanceof jwt.TokenExpiredError) {
+      // Must be checked before JsonWebTokenError: TokenExpiredError is a subclass of it,
+      // so checking the parent class first would always shadow this branch.
+      next(new AppError('Token expired. Please log in again.', 401, true, 'TOKEN_EXPIRED'));
     } else if (error instanceof jwt.JsonWebTokenError) {
       next(new AppError('Invalid token. Please log in again.', 401));
-    } else if (error instanceof jwt.TokenExpiredError) {
-      next(new AppError('Token expired. Please log in again.', 401, true, 'TOKEN_EXPIRED'));
     } else {
       next(error);
     }

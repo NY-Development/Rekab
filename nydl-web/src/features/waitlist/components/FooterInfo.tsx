@@ -1,4 +1,4 @@
-import { GraduationCap, Mail, ShieldCheck } from "lucide-react";
+import { Mail, ShieldCheck } from "lucide-react";
 
 export default function FooterInfo() {
   return (
@@ -6,10 +6,7 @@ export default function FooterInfo() {
       <div className="container mx-auto flex justify-between flex-wrap gap-12">
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-white">
-              <GraduationCap className="h-6 w-6" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-900">NYDEV Learning</h3>
+            <img src="/banner-logo.png" alt="NYDEV Learning" className="h-10 w-auto" />
           </div>
           <p className="text-sm text-slate-600 leading-6 max-w-xs">
             Preparing students for real-world careers through project-based education.

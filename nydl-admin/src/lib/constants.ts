@@ -47,7 +47,7 @@ export const NAV_ITEMS = [
   { label: 'Courses', path: '/courses', icon: 'BookOpen' },
   { label: 'Cohorts', path: '/cohorts', icon: 'CalendarDays' },
   { label: 'Teams', path: '/teams', icon: 'Users2' },
-  { label: 'Enrollments', path: '/enrollments', icon: 'ClipboardCheck' },
+  { label: 'Registrations', path: '/enrollments', icon: 'ClipboardCheck' },
   { label: 'Payments', path: '/payments', icon: 'CreditCard' },
   { label: 'Sessions', path: '/sessions', icon: 'Video' },
   { label: 'Attendance', path: '/attendance', icon: 'CheckSquare' },

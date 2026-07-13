@@ -29,9 +29,9 @@ export function useSubmitAssignment() {
   });
 }
 
-export function useSubmissions(params?: Parameters<typeof assignmentsApi.getMySubmissions>[0]) {
+export function useSubmissions() {
   return useQuery({
-    queryKey: ['submissions', params],
-    queryFn: () => assignmentsApi.getMySubmissions(params).then((res) => res.data),
+    queryKey: ['submissions'],
+    queryFn: () => assignmentsApi.getMySubmissions().then((res) => res.data),
   });
 }

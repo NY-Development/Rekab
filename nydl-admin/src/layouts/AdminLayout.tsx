@@ -37,8 +37,10 @@ export function AdminLayout() {
         {/* Title */}
         <div className="h-16 flex items-center px-6 border-b border-slate-800">
           <Link to="/dashboard" className="flex items-center gap-2">
-            <LucideIcons.ShieldAlert className="h-6 w-6 text-blue-500" />
-            <span className="font-bold text-lg tracking-wider text-white">NYDL ADMIN</span>
+            <div className="rounded-md bg-white p-1">
+              <img src="/logo.png" alt="NYDL" className="h-7 w-auto" />
+            </div>
+            <span className="font-bold text-lg tracking-wider text-white">ADMIN</span>
           </Link>
         </div>
 

@@ -60,6 +60,7 @@ export class ResourceRepository {
     page: number;
     limit: number;
     courseId?: string;
+    courseIds?: string[];
     resourceType?: string;
     search?: string;
     sortBy: string;
@@ -69,10 +70,11 @@ export class ResourceRepository {
       return { docs: [], total: 0 };
     }
 
-    const { page, limit, courseId, resourceType, search, sortBy, sortOrder } = filters;
+    const { page, limit, courseId, courseIds, resourceType, search, sortBy, sortOrder } = filters;
     const query: Record<string, any> = {};
 
     if (courseId) query.courseId = courseId;
+    if (courseIds && courseIds.length > 0) query.courseId = { $in: courseIds };
     if (resourceType) query.resourceType = resourceType;
 
     if (search) {

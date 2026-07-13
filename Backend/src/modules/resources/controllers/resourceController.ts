@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from '../../../middlewares/auth';
 import { ResourceService } from '../services/resourceService';
 import { CreateResourceSchema, UpdateResourceSchema, ResourceFilterSchema } from '../validators/resourceValidator';
+import { getStudentAccessScope } from '../../../utils/studentAccess';
 
 export class ResourceController {
   constructor(private resourceService: ResourceService) {}
@@ -17,7 +18,20 @@ export class ResourceController {
 
   async listResources(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const validated = await ResourceFilterSchema.parseAsync(req.query);
+      const validated: any = await ResourceFilterSchema.parseAsync(req.query);
+
+      if (req.user && req.user.role.toUpperCase() === 'STUDENT') {
+        const { courseIds } = await getStudentAccessScope(req.user.id);
+        if (courseIds.length === 0) {
+          res.status(200).json({
+            status: 'success',
+            data: { docs: [], total: 0, page: validated.page, limit: validated.limit, totalPages: 0 },
+          });
+          return;
+        }
+        validated.courseIds = courseIds;
+      }
+
       const result = await this.resourceService.listResources(validated);
       res.status(200).json({
         status: 'success',

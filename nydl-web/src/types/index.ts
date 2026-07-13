@@ -87,18 +87,81 @@ export interface Cohort {
   updatedAt: string;
 }
 
+// ─── Registration (extended Enrollment intake data) ───
+export interface RegistrationPersonalInfo {
+  fullName: string;
+  gender: 'Male' | 'Female' | 'Other';
+  dateOfBirth: string;
+  phone: string;
+  age?: number;
+}
+
+export interface RegistrationEducation {
+  schoolName: string;
+  grade: string;
+}
+
+export interface RegistrationLocation {
+  city: string;
+  region?: string;
+}
+
+export interface RegistrationTechnicalReadiness {
+  operatingSystem: 'Windows' | 'Mac' | 'Linux';
+  hasPersonalComputer: boolean;
+  hasDiscord: boolean;
+  programmingExperience: 'None' | 'Beginner' | 'Intermediate';
+  reasonForJoining: string;
+}
+
+export interface RegistrationAgreements {
+  agreedToPayFee: boolean;
+  agreedToPrivacyPolicy: boolean;
+  agreedToTerms: boolean;
+  understandsAttendance: boolean;
+  understandsAssignments: boolean;
+  agreesToRespect: boolean;
+  understandsInternshipPerformanceBased: boolean;
+  understandsEmploymentNotGuaranteed: boolean;
+}
+
 // ─── Enrollment ───
+export type EnrollmentStatus =
+  | 'PENDING'
+  | 'PENDING_APPROVAL'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'ACTIVE'
+  | 'SUSPENDED'
+  | 'COMPLETED'
+  | 'DROPPED'
+  | 'REMOVED';
+
 export interface Enrollment {
   id: string;
   studentId: string;
   courseId: string;
   cohortId: string;
-  status: 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'DROPPED' | 'SUSPENDED';
+  paymentId?: string;
+  status: EnrollmentStatus | string;
   enrolledAt: string;
   completedAt?: string;
-  progress: number;
+  progressPercentage: number;
   createdAt: string;
   updatedAt: string;
+
+  personalInfo?: RegistrationPersonalInfo;
+  education?: RegistrationEducation;
+  location?: RegistrationLocation;
+  technicalReadiness?: RegistrationTechnicalReadiness;
+  interests?: string[];
+  agreements?: RegistrationAgreements;
+
+  reviewerId?: string;
+  reviewNotes?: string;
+  approvedAt?: string;
+  rejectedAt?: string;
+  rejectionReason?: string;
 }
 
 // ─── Payment ───
@@ -106,13 +169,14 @@ export interface Payment {
   id: string;
   enrollmentId: string;
   studentId: string;
+  courseId?: string;
   amount: number;
   currency: string;
   transactionReference: string;
-  paymentMethod: string;
-  status: 'PENDING' | 'VERIFIED' | 'FAILED' | 'REFUNDED';
-  verifiedAt?: string;
-  verificationData?: Record<string, unknown>;
+  paymentMethod: 'CHAPA' | 'TELEBIRR' | 'BANK_TRANSFER' | 'CASH';
+  status: 'PENDING' | 'VERIFIED' | 'FAILED';
+  verificationDate?: string;
+  notes?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -142,11 +206,14 @@ export interface Assignment {
   description: string;
   courseId: string;
   cohortId: string;
+  moduleId: string;
   dueDate: string;
   maxScore: number;
-  type: 'INDIVIDUAL' | 'TEAM' | 'PROJECT';
-  status: 'DRAFT' | 'PUBLISHED' | 'CLOSED';
-  submissionType: 'FILE' | 'LINK' | 'TEXT';
+  maxPoints: number;
+  assignmentType: 'INDIVIDUAL' | 'TEAM';
+  submissionType: 'github' | 'text' | 'file';
+  attachments?: string[];
+  rubric?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -156,16 +223,19 @@ export interface Submission {
   id: string;
   assignmentId: string;
   studentId: string;
-  content: string;
-  fileUrl?: string;
-  linkUrl?: string;
+  cohortId: string;
+  repoUrl?: string;
+  content?: string;
+  notes?: string;
+  points?: number;
   score?: number;
   feedback?: string;
-  status: 'SUBMITTED' | 'GRADED' | 'RETURNED' | 'LATE';
+  gradedBy?: string;
+  status: 'submitted' | 'graded' | 'late';
   submittedAt: string;
   gradedAt?: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // ─── Resource ───

@@ -1,13 +1,34 @@
 import api from './axios';
-import type { Enrollment, PaginatedResponse, ApiResponse } from '@/types';
+import type {
+  Enrollment,
+  PaginatedResponse,
+  ApiResponse,
+  RegistrationPersonalInfo,
+  RegistrationEducation,
+  RegistrationLocation,
+  RegistrationTechnicalReadiness,
+  RegistrationAgreements,
+} from '@/types';
+
+export interface ApplyRegistrationPayload {
+  courseId: string;
+  personalInfo: RegistrationPersonalInfo;
+  education: RegistrationEducation;
+  location: RegistrationLocation;
+  technicalReadiness: RegistrationTechnicalReadiness;
+  interests: string[];
+  agreements: RegistrationAgreements;
+}
 
 export const enrollmentsApi = {
-  getMyEnrollments: (params?: { page?: number; limit?: number; status?: string }) =>
-    api.get<PaginatedResponse<Enrollment>>('/enrollments', { params }),
+  getMyEnrollments: () =>
+    api.get<ApiResponse<Enrollment[]>>('/enrollments/me'),
 
-  apply: (data: { courseId: string; cohortId: string }) =>
-    api.post<ApiResponse<Enrollment>>('/enrollments', data),
+  apply: (data: ApplyRegistrationPayload) =>
+    api.post<ApiResponse<Enrollment>>('/enrollments/apply', data),
 
   getById: (id: string) =>
     api.get<ApiResponse<Enrollment>>(`/enrollments/${id}`),
 };
+
+export type { PaginatedResponse };

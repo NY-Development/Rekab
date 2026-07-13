@@ -49,6 +49,7 @@ export class SessionService {
     page: number;
     limit: number;
     cohortId?: string;
+    cohortIds?: string[];
     courseId?: string;
     instructorId?: string;
     status?: string;

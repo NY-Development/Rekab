@@ -14,6 +14,9 @@ export function StatusBadge({ status }: StatusBadgeProps) {
       case 'LOW':
         return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
       case 'PENDING':
+      case 'PENDING_APPROVAL':
+      case 'PENDING_PAYMENT':
+      case 'PAYMENT_SUBMITTED':
       case 'UPCOMING':
       case 'MEDIUM':
       case 'LATE':
@@ -21,12 +24,15 @@ export function StatusBadge({ status }: StatusBadgeProps) {
       case 'DROPPED':
       case 'CANCELLED':
       case 'REJECTED':
+      case 'SUSPENDED':
+      case 'PAYMENT_FAILED':
       case 'ABSENT':
       case 'HIGH':
       case 'CRITICAL':
         return 'bg-rose-500/10 text-rose-400 border-rose-500/20';
       case 'COMPLETED':
       case 'GRADED':
+      case 'APPROVED':
         return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
       default:
         return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
@@ -40,7 +46,7 @@ export function StatusBadge({ status }: StatusBadgeProps) {
         status
       )}`}
     >
-      {status.toLowerCase()}
+      {status.toLowerCase().replace(/_/g, ' ')}
     </Badge>
   );
 }

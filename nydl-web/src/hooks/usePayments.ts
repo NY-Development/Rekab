@@ -1,10 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { paymentsApi } from '@/api/payments.api';
 
-export function usePayments(params?: Parameters<typeof paymentsApi.getMyPayments>[0]) {
+export function usePayments() {
   return useQuery({
-    queryKey: ['payments', params],
-    queryFn: () => paymentsApi.getMyPayments(params).then((res) => res.data),
+    queryKey: ['payments'],
+    queryFn: () => paymentsApi.getMyPayments().then((res) => res.data),
   });
 }
 
@@ -24,6 +24,7 @@ export function useSubmitPayment() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payments'] });
       queryClient.invalidateQueries({ queryKey: ['enrollments'] });
+      queryClient.invalidateQueries({ queryKey: ['enrollment'] });
     },
   });
 }

@@ -199,11 +199,48 @@ export interface Team {
   updatedAt: string;
 }
 
+export interface RegistrationPersonalInfo {
+  fullName: string;
+  gender: 'Male' | 'Female' | 'Other' | string;
+  dateOfBirth: string;
+  phone: string;
+  age?: number;
+}
+
+export interface RegistrationEducation {
+  schoolName: string;
+  grade: string;
+}
+
+export interface RegistrationLocation {
+  city: string;
+  region?: string;
+}
+
+export interface RegistrationTechnicalReadiness {
+  operatingSystem: 'Windows' | 'Mac' | 'Linux' | string;
+  hasPersonalComputer: boolean;
+  hasDiscord: boolean;
+  programmingExperience: 'None' | 'Beginner' | 'Intermediate' | string;
+  reasonForJoining: string;
+}
+
+export interface RegistrationAgreements {
+  agreedToPayFee: boolean;
+  agreedToPrivacyPolicy: boolean;
+  agreedToTerms: boolean;
+  understandsAttendance: boolean;
+  understandsAssignments: boolean;
+  agreesToRespect: boolean;
+  understandsInternshipPerformanceBased: boolean;
+  understandsEmploymentNotGuaranteed: boolean;
+}
+
 export interface Enrollment {
   id: string;
   studentId: string; // Ref to User
   cohortId: string; // Ref to Cohort
-  status: 'enrolled' | 'completed' | 'dropped' | 'PENDING' | 'APPROVED' | 'ACTIVE' | 'COMPLETED' | 'DROPPED' | 'REMOVED' | string;
+  status: 'enrolled' | 'completed' | 'dropped' | 'PENDING' | 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED' | 'ACTIVE' | 'SUSPENDED' | 'COMPLETED' | 'DROPPED' | 'REMOVED' | string;
   progressPercentage: number;
   enrolledAt: string;
   certificateIssued?: boolean;
@@ -216,6 +253,21 @@ export interface Enrollment {
   completedAt?: string;
   createdAt?: string;
   updatedAt?: string;
+
+  // Registration intake fields
+  personalInfo?: RegistrationPersonalInfo;
+  education?: RegistrationEducation;
+  location?: RegistrationLocation;
+  technicalReadiness?: RegistrationTechnicalReadiness;
+  interests?: string[];
+  agreements?: RegistrationAgreements;
+
+  // Review tracking
+  reviewerId?: string; // Ref to User (Admin)
+  reviewNotes?: string;
+  approvedAt?: string;
+  rejectedAt?: string;
+  rejectionReason?: string;
 }
 
 export interface Payment {
@@ -293,6 +345,7 @@ export interface Submission {
   studentId: string; // Ref to User
   cohortId: string; // Ref to Cohort
   repoUrl?: string; // compatible
+  content?: string;
   notes?: string;
   status: 'submitted' | 'graded' | 'late' | string;
   points?: number;

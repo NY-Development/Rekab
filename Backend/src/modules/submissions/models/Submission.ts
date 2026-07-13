@@ -11,6 +11,7 @@ const SubmissionSchema = new Schema<ISubmissionDocument>({
   githubLink: { type: String },
   liveLink: { type: String },
   repoUrl: { type: String }, // compatible
+  content: { type: String },
   notes: { type: String },
   attachments: [{ type: String }],
   score: { type: Number },

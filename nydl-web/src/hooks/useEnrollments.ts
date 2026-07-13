@@ -1,10 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { enrollmentsApi } from '@/api/enrollments.api';
 
-export function useEnrollments(params?: Parameters<typeof enrollmentsApi.getMyEnrollments>[0]) {
+export function useEnrollments() {
   return useQuery({
-    queryKey: ['enrollments', params],
-    queryFn: () => enrollmentsApi.getMyEnrollments(params).then((res) => res.data),
+    queryKey: ['enrollments'],
+    queryFn: () => enrollmentsApi.getMyEnrollments().then((res) => res.data),
   });
 }
 

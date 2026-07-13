@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   BookOpen, Video, Calendar, AlertTriangle, CheckCircle, Megaphone
 } from 'lucide-react';
-import { enrollmentsApi } from '@/api/enrollments.api';
+import { useEnrollments } from '@/hooks/useEnrollments';
 import { profileApi } from '@/api/profile.api';
 import { sessionsApi } from '@/api/sessions.api';
 import { announcementsApi } from '@/api/announcements.api';
@@ -23,10 +23,7 @@ export default function DashboardPage() {
     queryFn: () => profileApi.getStudentProfile().then((res) => res.data),
   });
 
-  const { data: enrollmentsRes, isLoading: isEnrollmentsLoading } = useQuery({
-    queryKey: ['myEnrollments'],
-    queryFn: () => enrollmentsApi.getMyEnrollments({ limit: 1 }).then((res) => res.data),
-  });
+  const { data: enrollmentsRes, isLoading: isEnrollmentsLoading } = useEnrollments();
 
   const { data: sessionsRes } = useQuery({
     queryKey: ['mySessions'],
@@ -44,7 +41,8 @@ export default function DashboardPage() {
   });
 
   const studentProfile = profileRes?.data;
-  const activeEnrollment = enrollmentsRes?.data?.docs?.[0];
+  const myEnrollments = enrollmentsRes?.data || [];
+  const activeEnrollment = myEnrollments.find((e) => e.status === 'ACTIVE') || myEnrollments[0];
   const nextSession = sessionsRes?.data?.docs?.[0];
   const announcements = announcementsRes?.data?.docs || [];
   const assignments = assignmentsRes?.data?.docs || [];
@@ -104,10 +102,10 @@ export default function DashboardPage() {
                 <div className="bg-muted/30 rounded-xl p-4 border border-border">
                   <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">COURSE PROGRESS</p>
                   <div className="flex items-end gap-2 mb-2">
-                    <span className="text-2xl font-bold text-primary">{activeEnrollment.progress || 0}%</span>
+                    <span className="text-2xl font-bold text-primary">{activeEnrollment.progressPercentage || 0}%</span>
                   </div>
                   <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full bg-primary rounded-full" style={{ width: `${activeEnrollment.progress || 0}%` }} />
+                    <div className="h-full bg-primary rounded-full" style={{ width: `${activeEnrollment.progressPercentage || 0}%` }} />
                   </div>
                 </div>
 

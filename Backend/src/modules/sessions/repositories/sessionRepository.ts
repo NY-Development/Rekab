@@ -63,6 +63,7 @@ export class SessionRepository {
     page: number;
     limit: number;
     cohortId?: string;
+    cohortIds?: string[];
     courseId?: string;
     instructorId?: string;
     status?: string;
@@ -73,10 +74,11 @@ export class SessionRepository {
       return { docs: [], total: 0 };
     }
 
-    const { page, limit, cohortId, courseId, instructorId, status, sortBy, sortOrder } = filters;
+    const { page, limit, cohortId, cohortIds, courseId, instructorId, status, sortBy, sortOrder } = filters;
     const query: Record<string, any> = {};
 
     if (cohortId) query.cohortId = cohortId;
+    if (cohortIds && cohortIds.length > 0) query.cohortId = { $in: cohortIds };
     if (courseId) query.courseId = courseId;
     if (instructorId) query.instructorId = instructorId;
     if (status) query.status = status;

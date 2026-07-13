@@ -53,6 +53,7 @@ export class AssignmentService {
     page: number;
     limit: number;
     cohortId?: string;
+    cohortIds?: string[];
     courseId?: string;
     moduleId?: string;
     assignmentType?: string;

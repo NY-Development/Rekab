@@ -53,11 +53,8 @@ export default function RegisterPage() {
   return (
     <div className="mx-auto w-full max-w-sm lg:w-96">
       {/* Mobile Logo (hidden on desktop) */}
-      <Link to='/' className="flex items-center gap-2 mb-8 lg:hidden">
-        <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold">
-          N
-        </div>
-        <span className="font-bold text-lg">NYDL</span>
+      <Link to='/' className="flex items-center mb-8 lg:hidden">
+        <img src="/banner-logo.png" alt="NYDL" className="h-9 w-auto" />
       </Link>
 
       <div>

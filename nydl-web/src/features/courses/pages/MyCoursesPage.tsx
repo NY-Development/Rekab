@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { BookOpen, Clock, ArrowRight, Award, Grid, List } from 'lucide-react';
-import { enrollmentsApi } from '@/api/enrollments.api';
+import { useEnrollments } from '@/hooks/useEnrollments';
 import { coursesApi } from '@/api/courses.api';
+import { getRegistrationStatusMeta } from '@/utils/registration';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,10 +15,7 @@ export default function MyCoursesPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   // Query enrolled courses
-  const { data: enrollmentsRes, isLoading: isEnrollmentsLoading } = useQuery({
-    queryKey: ['myEnrollmentsList'],
-    queryFn: () => enrollmentsApi.getMyEnrollments({ limit: 50 }).then((res) => res.data),
-  });
+  const { data: enrollmentsRes, isLoading: isEnrollmentsLoading } = useEnrollments();
 
   // Query all available catalog courses
   const { data: coursesRes, isLoading: isCatalogLoading } = useQuery({
@@ -24,7 +23,7 @@ export default function MyCoursesPage() {
     queryFn: () => coursesApi.getAll({ limit: 50 }).then((res) => res.data),
   });
 
-  const enrollments = enrollmentsRes?.data?.docs || [];
+  const enrollments = enrollmentsRes?.data || [];
   const catalogCourses = coursesRes?.data?.docs || [];
 
   const isLoading = isEnrollmentsLoading || isCatalogLoading;
@@ -75,11 +74,20 @@ export default function MyCoursesPage() {
         <TabsContent value="enrolled">
           {enrollments.length > 0 ? (
             <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
-              {enrollments.map((enrollment: any) => {
+              {enrollments.map((enrollment) => {
                 // Find course detail in catalog
                 const matchingCourse = catalogCourses.find(c => c.id === enrollment.courseId);
-                const progressVal = enrollment.progress || 0;
-                
+                const progressVal = enrollment.progressPercentage || 0;
+                const statusMeta = getRegistrationStatusMeta(enrollment);
+                const hasAccess = enrollment.status === 'ACTIVE' || enrollment.status === 'COMPLETED';
+
+                const toneClasses: Record<typeof statusMeta.tone, string> = {
+                  success: 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 border-emerald-200/50',
+                  warning: 'bg-amber-50 dark:bg-amber-950/20 text-amber-600 border-amber-200/50',
+                  destructive: 'bg-red-50 dark:bg-red-950/20 text-red-600 border-red-200/50',
+                  muted: 'bg-muted text-muted-foreground border-border',
+                };
+
                 return (
                    <Card key={enrollment.id} className="relative overflow-hidden flex flex-col justify-between hover:shadow-md transition-all duration-200">
                     <div className="absolute top-0 left-0 w-full h-1 bg-primary" />
@@ -89,16 +97,10 @@ export default function MyCoursesPage() {
                           <BookOpen className="h-5 w-5" />
                         </div>
                         <Badge
-                          variant={
-                            enrollment.status === 'ACTIVE'
-                              ? 'default'
-                              : enrollment.status === 'COMPLETED'
-                              ? 'secondary'
-                              : 'outline'
-                          }
-                          className="capitalize text-[10px] tracking-wide px-2.5 py-0.5"
+                          variant={statusMeta.tone === 'success' ? 'default' : statusMeta.tone === 'destructive' ? 'destructive' : 'outline'}
+                          className="text-[10px] tracking-wide px-2.5 py-0.5"
                         >
-                          {enrollment.status.toLowerCase()}
+                          {statusMeta.label}
                         </Badge>
                       </div>
                       <CardTitle className="text-lg font-bold text-foreground">
@@ -120,16 +122,23 @@ export default function MyCoursesPage() {
                           </div>
                         </div>
                       )}
-                      
+
                       {enrollment.status === 'COMPLETED' && (
-                        <div className="flex items-center gap-2 p-2 bg-emerald-50 dark:bg-emerald-990/20 text-emerald-600 rounded-lg text-xs">
+                        <div className="flex items-center gap-2 p-2 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 rounded-lg text-xs">
                           <Award className="h-4 w-4" /> Passed Course Successfully!
                         </div>
                       )}
 
-                      {enrollment.status === 'PENDING' && (
-                        <div className="flex items-center gap-2 p-2.5 bg-amber-50 dark:bg-amber-990/20 text-amber-600 rounded-lg text-xs border border-amber-200/50">
-                          <Clock className="h-4 w-4 shrink-0" /> Pending verification. Check dashboard updates.
+                      {!hasAccess && enrollment.status !== 'COMPLETED' && (
+                        <div className={`flex items-start gap-2 p-2.5 rounded-lg text-xs border ${toneClasses[statusMeta.tone]}`}>
+                          {statusMeta.tone === 'success' ? (
+                            <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
+                          ) : statusMeta.tone === 'destructive' ? (
+                            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                          ) : (
+                            <Clock className="h-4 w-4 shrink-0 mt-0.5" />
+                          )}
+                          <span>{statusMeta.description}</span>
                         </div>
                       )}
 
@@ -137,7 +146,7 @@ export default function MyCoursesPage() {
                         to={`/courses/${enrollment.courseId}`}
                         className={buttonVariants({ variant: 'default', size: 'sm', className: 'w-full text-center flex items-center justify-center' })}
                       >
-                        {enrollment.status === 'PENDING' ? 'View Details' : 'Continue Learning'}
+                        {hasAccess ? 'Continue Learning' : 'View Details'}
                       </Link>
                     </CardContent>
                   </Card>

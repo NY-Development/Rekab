@@ -53,6 +53,7 @@ export class ResourceService {
     page: number;
     limit: number;
     courseId?: string;
+    courseIds?: string[];
     resourceType?: string;
     search?: string;
     sortBy: string;

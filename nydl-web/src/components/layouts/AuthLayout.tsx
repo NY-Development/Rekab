@@ -6,8 +6,8 @@ export default function AuthLayout() {
       {/* Left — Branding Panel */}
       <div className="hidden w-1/2 items-center justify-center bg-primary lg:flex">
         <div className="max-w-md px-12 text-primary-foreground">
-          <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
-            <span className="text-xl font-bold">N</span>
+          <div className="mb-6 inline-flex rounded-xl bg-white p-3">
+            <img src="/logo.png" alt="NYDEV Learning" className="h-16 w-auto" />
           </div>
           <h1 className="mb-4 text-3xl font-bold leading-tight">
             Accelerate your tech career with NYDEV Learning

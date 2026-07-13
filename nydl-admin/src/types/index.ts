@@ -129,37 +129,102 @@ export interface Team {
   updatedAt: string;
 }
 
+// ─── Registration (extended Enrollment intake data) ───
+export interface RegistrationPersonalInfo {
+  fullName: string;
+  gender: 'Male' | 'Female' | 'Other';
+  dateOfBirth: string;
+  phone: string;
+  age?: number;
+}
+
+export interface RegistrationEducation {
+  schoolName: string;
+  grade: string;
+}
+
+export interface RegistrationLocation {
+  city: string;
+  region?: string;
+}
+
+export interface RegistrationTechnicalReadiness {
+  operatingSystem: 'Windows' | 'Mac' | 'Linux';
+  hasPersonalComputer: boolean;
+  hasDiscord: boolean;
+  programmingExperience: 'None' | 'Beginner' | 'Intermediate';
+  reasonForJoining: string;
+}
+
+export interface RegistrationAgreements {
+  agreedToPayFee: boolean;
+  agreedToPrivacyPolicy: boolean;
+  agreedToTerms: boolean;
+  understandsAttendance: boolean;
+  understandsAssignments: boolean;
+  agreesToRespect: boolean;
+  understandsInternshipPerformanceBased: boolean;
+  understandsEmploymentNotGuaranteed: boolean;
+}
+
+// A field that is either a raw ObjectId string, or the populated document (same key, Mongoose populate semantics)
+export type Populated<T> = string | (Partial<T> & { id: string });
+
+export type EnrollmentStatus =
+  | 'PENDING'
+  | 'PENDING_APPROVAL'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'ACTIVE'
+  | 'SUSPENDED'
+  | 'COMPLETED'
+  | 'DROPPED'
+  | 'REMOVED';
+
 // ─── Enrollment ───
 export interface Enrollment {
   id: string;
-  studentId: string;
-  student?: StudentProfile;
-  courseId: string;
-  course?: Course;
-  cohortId: string;
-  cohort?: Cohort;
-  status: 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'DROPPED' | 'SUSPENDED';
+  studentId: Populated<User>;
+  courseId: Populated<Course>;
+  cohortId: Populated<Cohort>;
+  teamId?: Populated<Team>;
+  paymentId?: Populated<Payment>;
+  reviewerId?: Populated<User>;
+  status: EnrollmentStatus | string;
   enrolledAt: string;
   completedAt?: string;
-  progress: number;
+  progressPercentage: number;
   createdAt: string;
   updatedAt: string;
+
+  personalInfo?: RegistrationPersonalInfo;
+  education?: RegistrationEducation;
+  location?: RegistrationLocation;
+  technicalReadiness?: RegistrationTechnicalReadiness;
+  interests?: string[];
+  agreements?: RegistrationAgreements;
+
+  reviewNotes?: string;
+  approvedAt?: string;
+  rejectedAt?: string;
+  rejectionReason?: string;
 }
 
 // ─── Payment ───
 export interface Payment {
   id: string;
-  enrollmentId: string;
-  enrollment?: Enrollment;
-  studentId: string;
+  enrollmentId?: Populated<Enrollment>;
+  studentId: Populated<User>;
+  courseId?: Populated<Course>;
   amount: number;
   currency: string;
-  method: string;
-  transactionRef: string;
-  status: 'PENDING' | 'VERIFIED' | 'REJECTED' | 'REFUNDED';
-  verifiedBy?: string;
-  verifiedAt?: string;
+  paymentMethod: 'CHAPA' | 'TELEBIRR' | 'BANK_TRANSFER' | 'CASH';
+  transactionReference?: string;
+  paidAt?: string;
+  verifiedBy?: Populated<User>;
+  verificationDate?: string;
   notes?: string;
+  status: 'PENDING' | 'VERIFIED' | 'FAILED';
   createdAt: string;
   updatedAt: string;
 }

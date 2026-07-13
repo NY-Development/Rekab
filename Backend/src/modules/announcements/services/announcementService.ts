@@ -54,6 +54,7 @@ export class AnnouncementService {
     teamId?: string;
     priority?: string;
     search?: string;
+    accessScope?: { courseIds: string[]; cohortIds: string[] };
     sortBy: string;
     sortOrder: 'asc' | 'desc';
   }): Promise<{ docs: Announcement[]; total: number }> {

@@ -50,8 +50,8 @@ export default function DashboardLayout() {
       >
         {/* Brand */}
         <div className="flex items-center gap-3 px-6 py-5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-sm font-bold">
-            N
+          <div className="rounded-lg bg-white p-1.5">
+            <img src="/logo.png" alt="NYDEV Learning" className="h-8 w-auto" />
           </div>
           <div>
             <h1 className="text-base font-semibold leading-tight">NYDEV Learning</h1>

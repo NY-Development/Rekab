@@ -1,80 +1,68 @@
 import { SubmissionRepository } from '../repositories/submissionRepository';
+import { AssignmentRepository } from '../../assignments/repositories/assignmentRepository';
+import { EnrollmentRepository } from '../../enrollments/repositories/enrollmentRepository';
 import { Submission } from '../../../types';
 import { AppError } from '../../../middlewares/errorHandler';
 import { DBStore } from '../../../services/dbStore';
 
+const ACTIVE_STATUSES = ['ACTIVE', 'COMPLETED', 'active', 'enrolled', 'completed'];
+
 export class SubmissionService {
-  constructor(private submissionRepository: SubmissionRepository) {}
+  constructor(
+    private submissionRepository: SubmissionRepository,
+    private assignmentRepository: AssignmentRepository,
+    private enrollmentRepository: EnrollmentRepository
+  ) {}
 
   async submitAssignment(
     userId: string,
     userName: string,
-    submissionData: { assignmentId: string; cohortId: string; repoUrl?: string; notes?: string }
+    submissionData: { assignmentId: string; repoUrl?: string; content?: string; notes?: string }
   ): Promise<Submission> {
-    const { assignmentId, cohortId, repoUrl, notes } = submissionData;
+    const { assignmentId, repoUrl, content, notes } = submissionData;
 
-    const cohort = await DBStore.getCohortById(cohortId);
-    if (!cohort) {
-      throw new AppError('Cohort not found', 404);
+    const assignment = await this.assignmentRepository.findById(assignmentId);
+    if (!assignment) {
+      throw new AppError('Assignment not found', 404);
     }
 
-    if (!cohort.students.includes(userId)) {
-      throw new AppError('You are not enrolled in this cohort', 403);
+    const courseId = (assignment.courseId as any)?.id || assignment.courseId;
+    const cohortId = (assignment.cohortId as any)?.id || assignment.cohortId;
+
+    const enrollment = await this.enrollmentRepository.findByStudentAndCourse(userId, courseId as string);
+    if (!enrollment || !ACTIVE_STATUSES.includes(enrollment.status)) {
+      throw new AppError('You do not have course access for this assignment yet', 403);
     }
 
-    const course = await DBStore.getCourseById(cohort.courseId);
-    if (!course) {
-      throw new AppError('Associated course not found', 404);
-    }
-
-    let assignmentExists = false;
-    let targetAssignment: any = null;
-    for (const module of course.modules || []) {
-      const found = module.assignments?.find((a: any) => a.id === assignmentId);
-      if (found) {
-        assignmentExists = true;
-        targetAssignment = found;
-        break;
-      }
-    }
-
-    if (!assignmentExists) {
-      throw new AppError('Assignment not found in this curriculum', 404);
-    }
-
-    const dueDate = new Date(targetAssignment.dueDate);
-    const today = new Date();
-    const status = today > dueDate ? 'late' : 'submitted';
+    const dueDate = new Date(assignment.dueDate);
+    const status = new Date() > dueDate ? 'late' : 'submitted';
 
     const submission = await this.submissionRepository.create({
       assignmentId,
       studentId: userId,
-      cohortId,
+      cohortId: cohortId as string,
       repoUrl,
+      content,
       notes,
       status,
       submittedAt: new Date().toISOString()
     });
 
-    // Update progressPercentage on enrollment
+    // Update progressPercentage on the student's enrollment
+    const cohortAssignments = await this.assignmentRepository.findByCohortId(cohortId as string);
     const studentSubmissions = await this.submissionRepository.findByStudent(userId);
     const cohortSubmissions = studentSubmissions.filter(s => s.cohortId === cohortId);
 
-    let totalAssignments = 0;
-    course.modules?.forEach(m => {
-      totalAssignments += m.assignments?.length ?? 0;
-    });
-
-    if (totalAssignments > 0) {
-      const progress = Math.round((cohortSubmissions.length / totalAssignments) * 100);
-      await DBStore.updateEnrollmentProgress(userId, cohortId, Math.min(progress, 100));
+    if (cohortAssignments.length > 0) {
+      const progress = Math.round((cohortSubmissions.length / cohortAssignments.length) * 100);
+      await this.enrollmentRepository.update(enrollment.id, { progressPercentage: Math.min(progress, 100) });
     }
 
     await DBStore.logActivity(
       userId,
       userName,
       'ASSIGNMENT_SUBMIT',
-      `Submitted assignment "${targetAssignment.title}" for cohort "${cohort.name}"`
+      `Submitted assignment "${assignment.title}"`
     );
 
     return submission;

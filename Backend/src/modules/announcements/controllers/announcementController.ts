@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from '../../../middlewares/auth';
 import { AnnouncementService } from '../services/announcementService';
 import { CreateAnnouncementSchema, UpdateAnnouncementSchema, AnnouncementFilterSchema } from '../validators/announcementValidator';
+import { getStudentAccessScope } from '../../../utils/studentAccess';
 
 export class AnnouncementController {
   constructor(private announcementService: AnnouncementService) {}
@@ -17,7 +18,12 @@ export class AnnouncementController {
 
   async listAnnouncements(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const validated = await AnnouncementFilterSchema.parseAsync(req.query);
+      const validated: any = await AnnouncementFilterSchema.parseAsync(req.query);
+
+      if (req.user && req.user.role.toUpperCase() === 'STUDENT') {
+        validated.accessScope = await getStudentAccessScope(req.user.id);
+      }
+
       const result = await this.announcementService.listAnnouncements(validated);
       res.status(200).json({
         status: 'success',

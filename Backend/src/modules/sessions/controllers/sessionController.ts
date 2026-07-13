@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from '../../../middlewares/auth';
 import { SessionService } from '../services/sessionService';
 import { CreateSessionSchema, UpdateSessionSchema, SessionFilterSchema } from '../validators/sessionValidator';
+import { getStudentAccessScope } from '../../../utils/studentAccess';
 
 export class SessionController {
   constructor(private sessionService: SessionService) {}
@@ -17,7 +18,20 @@ export class SessionController {
 
   async getSessions(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const validated = await SessionFilterSchema.parseAsync(req.query);
+      const validated: any = await SessionFilterSchema.parseAsync(req.query);
+
+      if (req.user && req.user.role.toUpperCase() === 'STUDENT') {
+        const { cohortIds } = await getStudentAccessScope(req.user.id);
+        if (cohortIds.length === 0) {
+          res.status(200).json({
+            status: 'success',
+            data: { docs: [], total: 0, page: validated.page, limit: validated.limit, totalPages: 0 },
+          });
+          return;
+        }
+        validated.cohortIds = cohortIds;
+      }
+
       const result = await this.sessionService.listSessions(validated);
       res.status(200).json({
         status: 'success',

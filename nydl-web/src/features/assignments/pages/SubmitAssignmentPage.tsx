@@ -16,15 +16,18 @@ export default function SubmitAssignmentPage() {
 
   const assignment = assignmentRes?.data;
 
+  const requiresLink = assignment?.submissionType === 'github' || assignment?.submissionType === 'file';
+  const requiresText = assignment?.submissionType === 'text';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!id) return;
 
-    if (assignment?.submissionType === 'LINK' && !linkUrl) {
-      toast.error('Submission URL Link is required.');
+    if (requiresLink && !linkUrl) {
+      toast.error('Please provide a submission link.');
       return;
     }
-    if (assignment?.submissionType === 'TEXT' && !content) {
+    if (requiresText && !content) {
       toast.error('Submission content is required.');
       return;
     }
@@ -33,7 +36,7 @@ export default function SubmitAssignmentPage() {
       await submitMutation.mutateAsync({
         assignmentId: id,
         data: {
-          linkUrl: linkUrl || undefined,
+          repoUrl: linkUrl || undefined,
           content: content || undefined,
         }
       });
@@ -69,7 +72,7 @@ export default function SubmitAssignmentPage() {
           <header className="mb-8">
             <div className="flex items-center gap-2 mb-2">
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-105 text-xs font-semibold uppercase tracking-wider">
-                {assignment.type}
+                {assignment.assignmentType}
               </span>
               <span className="text-slate-500 text-xs">• Due {new Date(assignment.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
             </div>
@@ -97,9 +100,11 @@ export default function SubmitAssignmentPage() {
               </div>
 
               <div className="space-y-4">
-                {assignment.submissionType === 'LINK' && (
+                {requiresLink && (
                   <div>
-                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5" htmlFor="github_link">GitHub / Repo link *</label>
+                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5" htmlFor="github_link">
+                      {assignment.submissionType === 'file' ? 'Submission Link *' : 'GitHub / Repo link *'}
+                    </label>
                     <div className="relative">
                       <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">link</span>
                       <input
@@ -115,7 +120,7 @@ export default function SubmitAssignmentPage() {
                   </div>
                 )}
 
-                {assignment.submissionType === 'TEXT' && (
+                {requiresText && (
                   <div>
                     <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5" htmlFor="content">Submission Content *</label>
                     <textarea

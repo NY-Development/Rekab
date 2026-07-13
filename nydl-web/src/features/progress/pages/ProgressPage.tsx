@@ -8,9 +8,9 @@ export default function ProgressPage() {
   const { data: enrollmentsRes, isLoading: isEnrollmentsLoading } = useEnrollments();
 
   const profile = profileRes?.data;
-  const enrollments = enrollmentsRes?.data?.docs || [];
+  const enrollments = enrollmentsRes?.data || [];
 
-  const completedCount = enrollments.filter((e: any) => e.status === 'COMPLETED').length;
+  const completedCount = enrollments.filter((e) => e.status === 'COMPLETED').length;
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 md:px-8 py-10">
@@ -93,10 +93,10 @@ export default function ProgressPage() {
                       <div className="w-full sm:w-60 space-y-1">
                         <div className="flex justify-between text-xs text-slate-500 font-semibold">
                           <span>Completion progress</span>
-                          <span>{enr.progress || 0}%</span>
+                          <span>{enr.progressPercentage || 0}%</span>
                         </div>
                         <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                          <div className="bg-blue-600 h-full rounded-full transition-all" style={{ width: `${enr.progress || 0}%` }}></div>
+                          <div className="bg-blue-600 h-full rounded-full transition-all" style={{ width: `${enr.progressPercentage || 0}%` }}></div>
                         </div>
                       </div>
                     )}

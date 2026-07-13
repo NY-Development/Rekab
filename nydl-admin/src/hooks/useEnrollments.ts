@@ -25,42 +25,55 @@ export function useEnrollment(id: string) {
 export function useEnrollmentMutations() {
   const queryClient = useQueryClient();
 
-  const createMutation = useMutation({
-    mutationFn: enrollmentsApi.create,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['enrollments'] });
-      queryClient.invalidateQueries({ queryKey: ['courses'] });
-      queryClient.invalidateQueries({ queryKey: ['analytics-summary'] });
-      queryClient.invalidateQueries({ queryKey: ['enrollment-trends'] });
-    },
-  });
+  const invalidateAll = (id?: string) => {
+    queryClient.invalidateQueries({ queryKey: ['enrollments'] });
+    if (id) queryClient.invalidateQueries({ queryKey: ['enrollment', id] });
+    queryClient.invalidateQueries({ queryKey: ['courses'] });
+    queryClient.invalidateQueries({ queryKey: ['analytics-summary'] });
+    queryClient.invalidateQueries({ queryKey: ['enrollment-trends'] });
+  };
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => enrollmentsApi.update(id, data),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['enrollments'] });
-      queryClient.invalidateQueries({ queryKey: ['enrollment', variables.id] });
-      queryClient.invalidateQueries({ queryKey: ['courses'] });
-      queryClient.invalidateQueries({ queryKey: ['analytics-summary'] });
-      queryClient.invalidateQueries({ queryKey: ['enrollment-trends'] });
-    },
+    onSuccess: (_, variables) => invalidateAll(variables.id),
+  });
+
+  const approveMutation = useMutation({
+    mutationFn: ({ id, notes }: { id: string; notes?: string }) => enrollmentsApi.approve(id, notes),
+    onSuccess: (_, variables) => invalidateAll(variables.id),
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: ({ id, reason, notes }: { id: string; reason: string; notes?: string }) => enrollmentsApi.reject(id, reason, notes),
+    onSuccess: (_, variables) => invalidateAll(variables.id),
+  });
+
+  const grantAccessMutation = useMutation({
+    mutationFn: (id: string) => enrollmentsApi.grantAccess(id),
+    onSuccess: (_, id) => invalidateAll(id),
+  });
+
+  const suspendMutation = useMutation({
+    mutationFn: ({ id, notes }: { id: string; notes?: string }) => enrollmentsApi.suspend(id, notes),
+    onSuccess: (_, variables) => invalidateAll(variables.id),
   });
 
   const deleteMutation = useMutation({
     mutationFn: enrollmentsApi.delete,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['enrollments'] });
-      queryClient.invalidateQueries({ queryKey: ['courses'] });
-      queryClient.invalidateQueries({ queryKey: ['analytics-summary'] });
-      queryClient.invalidateQueries({ queryKey: ['enrollment-trends'] });
-    },
+    onSuccess: () => invalidateAll(),
   });
 
   return {
-    createEnrollment: createMutation.mutateAsync,
-    isCreating: createMutation.isPending,
     updateEnrollment: updateMutation.mutateAsync,
     isUpdating: updateMutation.isPending,
+    approveRegistration: approveMutation.mutateAsync,
+    isApproving: approveMutation.isPending,
+    rejectRegistration: rejectMutation.mutateAsync,
+    isRejecting: rejectMutation.isPending,
+    grantAccess: grantAccessMutation.mutateAsync,
+    isGrantingAccess: grantAccessMutation.isPending,
+    suspendAccess: suspendMutation.mutateAsync,
+    isSuspending: suspendMutation.isPending,
     deleteEnrollment: deleteMutation.mutateAsync,
     isDeleting: deleteMutation.isPending,
   };

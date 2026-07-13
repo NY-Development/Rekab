@@ -12,8 +12,7 @@ export default function AssignmentsPage() {
   const { data: submissionsRes, isLoading: isSubmissionsLoading } = useSubmissions();
 
   const assignmentsList: Assignment[] = assignmentsRes?.data?.docs || [];
-  // Submissions is a paginated api or array. Let's handle both.
-  const submissionsList = (submissionsRes as any)?.data?.docs || (submissionsRes as any)?.data || [];
+  const submissionsList = submissionsRes?.data?.submissions || [];
 
   // Map submissions by assignmentId
   const submissionMap = React.useMemo(() => {
@@ -30,8 +29,8 @@ export default function AssignmentsPage() {
 
   // Filter list
   const filteredAssignments = assignmentsList.filter((item) => {
-    if (typeFilter === 'Individual') return item.type === 'INDIVIDUAL';
-    if (typeFilter === 'Team') return item.type === 'TEAM';
+    if (typeFilter === 'Individual') return item.assignmentType === 'INDIVIDUAL';
+    if (typeFilter === 'Team') return item.assignmentType === 'TEAM';
     return true;
   });
 
@@ -51,7 +50,7 @@ export default function AssignmentsPage() {
   const totalCount = assignmentsList.length;
   const completedCount = sortedAssignments.filter(item => {
     const sub = submissionMap.get(item.id);
-    return sub && (sub.status === 'SUBMITTED' || sub.status === 'GRADED');
+    return sub && (sub.status === 'submitted' || sub.status === 'graded' || sub.status === 'late');
   }).length;
 
   return (
@@ -107,7 +106,7 @@ export default function AssignmentsPage() {
               let statusClass = 'bg-yellow-50 text-yellow-700 border-yellow-200';
               
               if (submission) {
-                if (submission.status === 'GRADED') {
+                if (submission.status === 'graded') {
                   statusLabel = 'Graded';
                   statusClass = 'bg-green-50 text-green-700 border-green-200';
                 } else {
@@ -134,7 +133,7 @@ export default function AssignmentsPage() {
                           {statusLabel}
                         </span>
                         <span className="bg-slate-100 text-slate-550 border border-slate-200 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-widest">
-                          {assignment.type}
+                          {assignment.assignmentType}
                         </span>
                       </div>
                       <h3 className="text-lg font-bold text-slate-905 mt-2 group-hover:text-blue-600 transition-colors">
@@ -156,11 +155,11 @@ export default function AssignmentsPage() {
                   <div className="flex items-center justify-between border-t border-slate-100 pt-4 mt-2">
                     <div className="flex items-center gap-2 text-xs text-slate-400">
                       <span className="material-symbols-outlined text-[16px]">info</span>
-                      <span>Requires {assignment.submissionType || 'LINK'} submission</span>
+                      <span>Requires {assignment.submissionType || 'github'} submission</span>
                     </div>
-                    {submission && submission.score !== undefined && (
+                    {submission && submission.points !== undefined && (
                       <span className="text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-100 px-2.5 py-0.5 rounded-md">
-                        Score: {submission.score} / {assignment.maxScore}
+                        Score: {submission.points} / {assignment.maxScore}
                       </span>
                     )}
                     {!submission && (

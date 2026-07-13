@@ -1,8 +1,10 @@
 import EnrollmentModel from '../models/Enrollment';
+import PaymentModel from '../../payments/models/Payment';
 import { Enrollment } from '../../../types';
 import { isMongoConnected } from '../../../configs/db';
 
 const EnrollmentM = EnrollmentModel as any;
+const PaymentM = PaymentModel as any;
 
 export class EnrollmentRepository {
   async findById(id: string): Promise<Enrollment | null> {
@@ -12,7 +14,8 @@ export class EnrollmentRepository {
         .populate('courseId', 'title category slug thumbnail price code')
         .populate('cohortId', 'name code startDate endDate status')
         .populate('teamId', 'name teamCode score')
-        .populate('paymentId', 'amount status transactionReference paidAt');
+        .populate('paymentId', 'amount status transactionReference paidAt')
+        .populate('reviewerId', 'name email role avatar');
       return doc ? (doc.toJSON() as Enrollment) : null;
     }
     return null;
@@ -25,7 +28,8 @@ export class EnrollmentRepository {
         .populate('courseId', 'title category slug thumbnail price code')
         .populate('cohortId', 'name code startDate endDate status')
         .populate('teamId', 'name teamCode score')
-        .populate('paymentId', 'amount status transactionReference paidAt');
+        .populate('paymentId', 'amount status transactionReference paidAt')
+        .populate('reviewerId', 'name email role avatar');
       return doc ? (doc.toJSON() as Enrollment) : null;
     }
     return null;
@@ -38,7 +42,8 @@ export class EnrollmentRepository {
         .populate('courseId', 'title category slug thumbnail price code')
         .populate('cohortId', 'name code startDate endDate status')
         .populate('teamId', 'name teamCode score')
-        .populate('paymentId', 'amount status transactionReference paidAt');
+        .populate('paymentId', 'amount status transactionReference paidAt')
+        .populate('reviewerId', 'name email role avatar');
       return doc ? (doc.toJSON() as Enrollment) : null;
     }
     return null;
@@ -68,7 +73,8 @@ export class EnrollmentRepository {
         .populate('courseId', 'title category slug thumbnail price code')
         .populate('cohortId', 'name code startDate endDate status')
         .populate('teamId', 'name teamCode score')
-        .populate('paymentId', 'amount status transactionReference paidAt');
+        .populate('paymentId', 'amount status transactionReference paidAt')
+        .populate('reviewerId', 'name email role avatar');
       return doc ? (doc.toJSON() as Enrollment) : null;
     }
     return null;
@@ -89,6 +95,7 @@ export class EnrollmentRepository {
     courseId?: string;
     cohortId?: string;
     status?: string;
+    paymentStatus?: string;
     sortBy: string;
     sortOrder: 'asc' | 'desc';
   }): Promise<{ docs: Enrollment[]; total: number }> {
@@ -96,13 +103,21 @@ export class EnrollmentRepository {
       return { docs: [], total: 0 };
     }
 
-    const { page, limit, studentId, courseId, cohortId, status, sortBy, sortOrder } = filters;
+    const { page, limit, studentId, courseId, cohortId, status, paymentStatus, sortBy, sortOrder } = filters;
     const query: Record<string, any> = {};
 
     if (studentId) query.studentId = studentId;
     if (courseId) query.courseId = courseId;
     if (cohortId) query.cohortId = cohortId;
     if (status) query.status = status;
+    if (paymentStatus) {
+      if (paymentStatus === 'NONE') {
+        query.paymentId = { $exists: false };
+      } else {
+        const paymentIds = await PaymentM.find({ status: paymentStatus }).distinct('_id');
+        query.paymentId = { $in: paymentIds };
+      }
+    }
 
     const skip = (page - 1) * limit;
 
@@ -113,6 +128,7 @@ export class EnrollmentRepository {
       .populate('cohortId', 'name code startDate endDate status')
       .populate('teamId', 'name teamCode score')
       .populate('paymentId', 'amount status transactionReference paidAt')
+      .populate('reviewerId', 'name email role avatar')
       .sort({ [sortBy]: sortOrder === 'asc' ? 1 : -1 })
       .skip(skip)
       .limit(limit);

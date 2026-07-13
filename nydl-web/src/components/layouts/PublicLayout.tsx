@@ -1,5 +1,5 @@
 import { Link, Outlet } from 'react-router-dom';
-import { GraduationCap, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 
@@ -12,11 +12,8 @@ export default function PublicLayout() {
       <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-lg">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-8">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-              <GraduationCap className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="text-lg font-bold tracking-tight">NYDEV Learning</span>
+          <Link to="/" className="flex items-center">
+            <img src="/banner-logo.png" alt="NYDEV Learning" className="h-9 w-auto" />
           </Link>
 
           {/* Desktop Nav */}
@@ -85,11 +82,8 @@ export default function PublicLayout() {
         <div className="mx-auto max-w-7xl px-4 py-12 md:px-8">
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
             <div className="col-span-2 md:col-span-1">
-              <Link to="/" className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                  <GraduationCap className="h-4 w-4 text-primary-foreground" />
-                </div>
-                <span className="font-bold">NYDEV Learning</span>
+              <Link to="/" className="flex items-center">
+                <img src="/banner-logo.png" alt="NYDEV Learning" className="h-8 w-auto" />
               </Link>
               <p className="mt-3 text-sm text-muted-foreground">
                 Professional cohort-based technology training.

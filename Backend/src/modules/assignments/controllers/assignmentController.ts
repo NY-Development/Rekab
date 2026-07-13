@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from '../../../middlewares/auth';
 import { AssignmentService } from '../services/assignmentService';
 import { CreateAssignmentSchema, UpdateAssignmentSchema, AssignmentFilterSchema } from '../validators/assignmentValidator';
+import { getStudentAccessScope } from '../../../utils/studentAccess';
 
 export class AssignmentController {
   constructor(private assignmentService: AssignmentService) {}
@@ -17,7 +18,20 @@ export class AssignmentController {
 
   async listAssignments(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const validated = await AssignmentFilterSchema.parseAsync(req.query);
+      const validated: any = await AssignmentFilterSchema.parseAsync(req.query);
+
+      if (req.user && req.user.role.toUpperCase() === 'STUDENT') {
+        const { cohortIds } = await getStudentAccessScope(req.user.id);
+        if (cohortIds.length === 0) {
+          res.status(200).json({
+            status: 'success',
+            data: { docs: [], total: 0, page: validated.page, limit: validated.limit, totalPages: 0 },
+          });
+          return;
+        }
+        validated.cohortIds = cohortIds;
+      }
+
       const result = await this.assignmentService.listAssignments(validated);
       res.status(200).json({
         status: 'success',

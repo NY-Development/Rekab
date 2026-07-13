@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
 export const SubmissionSchema = z.object({
-  assignmentId: z.string().min(1, 'Assignment ID is required'),
-  cohortId: z.string().min(1, 'Cohort ID is required'),
+  assignmentId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid assignment ID'),
   repoUrl: z.string().url('Please provide a valid GitHub repository URL').optional().or(z.literal('')),
+  content: z.string().optional(),
   notes: z.string().optional()
 });
 

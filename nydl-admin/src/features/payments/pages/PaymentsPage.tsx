@@ -11,7 +11,7 @@ export function PaymentsPage() {
   const { data, isLoading, isError } = usePayments();
   const { verifyPayment } = usePaymentMutations();
 
-  const handleVerify = async (id: string, status: 'VERIFIED' | 'REJECTED') => {
+  const handleVerify = async (id: string, status: 'VERIFIED' | 'FAILED') => {
     try {
       await verifyPayment({ id, data: { status, notes: `Verified by admin` } });
       toast.success(`Payment marked as ${status.toLowerCase()}`);
@@ -21,13 +21,13 @@ export function PaymentsPage() {
   };
 
   const columns: ColumnDef<Payment>[] = [
-    { accessorKey: 'transactionRef', header: 'Reference', cell: (info) => <span className="font-mono text-white text-xs">{info.getValue() as string}</span> },
+    { accessorKey: 'transactionReference', header: 'Reference', cell: (info) => <span className="font-mono text-white text-xs">{info.getValue() as string}</span> },
     {
       accessorKey: 'amount',
       header: 'Amount',
       cell: (info) => <span className="font-semibold text-slate-200">${info.getValue() as number} {info.row.original.currency}</span>,
     },
-    { accessorKey: 'method', header: 'Method' },
+    { accessorKey: 'paymentMethod', header: 'Method' },
     { accessorKey: 'status', header: 'Status', cell: (info) => <StatusBadge status={info.getValue() as string} /> },
     {
       accessorKey: 'createdAt',
@@ -52,7 +52,7 @@ export function PaymentsPage() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => handleVerify(info.row.original.id, 'REJECTED')}
+                onClick={() => handleVerify(info.row.original.id, 'FAILED')}
                 className="text-rose-500 hover:bg-rose-500/10 h-8 w-8"
               >
                 <XCircle className="h-4 w-4" />

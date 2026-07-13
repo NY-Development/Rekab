@@ -57,6 +57,7 @@ export class AnnouncementRepository {
     teamId?: string;
     priority?: string;
     search?: string;
+    accessScope?: { courseIds: string[]; cohortIds: string[] };
     sortBy: string;
     sortOrder: 'asc' | 'desc';
   }): Promise<{ docs: Announcement[]; total: number }> {
@@ -64,7 +65,7 @@ export class AnnouncementRepository {
       return { docs: [], total: 0 };
     }
 
-    const { page, limit, courseId, cohortId, teamId, priority, search, sortBy, sortOrder } = filters;
+    const { page, limit, courseId, cohortId, teamId, priority, search, accessScope, sortBy, sortOrder } = filters;
     const query: Record<string, any> = {};
 
     if (courseId) query.courseId = courseId;
@@ -76,6 +77,19 @@ export class AnnouncementRepository {
       query.$or = [
         { title: { $regex: search, $options: 'i' } },
         { content: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    if (accessScope) {
+      query.$and = [
+        {
+          $or: [
+            { courseId: { $exists: false } },
+            { courseId: null },
+            { courseId: { $in: accessScope.courseIds } },
+            { cohortId: { $in: accessScope.cohortIds } },
+          ],
+        },
       ];
     }
 

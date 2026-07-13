@@ -8,9 +8,9 @@ export const assignmentsApi = {
   getById: (id: string) =>
     api.get<ApiResponse<Assignment>>(`/assignments/${id}`),
 
-  submit: (assignmentId: string, data: { content?: string; fileUrl?: string; linkUrl?: string }) =>
-    api.post<ApiResponse<Submission>>(`/assignments/${assignmentId}/submissions`, data),
+  submit: (assignmentId: string, data: { content?: string; repoUrl?: string; notes?: string }) =>
+    api.post<ApiResponse<{ submission: Submission }>>('/submissions', { assignmentId, ...data }),
 
-  getMySubmissions: (params?: { page?: number; limit?: number }) =>
-    api.get('/submissions', { params }),
+  getMySubmissions: () =>
+    api.get<ApiResponse<{ submissions: Submission[] }>>('/submissions/mine'),
 };

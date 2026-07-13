@@ -104,11 +104,10 @@ export class PaymentService {
       notes: data.notes || 'Auto-verified successfully via Verify.ET Integration.',
     });
 
-    // 6. Activate Enrollment
+    // 6. Payment verified — registration now awaits admin approval
     await this.enrollmentRepository.update(data.enrollmentId, {
       paymentId: payment.id,
-      status: 'ACTIVE',
-      enrolledAt: new Date().toISOString(),
+      status: 'PENDING_APPROVAL',
     });
 
     return payment;
@@ -132,14 +131,13 @@ export class PaymentService {
       throw new AppError('Failed to update payment status', 500);
     }
 
-    // If status changed to VERIFIED, ensure enrollment is activated
+    // If status changed to VERIFIED, registration now awaits admin approval
     if (data.status === 'VERIFIED' && payment.status !== 'VERIFIED') {
       const eId = payment.enrollmentId?.toString();
       if (!eId) throw new AppError('Payment is missing enrollmentId', 400);
       await this.enrollmentRepository.update(eId, {
         paymentId: payment.id,
-        status: 'ACTIVE',
-        enrolledAt: new Date().toISOString(),
+        status: 'PENDING_APPROVAL',
       });
     }
     if (!payment.enrollmentId) {
