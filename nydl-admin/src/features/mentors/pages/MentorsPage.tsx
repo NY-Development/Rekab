@@ -1,14 +1,23 @@
+import { z } from 'zod';
 import { useMentors, useMentorMutations } from '@/hooks/useMentors';
 import { DataTable } from '@/components/common/DataTable';
+import { EntityFormDialog } from '@/components/common/EntityFormDialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { Mentor } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash, Heart } from 'lucide-react';
+import { Trash } from 'lucide-react';
 import { toast } from 'sonner';
 
+const createMentorSchema = z.object({
+  userId: z.string().min(1, 'User ID is required'),
+  specialization: z.string().optional(),
+  availability: z.string().optional(),
+  bio: z.string().optional(),
+});
+
 export function MentorsPage() {
-  const { data, isLoading } = useMentors();
-  const { deleteMentor } = useMentorMutations();
+  const { data, isLoading, isError } = useMentors();
+  const { createMentor, deleteMentor } = useMentorMutations();
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this mentor?')) return;
@@ -17,6 +26,16 @@ export function MentorsPage() {
       toast.success('Mentor deleted successfully');
     } catch {
       toast.error('Failed to delete mentor');
+    }
+  };
+
+  const handleCreate = async (values: z.infer<typeof createMentorSchema>) => {
+    try {
+      await createMentor(values);
+      toast.success('Mentor added successfully');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Failed to add mentor');
+      throw err;
     }
   };
 
@@ -57,13 +76,24 @@ export function MentorsPage() {
           <h1 className="text-xl font-bold text-white uppercase tracking-wider">Mentor Registry</h1>
           <p className="text-sm text-slate-400 font-medium">Manage support mentors, student success advisors, and assigned project teams.</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold">
-          <Plus className="mr-2 h-4 w-4" /> Add Mentor
-        </Button>
+        <EntityFormDialog
+          triggerLabel="Add Mentor"
+          title="Add New Mentor"
+          schema={createMentorSchema}
+          fields={[
+            { name: 'userId', label: 'User ID', placeholder: 'Mongo User ID of the mentor account' },
+            { name: 'specialization', label: 'Specialization', placeholder: 'Career Coaching' },
+            { name: 'availability', label: 'Availability', placeholder: 'Weekday evenings' },
+            { name: 'bio', label: 'Bio', type: 'textarea', placeholder: 'Short professional bio...' },
+          ]}
+          onSubmit={handleCreate}
+        />
       </div>
 
       {isLoading ? (
         <div className="text-slate-400">Loading mentor registry...</div>
+      ) : isError ? (
+        <div className="text-rose-400">Failed to load mentors. Please try again later.</div>
       ) : (
         <DataTable columns={columns} data={data?.docs || []} pageCount={data?.totalPages || 1} />
       )}

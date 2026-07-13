@@ -1,14 +1,24 @@
+import { z } from 'zod';
 import { useResources, useResourceMutations } from '@/hooks/useResources';
 import { DataTable } from '@/components/common/DataTable';
+import { EntityFormDialog } from '@/components/common/EntityFormDialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { Resource } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash, ExternalLink } from 'lucide-react';
+import { Trash, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 
+const createResourceSchema = z.object({
+  courseId: z.string().min(1, 'Course ID is required'),
+  title: z.string().min(2, 'Title must be at least 2 characters'),
+  description: z.string().optional(),
+  resourceType: z.enum(['PDF', 'VIDEO', 'LINK', 'ZIP', 'GITHUB', 'SLIDES']),
+  url: z.string().url('Invalid resource URL'),
+});
+
 export function ResourcesPage() {
-  const { data, isLoading } = useResources();
-  const { deleteResource } = useResourceMutations();
+  const { data, isLoading, isError } = useResources();
+  const { createResource, deleteResource } = useResourceMutations();
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this resource?')) return;
@@ -17,6 +27,16 @@ export function ResourcesPage() {
       toast.success('Resource deleted successfully');
     } catch {
       toast.error('Failed to delete resource');
+    }
+  };
+
+  const handleCreate = async (values: z.infer<typeof createResourceSchema>) => {
+    try {
+      await createResource(values);
+      toast.success('Resource added successfully');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Failed to add resource');
+      throw err;
     }
   };
 
@@ -62,13 +82,38 @@ export function ResourcesPage() {
           <h1 className="text-xl font-bold text-white uppercase tracking-wider">Resource Vault</h1>
           <p className="text-sm text-slate-400 font-medium">Upload slides, code repositories, books, documentation, and external reference materials.</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold">
-          <Plus className="mr-2 h-4 w-4" /> Add Resource
-        </Button>
+        <EntityFormDialog
+          triggerLabel="Add Resource"
+          title="Add New Resource"
+          schema={createResourceSchema}
+          fields={[
+            { name: 'courseId', label: 'Course ID', placeholder: 'Mongo Course ID' },
+            { name: 'title', label: 'Title', placeholder: 'Week 1 Slides' },
+            { name: 'description', label: 'Description', type: 'textarea', placeholder: 'Optional description...' },
+            {
+              name: 'resourceType',
+              label: 'Type',
+              type: 'select',
+              placeholder: 'Select a type',
+              options: [
+                { value: 'PDF', label: 'PDF' },
+                { value: 'VIDEO', label: 'Video' },
+                { value: 'LINK', label: 'Link' },
+                { value: 'ZIP', label: 'Zip' },
+                { value: 'GITHUB', label: 'GitHub' },
+                { value: 'SLIDES', label: 'Slides' },
+              ],
+            },
+            { name: 'url', label: 'URL', type: 'url', placeholder: 'https://...' },
+          ]}
+          onSubmit={handleCreate}
+        />
       </div>
 
       {isLoading ? (
         <div className="text-slate-400">Loading resources...</div>
+      ) : isError ? (
+        <div className="text-rose-400">Failed to load resources. Please try again later.</div>
       ) : (
         <DataTable columns={columns} data={data?.docs || []} pageCount={data?.totalPages || 1} />
       )}

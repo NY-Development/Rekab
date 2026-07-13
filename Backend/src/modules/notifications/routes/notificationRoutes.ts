@@ -18,5 +18,6 @@ router.get('/', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN'), (req, r
 router.get('/:id', requireAuthenticated, (req, res, next) => notificationController.getNotificationById(req, res, next));
 router.post('/', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN', 'INSTRUCTOR'), validateBody(CreateNotificationSchema), (req, res, next) => notificationController.createNotification(req, res, next));
 router.put('/:id/read', requireAuthenticated, (req, res, next) => notificationController.markAsRead(req, res, next));
+router.delete('/:id', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN'), (req, res, next) => notificationController.deleteNotification(req, res, next));
 
 export default router;

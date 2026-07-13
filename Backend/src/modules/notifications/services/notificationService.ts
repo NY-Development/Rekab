@@ -41,6 +41,13 @@ export class NotificationService {
     await this.notificationRepository.markAllAsRead(userId);
   }
 
+  async deleteNotification(id: string): Promise<void> {
+    const deleted = await this.notificationRepository.delete(id);
+    if (!deleted) {
+      throw new AppError('Notification not found', 404);
+    }
+  }
+
   async listNotifications(filters: {
     page: number;
     limit: number;

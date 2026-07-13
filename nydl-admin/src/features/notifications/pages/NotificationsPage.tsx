@@ -7,7 +7,7 @@ import { Plus, Trash } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function NotificationsPage() {
-  const { data, isLoading } = useNotifications();
+  const { data, isLoading, isError } = useNotifications();
   const { sendNotification, deleteNotification } = useNotificationMutations();
 
   const handleSend = async () => {
@@ -76,6 +76,8 @@ export function NotificationsPage() {
 
       {isLoading ? (
         <div className="text-slate-400">Loading notifications...</div>
+      ) : isError ? (
+        <div className="text-rose-400">Failed to load notifications. Please try again later.</div>
       ) : (
         <DataTable columns={columns} data={data?.docs || []} pageCount={data?.totalPages || 1} />
       )}

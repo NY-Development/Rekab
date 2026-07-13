@@ -1,26 +1,28 @@
+import { lazy } from 'react';
 import { RouteObject } from 'react-router-dom';
-import DashboardPage from '@/features/dashboard/pages/DashboardPage';
-import UsersPage from '@/features/users/pages/UsersPage';
-import StudentsPage from '@/features/students/pages/StudentsPage';
-import InstructorsPage from '@/features/instructors/pages/InstructorsPage';
-import MentorsPage from '@/features/mentors/pages/MentorsPage';
-import CoursesPage from '@/features/courses/pages/CoursesPage';
-import CohortsPage from '@/features/cohorts/pages/CohortsPage';
-import TeamsPage from '@/features/teams/pages/TeamsPage';
-import EnrollmentsPage from '@/features/enrollments/pages/EnrollmentsPage';
-import PaymentsPage from '@/features/payments/pages/PaymentsPage';
-import SessionsPage from '@/features/sessions/pages/SessionsPage';
-import AttendancePage from '@/features/attendance/pages/AttendancePage';
-import AssignmentsPage from '@/features/assignments/pages/AssignmentsPage';
-import SubmissionsPage from '@/features/submissions/pages/SubmissionsPage';
-import ResourcesPage from '@/features/resources/pages/ResourcesPage';
-import AnnouncementsPage from '@/features/announcements/pages/AnnouncementsPage';
-import AnalyticsPage from '@/features/analytics/pages/AnalyticsPage';
-import CertificatesPage from '@/features/certificates/pages/CertificatesPage';
-import NotificationsPage from '@/features/notifications/pages/NotificationsPage';
-import AuditLogsPage from '@/features/audit-logs/pages/AuditLogsPage';
-import RiskStudentsPage from '@/features/risk-students/pages/RiskStudentsPage';
-import SettingsPage from '@/features/settings/pages/SettingsPage';
+
+const DashboardPage = lazy(() => import('@/features/dashboard/pages/DashboardPage'));
+const UsersPage = lazy(() => import('@/features/users/pages/UsersPage'));
+const StudentsPage = lazy(() => import('@/features/students/pages/StudentsPage'));
+const InstructorsPage = lazy(() => import('@/features/instructors/pages/InstructorsPage'));
+const MentorsPage = lazy(() => import('@/features/mentors/pages/MentorsPage'));
+const CoursesPage = lazy(() => import('@/features/courses/pages/CoursesPage'));
+const CohortsPage = lazy(() => import('@/features/cohorts/pages/CohortsPage'));
+const TeamsPage = lazy(() => import('@/features/teams/pages/TeamsPage'));
+const EnrollmentsPage = lazy(() => import('@/features/enrollments/pages/EnrollmentsPage'));
+const PaymentsPage = lazy(() => import('@/features/payments/pages/PaymentsPage'));
+const SessionsPage = lazy(() => import('@/features/sessions/pages/SessionsPage'));
+const AttendancePage = lazy(() => import('@/features/attendance/pages/AttendancePage'));
+const AssignmentsPage = lazy(() => import('@/features/assignments/pages/AssignmentsPage'));
+const SubmissionsPage = lazy(() => import('@/features/submissions/pages/SubmissionsPage'));
+const ResourcesPage = lazy(() => import('@/features/resources/pages/ResourcesPage'));
+const AnnouncementsPage = lazy(() => import('@/features/announcements/pages/AnnouncementsPage'));
+const AnalyticsPage = lazy(() => import('@/features/analytics/pages/AnalyticsPage'));
+const CertificatesPage = lazy(() => import('@/features/certificates/pages/CertificatesPage'));
+const NotificationsPage = lazy(() => import('@/features/notifications/pages/NotificationsPage'));
+const AuditLogsPage = lazy(() => import('@/features/audit-logs/pages/AuditLogsPage'));
+const RiskStudentsPage = lazy(() => import('@/features/risk-students/pages/RiskStudentsPage'));
+const SettingsPage = lazy(() => import('@/features/settings/pages/SettingsPage'));
 
 export const adminRoutes: RouteObject[] = [
   {

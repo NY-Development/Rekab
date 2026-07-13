@@ -12,6 +12,9 @@ const MyCoursesPage = lazy(
 const AssignmentsPage = lazy(
   () => import("@/features/assignments/pages/AssignmentsPage")
 );
+const SubmitAssignmentPage = lazy(
+  () => import("@/features/assignments/pages/SubmitAssignmentPage")
+);
 const SessionsPage = lazy(
   () => import("@/features/sessions/pages/SessionsPage")
 );
@@ -50,6 +53,7 @@ export const studentRoutes: RouteObject[] = [
           { path: "/dashboard", element: <DashboardPage /> },
           { path: "/courses/enrolled", element: <MyCoursesPage /> },
           { path: "/assignments", element: <AssignmentsPage /> },
+          { path: "/assignments/:id/submit", element: <SubmitAssignmentPage /> },
           { path: "/sessions", element: <SessionsPage /> },
           { path: "/resources", element: <ResourcesPage /> },
           { path: "/announcements", element: <AnnouncementsPage /> },

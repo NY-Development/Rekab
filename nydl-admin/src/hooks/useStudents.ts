@@ -25,6 +25,13 @@ export function useStudent(id: string) {
 export function useStudentMutations() {
   const queryClient = useQueryClient();
 
+  const createMutation = useMutation({
+    mutationFn: studentsApi.create,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['students'] });
+    },
+  });
+
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => studentsApi.update(id, data),
     onSuccess: (_, variables) => {
@@ -41,6 +48,8 @@ export function useStudentMutations() {
   });
 
   return {
+    createStudent: createMutation.mutateAsync,
+    isCreating: createMutation.isPending,
     updateStudent: updateMutation.mutateAsync,
     isUpdating: updateMutation.isPending,
     deleteStudent: deleteMutation.mutateAsync,

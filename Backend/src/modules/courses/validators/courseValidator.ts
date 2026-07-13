@@ -10,6 +10,26 @@ export const CourseSchema = z.object({
   syllabusSummary: z.string().min(10, 'Syllabus summary must be at least 10 characters')
 });
 
+export const UpdateCourseSchema = z.object({
+  title: z.string().min(3).optional(),
+  description: z.string().min(10).optional(),
+  category: z.enum(['Frontend', 'Backend', 'DevOps', 'Full-Stack']).optional(),
+  difficulty: z.enum(['Beginner', 'Intermediate', 'Advanced']).optional(),
+  durationWeeks: z.number().int().positive().optional(),
+  image: z.string().url().optional(),
+  syllabusSummary: z.string().min(10).optional(),
+  status: z.enum(['draft', 'published', 'archived']).optional(),
+});
+
+export const CourseFilterSchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(20),
+  search: z.string().optional(),
+  category: z.string().optional(),
+  difficulty: z.string().optional(),
+  status: z.string().optional(),
+});
+
 export const ModuleSchema = z.object({
   title: z.string().min(3, 'Module title must be at least 3 characters'),
   description: z.string().min(5, 'Module description must be at least 5 characters'),

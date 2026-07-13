@@ -8,15 +8,14 @@ import { toast } from 'sonner';
 
 export function SettingsPage() {
   const { data, isLoading } = useSettings();
-  const { updateSettingProfile } = useSettingsMutations() as any;
   const { updateSetting } = useSettingsMutations();
 
-  const handleEdit = async (id: string, key: string, currentVal: string) => {
+  const handleEdit = async (key: string, category: string, currentVal: string) => {
     const newVal = prompt(`Update value for "${key}":`, currentVal);
     if (newVal === null || newVal === currentVal) return;
 
     try {
-      await updateSetting({ id, value: newVal });
+      await updateSetting({ key, value: newVal, category });
       toast.success('Setting updated successfully');
     } catch {
       toast.error('Failed to update setting');
@@ -35,7 +34,7 @@ export function SettingsPage() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => handleEdit(info.row.original.id, info.row.original.key, info.row.original.value)}
+            onClick={() => handleEdit(info.row.original.key, info.row.original.category, info.row.original.value)}
             className="text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 h-8 w-8"
           >
             <Edit className="h-4 w-4" />
@@ -55,7 +54,7 @@ export function SettingsPage() {
       {isLoading ? (
         <div className="text-slate-400">Loading configurations...</div>
       ) : (
-        <DataTable columns={columns} data={data?.docs || []} pageCount={data?.totalPages || 1} />
+        <DataTable columns={columns} data={data || []} pageCount={1} />
       )}
     </div>
   );

@@ -17,5 +17,6 @@ router.get('/', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN', 'INSTRUC
 router.get('/:id', requireAuthenticated, (req, res, next) => studentController.getProfileById(req, res, next));
 router.post('/', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN'), validateBody(CreateStudentProfileSchema), (req, res, next) => studentController.createProfile(req, res, next));
 router.put('/:id', requireAuthenticated, validateBody(UpdateStudentProfileSchema), (req, res, next) => studentController.updateProfile(req, res, next));
+router.delete('/:id', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN'), (req, res, next) => studentController.deleteProfile(req, res, next));
 
 export default router;

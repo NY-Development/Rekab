@@ -56,6 +56,14 @@ export class InstructorRepository {
     return null;
   }
 
+  async delete(id: string): Promise<boolean> {
+    if (isMongoConnected) {
+      const result = await InstructorProfileM.findByIdAndDelete(id);
+      return !!result;
+    }
+    return false;
+  }
+
   async findPaginated(filters: {
     page: number;
     limit: number;

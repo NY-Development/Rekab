@@ -57,6 +57,14 @@ export class StudentRepository {
     return null;
   }
 
+  async delete(id: string): Promise<boolean> {
+    if (isMongoConnected) {
+      const result = await StudentProfileM.findByIdAndDelete(id);
+      return !!result;
+    }
+    return false;
+  }
+
   async findPaginated(filters: {
     page: number;
     limit: number;

@@ -9,7 +9,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 export function SubmissionsPage() {
-  const { data, isLoading } = useSubmissions();
+  const { data, isLoading, isError } = useSubmissions();
   const { gradeSubmission } = useSubmissionMutations();
 
   const handleGrade = async (id: string) => {
@@ -74,6 +74,8 @@ export function SubmissionsPage() {
 
       {isLoading ? (
         <div className="text-slate-400">Loading submissions...</div>
+      ) : isError ? (
+        <div className="text-rose-400">Failed to load submissions. Please try again later.</div>
       ) : (
         <DataTable columns={columns} data={data?.docs || []} pageCount={data?.totalPages || 1} />
       )}

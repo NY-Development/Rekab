@@ -1,20 +1,24 @@
 import { Response, NextFunction } from 'express';
 import { CohortService } from '../services/cohortService';
 import { AuthenticatedRequest } from '../../../middlewares/auth';
+import { CohortFilterSchema, UpdateCohortSchema } from '../validators/cohortValidator';
 
 export class CohortController {
   constructor(private cohortService: CohortService) {}
 
   async listCohorts(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
-    const { courseId, studentId } = req.query;
     try {
-      const cohorts = await this.cohortService.listCohorts({
-        courseId: courseId ? String(courseId) : undefined,
-        studentId: studentId ? String(studentId) : undefined
-      });
-      res.json({
+      const validated = await CohortFilterSchema.parseAsync(req.query);
+      const result = await this.cohortService.listCohorts(validated);
+      res.status(200).json({
         status: 'success',
-        data: { cohorts }
+        data: {
+          docs: result.docs,
+          total: result.total,
+          page: validated.page,
+          limit: validated.limit,
+          totalPages: Math.ceil(result.total / validated.limit),
+        },
       });
     } catch (error) {
       next(error);
@@ -27,7 +31,7 @@ export class CohortController {
       const cohort = await this.cohortService.getCohortDetails(id);
       res.json({
         status: 'success',
-        data: { cohort }
+        data: cohort
       });
     } catch (error) {
       next(error);
@@ -53,8 +57,27 @@ export class CohortController {
       );
       res.status(201).json({
         status: 'success',
-        data: { cohort }
+        data: cohort
       });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateCohort(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const validated = await UpdateCohortSchema.parseAsync(req.body);
+      const cohort = await this.cohortService.updateCohort(req.user!.id, req.user!.name, req.params.id, validated);
+      res.status(200).json({ status: 'success', data: cohort });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async deleteCohort(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      await this.cohortService.deleteCohort(req.user!.id, req.user!.name, req.params.id);
+      res.status(200).json({ status: 'success', message: 'Cohort deleted successfully' });
     } catch (error) {
       next(error);
     }

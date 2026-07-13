@@ -49,6 +49,13 @@ export class StudentService {
     return updated;
   }
 
+  async deleteProfile(id: string): Promise<void> {
+    const deleted = await this.studentRepository.delete(id);
+    if (!deleted) {
+      throw new AppError('Student profile not found', 404);
+    }
+  }
+
   async getStudents(filters: {
     page: number;
     limit: number;

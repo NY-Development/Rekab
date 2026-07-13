@@ -4,7 +4,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { AuditLog } from '@/types';
 
 export function AuditLogsPage() {
-  const { data, isLoading } = useAuditLogs();
+  const { data, isLoading, isError } = useAuditLogs();
 
   const columns: ColumnDef<AuditLog>[] = [
     { accessorKey: 'action', header: 'Action', cell: (info) => <span className="font-bold text-slate-200">{info.getValue() as string}</span> },
@@ -27,6 +27,8 @@ export function AuditLogsPage() {
 
       {isLoading ? (
         <div className="text-slate-400">Loading audit history...</div>
+      ) : isError ? (
+        <div className="text-rose-400">Failed to load audit logs. Please try again later.</div>
       ) : (
         <DataTable columns={columns} data={data?.docs || []} pageCount={data?.totalPages || 1} />
       )}

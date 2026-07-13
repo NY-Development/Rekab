@@ -1,15 +1,22 @@
+import { z } from 'zod';
 import { useStudents, useStudentMutations } from '@/hooks/useStudents';
 import { DataTable } from '@/components/common/DataTable';
-import { StatusBadge } from '@/components/common/StatusBadge';
+import { EntityFormDialog } from '@/components/common/EntityFormDialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { StudentProfile } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Trash, Shield } from 'lucide-react';
+import { Trash } from 'lucide-react';
 import { toast } from 'sonner';
 
+const createStudentSchema = z.object({
+  userId: z.string().min(1, 'User ID is required'),
+  studentCode: z.string().min(3, 'Student code must be at least 3 characters'),
+  currentLevel: z.string().optional(),
+});
+
 export function StudentsPage() {
-  const { data, isLoading } = useStudents();
-  const { deleteStudent } = useStudentMutations();
+  const { data, isLoading, isError } = useStudents();
+  const { createStudent, deleteStudent } = useStudentMutations();
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this student profile?')) return;
@@ -18,6 +25,16 @@ export function StudentsPage() {
       toast.success('Student deleted successfully');
     } catch {
       toast.error('Failed to delete student');
+    }
+  };
+
+  const handleCreate = async (values: z.infer<typeof createStudentSchema>) => {
+    try {
+      await createStudent(values);
+      toast.success('Student profile created successfully');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Failed to create student profile');
+      throw err;
     }
   };
 
@@ -61,13 +78,28 @@ export function StudentsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-bold text-white uppercase tracking-wider">Student Registry</h1>
-        <p className="text-sm text-slate-400 font-medium">Track student registration codes, performance indices, and risk assessment indicators.</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-xl font-bold text-white uppercase tracking-wider">Student Registry</h1>
+          <p className="text-sm text-slate-400 font-medium">Track student registration codes, performance indices, and risk assessment indicators.</p>
+        </div>
+        <EntityFormDialog
+          triggerLabel="Add Student"
+          title="Create Student Profile"
+          schema={createStudentSchema}
+          fields={[
+            { name: 'userId', label: 'User ID', placeholder: 'Mongo User ID of the student account' },
+            { name: 'studentCode', label: 'Student Code', placeholder: 'STU-123456' },
+            { name: 'currentLevel', label: 'Current Level', placeholder: 'Beginner' },
+          ]}
+          onSubmit={handleCreate}
+        />
       </div>
 
       {isLoading ? (
         <div className="text-slate-400">Loading student registry...</div>
+      ) : isError ? (
+        <div className="text-rose-400">Failed to load students. Please try again later.</div>
       ) : (
         <DataTable columns={columns} data={data?.docs || []} pageCount={data?.totalPages || 1} />
       )}

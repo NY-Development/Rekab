@@ -26,12 +26,12 @@ export class AnalyticsController {
       const result = await this.analyticsService.getStudentActivities(validated);
       res.status(200).json({
         status: 'success',
-        data: result.docs,
-        pagination: {
+        data: {
+          docs: result.docs,
+          total: result.total,
           page: validated.page,
           limit: validated.limit,
-          total: result.total,
-          pages: Math.ceil(result.total / validated.limit),
+          totalPages: Math.ceil(result.total / validated.limit),
         },
       });
     } catch (error) {
@@ -45,14 +45,43 @@ export class AnalyticsController {
       const result = await this.analyticsService.getActivityLogs(validated);
       res.status(200).json({
         status: 'success',
-        data: result.docs,
-        pagination: {
+        data: {
+          docs: result.docs,
+          total: result.total,
           page: validated.page,
           limit: validated.limit,
-          total: result.total,
-          pages: Math.ceil(result.total / validated.limit),
+          totalPages: Math.ceil(result.total / validated.limit),
         },
       });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getSummary(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const summary = await this.analyticsService.getSummary();
+      res.status(200).json({ status: 'success', data: summary });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getEnrollmentTrends(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const months = Math.min(Math.max(parseInt(String(req.query.months || '6'), 10) || 6, 1), 24);
+      const trends = await this.analyticsService.getEnrollmentTrends(months);
+      res.status(200).json({ status: 'success', data: trends });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getRevenueTrends(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const months = Math.min(Math.max(parseInt(String(req.query.months || '6'), 10) || 6, 1), 24);
+      const trends = await this.analyticsService.getRevenueTrends(months);
+      res.status(200).json({ status: 'success', data: trends });
     } catch (error) {
       next(error);
     }

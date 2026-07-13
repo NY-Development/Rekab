@@ -1,0 +1,1072 @@
+### NYDL Backend API Test Collection
+### REST Client extension (VS Code) format. Matches the existing logout.rest convention.
+### Usage: run requests top to bottom within a module - login first to populate {{accessToken}},
+### then paste real Mongo ObjectIds from your database into the @variables below as needed.
+
+@baseUrl = http://localhost:3000/api/v1
+@accessToken = REPLACE_WITH_TOKEN_FROM_LOGIN_RESPONSE
+@userId = REPLACE_WITH_USER_ID
+@courseId = REPLACE_WITH_COURSE_ID
+@cohortId = REPLACE_WITH_COHORT_ID
+@studentId = REPLACE_WITH_STUDENT_PROFILE_ID
+@instructorId = REPLACE_WITH_INSTRUCTOR_PROFILE_ID
+@mentorId = REPLACE_WITH_MENTOR_PROFILE_ID
+@teamId = REPLACE_WITH_TEAM_ID
+@enrollmentId = REPLACE_WITH_ENROLLMENT_ID
+@sessionId = REPLACE_WITH_SESSION_ID
+@assignmentId = REPLACE_WITH_ASSIGNMENT_ID
+@submissionId = REPLACE_WITH_SUBMISSION_ID
+@resourceId = REPLACE_WITH_RESOURCE_ID
+@announcementId = REPLACE_WITH_ANNOUNCEMENT_ID
+@notificationId = REPLACE_WITH_NOTIFICATION_ID
+@paymentId = REPLACE_WITH_PAYMENT_ID
+@certificateId = REPLACE_WITH_CERTIFICATE_ID
+@moduleId = REPLACE_WITH_MODULE_ID
+
+###############################################################################
+# AUTH
+###############################################################################
+
+### Signup (student, default role)
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{
+  "name": "Test Student",
+  "email": "test.student@example.com",
+  "password": "Password123!",
+  "role": "student"
+}
+
+### Signup - validation error (short password)
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{
+  "name": "Test Student",
+  "email": "bad-email",
+  "password": "123",
+  "role": "student"
+}
+
+### Login
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "test.student@example.com",
+  "password": "Password123!"
+}
+
+### Login - invalid credentials (expect 401)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "test.student@example.com",
+  "password": "wrong-password"
+}
+
+### Refresh token (uses httpOnly cookie set by login; run in a client that persists cookies)
+POST {{baseUrl}}/auth/refresh-token
+
+### GitHub OAuth redirect (open in browser, not via REST client)
+GET {{baseUrl}}/auth/github?from=http://localhost:5174
+
+### Get profile (requires auth)
+GET {{baseUrl}}/auth/profile
+Authorization: Bearer {{accessToken}}
+
+### Get profile - unauthorized (no token, expect 401)
+GET {{baseUrl}}/auth/profile
+
+### Update profile
+PUT {{baseUrl}}/auth/profile
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Updated Name"
+}
+
+### Logout
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# ADMIN / USERS
+###############################################################################
+
+### List users (paginated, admin only)
+GET {{baseUrl}}/admin/users?page=1&limit=20
+Authorization: Bearer {{accessToken}}
+
+### List users with search + role filter
+GET {{baseUrl}}/admin/users?search=jane&role=STUDENT
+Authorization: Bearer {{accessToken}}
+
+### List users - forbidden for non-admin (expect 403)
+GET {{baseUrl}}/admin/users
+Authorization: Bearer NON_ADMIN_TOKEN
+
+### Get user by id
+GET {{baseUrl}}/admin/users/{{userId}}
+Authorization: Bearer {{accessToken}}
+
+### Create user (admin-managed)
+POST {{baseUrl}}/admin/users
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "New Instructor",
+  "email": "new.instructor@example.com",
+  "password": "Password123!",
+  "role": "INSTRUCTOR"
+}
+
+### Update user
+PUT {{baseUrl}}/admin/users/{{userId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "isBlocked": true,
+  "blockReason": "Violation of terms"
+}
+
+### Delete user
+DELETE {{baseUrl}}/admin/users/{{userId}}
+Authorization: Bearer {{accessToken}}
+
+### Dashboard stats
+GET {{baseUrl}}/admin/stats
+Authorization: Bearer {{accessToken}}
+
+### System activity logs
+GET {{baseUrl}}/admin/logs
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# STUDENTS
+###############################################################################
+
+### Get my student profile
+GET {{baseUrl}}/students/me
+Authorization: Bearer {{accessToken}}
+
+### List students (paginated, staff only)
+GET {{baseUrl}}/students?page=1&limit=20&search=STU
+Authorization: Bearer {{accessToken}}
+
+### Get student profile by id
+GET {{baseUrl}}/students/{{studentId}}
+Authorization: Bearer {{accessToken}}
+
+### Create student profile
+POST {{baseUrl}}/students
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "studentCode": "STU-100001",
+  "currentLevel": "Beginner"
+}
+
+### Update student profile
+PUT {{baseUrl}}/students/{{studentId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "currentLevel": "Intermediate",
+  "graduationStatus": "ACTIVE"
+}
+
+### Delete student profile
+DELETE {{baseUrl}}/students/{{studentId}}
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# INSTRUCTORS
+###############################################################################
+
+### Get my instructor profile
+GET {{baseUrl}}/instructors/me
+Authorization: Bearer {{accessToken}}
+
+### List instructors (paginated)
+GET {{baseUrl}}/instructors?page=1&limit=20
+Authorization: Bearer {{accessToken}}
+
+### Get instructor profile by id
+GET {{baseUrl}}/instructors/{{instructorId}}
+Authorization: Bearer {{accessToken}}
+
+### Create instructor profile
+POST {{baseUrl}}/instructors
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "specialization": "Frontend Engineering",
+  "yearsExperience": 5
+}
+
+### Update instructor profile
+PUT {{baseUrl}}/instructors/{{instructorId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "specialization": "Full-Stack Engineering"
+}
+
+### Delete instructor profile
+DELETE {{baseUrl}}/instructors/{{instructorId}}
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# MENTORS
+###############################################################################
+
+### Get my mentor profile
+GET {{baseUrl}}/mentors/me
+Authorization: Bearer {{accessToken}}
+
+### List mentors (paginated)
+GET {{baseUrl}}/mentors?page=1&limit=20
+Authorization: Bearer {{accessToken}}
+
+### Get mentor profile by id
+GET {{baseUrl}}/mentors/{{mentorId}}
+Authorization: Bearer {{accessToken}}
+
+### Create mentor profile
+POST {{baseUrl}}/mentors
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "specialization": "Career Coaching",
+  "availability": "Weekday evenings"
+}
+
+### Update mentor profile
+PUT {{baseUrl}}/mentors/{{mentorId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "availability": "Weekends"
+}
+
+### Delete mentor profile
+DELETE {{baseUrl}}/mentors/{{mentorId}}
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# COURSES
+###############################################################################
+
+### List courses (public, paginated + filters)
+GET {{baseUrl}}/courses?page=1&limit=20&category=Backend&difficulty=Beginner&search=react
+
+### Get course details (public)
+GET {{baseUrl}}/courses/{{courseId}}
+
+### Get course details - not found (expect 404)
+GET {{baseUrl}}/courses/000000000000000000000000
+
+### Create course (admin only)
+POST {{baseUrl}}/courses
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Full Stack Web Development",
+  "description": "Learn to build production web applications end to end.",
+  "category": "Full-Stack",
+  "difficulty": "Intermediate",
+  "durationWeeks": 12,
+  "image": "https://example.com/course-cover.jpg",
+  "syllabusSummary": "Covers frontend, backend, databases, and deployment."
+}
+
+### Update course
+PUT {{baseUrl}}/courses/{{courseId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "status": "published",
+  "price": 499
+}
+
+### Delete course
+DELETE {{baseUrl}}/courses/{{courseId}}
+Authorization: Bearer {{accessToken}}
+
+### Add module to course (instructor+)
+POST {{baseUrl}}/courses/{{courseId}}/modules
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Module 1: Fundamentals",
+  "description": "Core concepts and setup.",
+  "order": 1
+}
+
+### Add lesson to module
+POST {{baseUrl}}/courses/{{courseId}}/modules/{{moduleId}}/lessons
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Lesson 1: Environment Setup",
+  "content": "Step-by-step setup guide.",
+  "durationMinutes": 30
+}
+
+### Add assignment to module
+POST {{baseUrl}}/courses/{{courseId}}/modules/{{moduleId}}/assignments
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Assignment 1: Hello World",
+  "description": "Build and deploy a starter app.",
+  "maxPoints": 100,
+  "dueDate": "2026-08-01",
+  "submissionType": "github"
+}
+
+###############################################################################
+# CURRICULUM (courses / modules / lessons - separate collection model)
+###############################################################################
+
+### List curricula (public)
+GET {{baseUrl}}/curriculum?courseId={{courseId}}
+
+### Get curriculum detail (public)
+GET {{baseUrl}}/curriculum/detail?id=CURRICULUM_ID
+
+### Create curriculum
+POST {{baseUrl}}/curriculum
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "courseId": "{{courseId}}",
+  "title": "Core Curriculum",
+  "order": 1
+}
+
+### Update curriculum
+PUT {{baseUrl}}/curriculum/CURRICULUM_ID
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Updated Curriculum Title"
+}
+
+### Delete curriculum
+DELETE {{baseUrl}}/curriculum/CURRICULUM_ID
+Authorization: Bearer {{accessToken}}
+
+### List modules (public)
+GET {{baseUrl}}/curriculum/modules?courseId={{courseId}}
+
+### Create module
+POST {{baseUrl}}/curriculum/modules
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "courseId": "{{courseId}}",
+  "title": "Module 1",
+  "order": 1
+}
+
+### Update module
+PUT {{baseUrl}}/curriculum/modules/{{moduleId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Updated Module Title"
+}
+
+### Delete module
+DELETE {{baseUrl}}/curriculum/modules/{{moduleId}}
+Authorization: Bearer {{accessToken}}
+
+### List lessons (public)
+GET {{baseUrl}}/curriculum/lessons?moduleId={{moduleId}}
+
+### Create lesson
+POST {{baseUrl}}/curriculum/lessons
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "moduleId": "{{moduleId}}",
+  "title": "Lesson 1",
+  "content": "Lesson content here."
+}
+
+### Update lesson
+PUT {{baseUrl}}/curriculum/lessons/LESSON_ID
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Updated Lesson Title"
+}
+
+### Delete lesson
+DELETE {{baseUrl}}/curriculum/lessons/LESSON_ID
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# COHORTS
+###############################################################################
+
+### List cohorts (paginated)
+GET {{baseUrl}}/cohorts?page=1&limit=20&courseId={{courseId}}
+Authorization: Bearer {{accessToken}}
+
+### Get cohort details
+GET {{baseUrl}}/cohorts/{{cohortId}}
+Authorization: Bearer {{accessToken}}
+
+### Create cohort (staff)
+POST {{baseUrl}}/cohorts
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "courseId": "{{courseId}}",
+  "name": "Fall 2026 - Batch A",
+  "code": "NYDL-2026-FS-A",
+  "startDate": "2026-09-01",
+  "endDate": "2026-12-01",
+  "maxCapacity": 30,
+  "instructors": ["{{userId}}"],
+  "schedule": "Mon, Wed 7:00 PM - 9:00 PM EST"
+}
+
+### Enroll a student in a cohort
+POST {{baseUrl}}/cohorts/{{cohortId}}/enroll
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "studentId": "{{userId}}"
+}
+
+### Update cohort status
+PUT {{baseUrl}}/cohorts/{{cohortId}}/status
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "status": "active"
+}
+
+### Update cohort (generic)
+PUT {{baseUrl}}/cohorts/{{cohortId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "maxCapacity": 35
+}
+
+### Delete cohort
+DELETE {{baseUrl}}/cohorts/{{cohortId}}
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# TEAMS
+###############################################################################
+
+### List teams
+GET {{baseUrl}}/teams
+Authorization: Bearer {{accessToken}}
+
+### Get team by id
+GET {{baseUrl}}/teams/{{teamId}}
+Authorization: Bearer {{accessToken}}
+
+### Create team
+POST {{baseUrl}}/teams
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "cohortId": "{{cohortId}}",
+  "name": "Team Rocket",
+  "teamCode": "TR-01"
+}
+
+### Update team
+PUT {{baseUrl}}/teams/{{teamId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Team Rocket (Renamed)"
+}
+
+### Delete team
+DELETE {{baseUrl}}/teams/{{teamId}}
+Authorization: Bearer {{accessToken}}
+
+### Add member to team
+POST {{baseUrl}}/teams/{{teamId}}/members
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}"
+}
+
+### Remove member from team
+DELETE {{baseUrl}}/teams/{{teamId}}/members
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}"
+}
+
+###############################################################################
+# ENROLLMENTS
+###############################################################################
+
+### Get my enrollments
+GET {{baseUrl}}/enrollments/me
+Authorization: Bearer {{accessToken}}
+
+### List enrollments (staff, paginated)
+GET {{baseUrl}}/enrollments?page=1&limit=20
+Authorization: Bearer {{accessToken}}
+
+### Get enrollment by id
+GET {{baseUrl}}/enrollments/{{enrollmentId}}
+Authorization: Bearer {{accessToken}}
+
+### Apply for enrollment
+POST {{baseUrl}}/enrollments/apply
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "cohortId": "{{cohortId}}"
+}
+
+### Update enrollment status
+PUT {{baseUrl}}/enrollments/{{enrollmentId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "status": "ACTIVE"
+}
+
+### Delete/drop enrollment
+DELETE {{baseUrl}}/enrollments/{{enrollmentId}}
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# PAYMENTS
+###############################################################################
+
+### Get my payments
+GET {{baseUrl}}/payments/me
+Authorization: Bearer {{accessToken}}
+
+### List payments (staff, paginated)
+GET {{baseUrl}}/payments?page=1&limit=20
+Authorization: Bearer {{accessToken}}
+
+### Get payment by id
+GET {{baseUrl}}/payments/{{paymentId}}
+Authorization: Bearer {{accessToken}}
+
+### Submit payment
+POST {{baseUrl}}/payments/submit
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "courseId": "{{courseId}}",
+  "amount": 499,
+  "currency": "USD",
+  "paymentMethod": "BANK_TRANSFER",
+  "transactionReference": "TXN123456"
+}
+
+### Admin verify payment
+PUT {{baseUrl}}/payments/{{paymentId}}/verify
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "status": "VERIFIED",
+  "notes": "Confirmed by admin"
+}
+
+###############################################################################
+# SESSIONS
+###############################################################################
+
+### List sessions (paginated)
+GET {{baseUrl}}/sessions?page=1&limit=20&cohortId={{cohortId}}
+Authorization: Bearer {{accessToken}}
+
+### Get session by id
+GET {{baseUrl}}/sessions/{{sessionId}}
+Authorization: Bearer {{accessToken}}
+
+### Create session
+POST {{baseUrl}}/sessions
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "courseId": "{{courseId}}",
+  "cohortId": "{{cohortId}}",
+  "instructorId": "{{userId}}",
+  "title": "Intro to React Hooks",
+  "sessionDate": "2026-08-01T19:00:00.000Z",
+  "duration": 120,
+  "meetLink": "https://meet.google.com/abc-defg-hij"
+}
+
+### Update session
+PUT {{baseUrl}}/sessions/{{sessionId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "status": "COMPLETED",
+  "recordingLink": "https://example.com/recording.mp4"
+}
+
+### Delete session
+DELETE {{baseUrl}}/sessions/{{sessionId}}
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# ATTENDANCE
+###############################################################################
+
+### Get my attendance
+GET {{baseUrl}}/attendance/me
+Authorization: Bearer {{accessToken}}
+
+### Get attendance for a session
+GET {{baseUrl}}/attendance/session/{{sessionId}}
+Authorization: Bearer {{accessToken}}
+
+### List attendance (paginated)
+GET {{baseUrl}}/attendance?page=1&limit=20&sessionId={{sessionId}}
+Authorization: Bearer {{accessToken}}
+
+### Get attendance record by id
+GET {{baseUrl}}/attendance/ATTENDANCE_ID
+Authorization: Bearer {{accessToken}}
+
+### Mark single attendance
+POST {{baseUrl}}/attendance
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "studentId": "{{userId}}",
+  "sessionId": "{{sessionId}}",
+  "enrollmentId": "{{enrollmentId}}",
+  "status": "PRESENT"
+}
+
+### Bulk mark attendance
+POST {{baseUrl}}/attendance/bulk
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "sessionId": "{{sessionId}}",
+  "records": [
+    { "studentId": "{{userId}}", "enrollmentId": "{{enrollmentId}}", "status": "PRESENT" }
+  ]
+}
+
+### Delete attendance record
+DELETE {{baseUrl}}/attendance/ATTENDANCE_ID
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# ASSIGNMENTS
+###############################################################################
+
+### List assignments (paginated)
+GET {{baseUrl}}/assignments?page=1&limit=20&courseId={{courseId}}
+Authorization: Bearer {{accessToken}}
+
+### Get assignment by id
+GET {{baseUrl}}/assignments/{{assignmentId}}
+Authorization: Bearer {{accessToken}}
+
+### Create assignment
+POST {{baseUrl}}/assignments
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "courseId": "{{courseId}}",
+  "cohortId": "{{cohortId}}",
+  "moduleId": "{{moduleId}}",
+  "title": "Build a REST API",
+  "description": "Implement a CRUD API using Express and MongoDB.",
+  "maxPoints": 100,
+  "dueDate": "2026-08-15T23:59:00.000Z"
+}
+
+### Update assignment
+PUT {{baseUrl}}/assignments/{{assignmentId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "maxPoints": 150
+}
+
+### Delete assignment
+DELETE {{baseUrl}}/assignments/{{assignmentId}}
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# SUBMISSIONS
+###############################################################################
+
+### Submit assignment
+POST {{baseUrl}}/submissions
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "assignmentId": "{{assignmentId}}",
+  "cohortId": "{{cohortId}}",
+  "githubLink": "https://github.com/example/repo"
+}
+
+### My submissions
+GET {{baseUrl}}/submissions/mine
+Authorization: Bearer {{accessToken}}
+
+### List submissions (staff)
+GET {{baseUrl}}/submissions
+Authorization: Bearer {{accessToken}}
+
+### Grade a submission
+POST {{baseUrl}}/submissions/{{submissionId}}/grade
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "score": 95,
+  "feedback": "Excellent work, minor style nitpicks."
+}
+
+###############################################################################
+# RESOURCES
+###############################################################################
+
+### List resources (paginated)
+GET {{baseUrl}}/resources?page=1&limit=20&courseId={{courseId}}
+Authorization: Bearer {{accessToken}}
+
+### Get resource by id
+GET {{baseUrl}}/resources/{{resourceId}}
+Authorization: Bearer {{accessToken}}
+
+### Create resource
+POST {{baseUrl}}/resources
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "courseId": "{{courseId}}",
+  "title": "Week 1 Slides",
+  "resourceType": "SLIDES",
+  "url": "https://example.com/slides.pdf"
+}
+
+### Update resource
+PUT {{baseUrl}}/resources/{{resourceId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Week 1 Slides (Updated)"
+}
+
+### Delete resource
+DELETE {{baseUrl}}/resources/{{resourceId}}
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# ANNOUNCEMENTS
+###############################################################################
+
+### List announcements (paginated)
+GET {{baseUrl}}/announcements?page=1&limit=20
+Authorization: Bearer {{accessToken}}
+
+### Get announcement by id
+GET {{baseUrl}}/announcements/{{announcementId}}
+Authorization: Bearer {{accessToken}}
+
+### Create announcement
+POST {{baseUrl}}/announcements
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Cohort schedule update",
+  "content": "Sessions moved to 8 PM starting next week.",
+  "priority": "HIGH"
+}
+
+### Update announcement
+PUT {{baseUrl}}/announcements/{{announcementId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "priority": "URGENT"
+}
+
+### Delete announcement
+DELETE {{baseUrl}}/announcements/{{announcementId}}
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# NOTIFICATIONS
+###############################################################################
+
+### Get my notifications
+GET {{baseUrl}}/notifications/me
+Authorization: Bearer {{accessToken}}
+
+### Mark all as read
+POST {{baseUrl}}/notifications/me/read-all
+Authorization: Bearer {{accessToken}}
+
+### List notifications (admin, paginated)
+GET {{baseUrl}}/notifications?page=1&limit=20
+Authorization: Bearer {{accessToken}}
+
+### Get notification by id
+GET {{baseUrl}}/notifications/{{notificationId}}
+Authorization: Bearer {{accessToken}}
+
+### Create/send notification
+POST {{baseUrl}}/notifications
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "title": "Welcome!",
+  "message": "Your enrollment has been approved."
+}
+
+### Mark single notification as read
+PUT {{baseUrl}}/notifications/{{notificationId}}/read
+Authorization: Bearer {{accessToken}}
+
+### Delete notification
+DELETE {{baseUrl}}/notifications/{{notificationId}}
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# HEALTH SCORES (Risk Dashboard)
+###############################################################################
+
+### List health records (paginated, staff)
+GET {{baseUrl}}/health-scores?page=1&limit=20
+Authorization: Bearer {{accessToken}}
+
+### Get student health for a specific enrollment
+GET {{baseUrl}}/health-scores/student/{{studentId}}/enrollment/{{enrollmentId}}
+Authorization: Bearer {{accessToken}}
+
+### Get health record by id
+GET {{baseUrl}}/health-scores/HEALTH_RECORD_ID
+Authorization: Bearer {{accessToken}}
+
+### Recalculate score
+POST {{baseUrl}}/health-scores/recalculate
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "studentId": "{{studentId}}",
+  "enrollmentId": "{{enrollmentId}}"
+}
+
+### Manually update scores
+PUT {{baseUrl}}/health-scores/student/{{studentId}}/enrollment/{{enrollmentId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "participationScore": 80
+}
+
+###############################################################################
+# ANALYTICS
+###############################################################################
+
+### Dashboard summary (KPIs)
+GET {{baseUrl}}/analytics/summary
+Authorization: Bearer {{accessToken}}
+
+### Enrollment trends (last N months)
+GET {{baseUrl}}/analytics/enrollment-trends?months=6
+Authorization: Bearer {{accessToken}}
+
+### Revenue trends (last N months)
+GET {{baseUrl}}/analytics/revenue-trends?months=6
+Authorization: Bearer {{accessToken}}
+
+### Log student activity
+POST {{baseUrl}}/analytics/activity
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "action": "OPEN_COURSE",
+  "metadata": { "courseId": "{{courseId}}" }
+}
+
+### Get student activities (paginated)
+GET {{baseUrl}}/analytics/activities?page=1&limit=20
+Authorization: Bearer {{accessToken}}
+
+### Get system activity logs (paginated)
+GET {{baseUrl}}/analytics/system-logs?page=1&limit=20
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# AUDIT LOGS
+###############################################################################
+
+### List audit logs (paginated, admin)
+GET {{baseUrl}}/audit-logs?page=1&limit=20
+Authorization: Bearer {{accessToken}}
+
+### Get audit log by id
+GET {{baseUrl}}/audit-logs/AUDIT_LOG_ID
+Authorization: Bearer {{accessToken}}
+
+### Create audit log entry
+POST {{baseUrl}}/audit-logs
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "action": "MANUAL_OVERRIDE",
+  "entityType": "Course",
+  "entityId": "{{courseId}}"
+}
+
+###############################################################################
+# CERTIFICATES
+###############################################################################
+
+### Verify certificate (public)
+GET {{baseUrl}}/certificates/verify/CERT-2026-000001
+
+### Get my certificates
+GET {{baseUrl}}/certificates/me
+Authorization: Bearer {{accessToken}}
+
+### List certificates (paginated, admin)
+GET {{baseUrl}}/certificates?page=1&limit=20
+Authorization: Bearer {{accessToken}}
+
+### Get certificate by id
+GET {{baseUrl}}/certificates/{{certificateId}}
+Authorization: Bearer {{accessToken}}
+
+### Issue certificate
+POST {{baseUrl}}/certificates
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "studentId": "{{studentId}}",
+  "courseId": "{{courseId}}"
+}
+
+### Revoke certificate
+DELETE {{baseUrl}}/certificates/{{certificateId}}
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# SETTINGS
+###############################################################################
+
+### Get public settings
+GET {{baseUrl}}/settings/public
+
+### Get all settings (admin)
+GET {{baseUrl}}/settings
+Authorization: Bearer {{accessToken}}
+
+### Get settings by category
+GET {{baseUrl}}/settings/category/general
+Authorization: Bearer {{accessToken}}
+
+### Get setting by key
+GET {{baseUrl}}/settings/site_name
+Authorization: Bearer {{accessToken}}
+
+### Upsert setting
+PUT {{baseUrl}}/settings
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "key": "site_name",
+  "value": "NYDEV Learning",
+  "category": "general",
+  "isPublic": true
+}
+
+### Delete setting (super admin only)
+DELETE {{baseUrl}}/settings/site_name
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# WAITLIST
+###############################################################################
+
+### Join waitlist (public, rate-limited)
+POST {{baseUrl}}/waitlist/join
+Content-Type: application/json
+
+{
+  "name": "Jane Doe",
+  "email": "jane.doe@example.com"
+}

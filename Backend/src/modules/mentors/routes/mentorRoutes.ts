@@ -17,5 +17,6 @@ router.get('/', requireAuthenticated, (req, res, next) => mentorController.listM
 router.get('/:id', requireAuthenticated, (req, res, next) => mentorController.getProfileById(req, res, next));
 router.post('/', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN'), validateBody(CreateMentorProfileSchema), (req, res, next) => mentorController.createProfile(req, res, next));
 router.put('/:id', requireAuthenticated, validateBody(UpdateMentorProfileSchema), (req, res, next) => mentorController.updateProfile(req, res, next));
+router.delete('/:id', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN'), (req, res, next) => mentorController.deleteProfile(req, res, next));
 
 export default router;

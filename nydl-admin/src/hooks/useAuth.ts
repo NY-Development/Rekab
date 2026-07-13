@@ -16,7 +16,7 @@ export function useAuth() {
     onSuccess: (data) => {
       setAuth(data.data.user, data.data.token);
       queryClient.setQueryData(['admin-profile'], data.data.user);
-      navigate('/dashboard');
+      // navigate('/dashboard');
     },
   });
 
@@ -47,7 +47,7 @@ export function useAuth() {
     }
     storeLogout();
     queryClient.clear();
-    navigate('/login');
+    // navigate('/login');
   };
 
   return {

@@ -8,7 +8,7 @@ import { Trash, ClipboardCheck } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function EnrollmentsPage() {
-  const { data, isLoading } = useEnrollments();
+  const { data, isLoading, isError } = useEnrollments();
   const { deleteEnrollment, updateEnrollment } = useEnrollmentMutations();
 
   const handleDelete = async (id: string) => {
@@ -77,6 +77,8 @@ export function EnrollmentsPage() {
 
       {isLoading ? (
         <div className="text-slate-400">Loading enrollment logs...</div>
+      ) : isError ? (
+        <div className="text-rose-400">Failed to load enrollments. Please try again later.</div>
       ) : (
         <DataTable columns={columns} data={data?.docs || []} pageCount={data?.totalPages || 1} />
       )}

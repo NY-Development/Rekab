@@ -6,8 +6,15 @@ import { DBStore } from '../../../services/dbStore';
 export class CourseService {
   constructor(private courseRepository: CourseRepository) {}
 
-  async listCourses(): Promise<Course[]> {
-    return this.courseRepository.findAll();
+  async listCourses(filters: {
+    page: number;
+    limit: number;
+    search?: string;
+    category?: string;
+    difficulty?: string;
+    status?: string;
+  }): Promise<{ docs: Course[]; total: number }> {
+    return this.courseRepository.findPaginated(filters);
   }
 
   async getCourseDetails(id: string): Promise<Course> {
@@ -22,6 +29,25 @@ export class CourseService {
     const course = await this.courseRepository.create(courseData);
     await DBStore.logActivity(userId, userName, 'COURSE_CREATE', `Created new course: "${courseData.title}"`);
     return course;
+  }
+
+  async updateCourse(userId: string, userName: string, id: string, updateData: Partial<Course>): Promise<Course> {
+    const course = await this.getCourseDetails(id);
+    const updated = await this.courseRepository.update(id, updateData);
+    if (!updated) {
+      throw new AppError('Failed to update course', 500);
+    }
+    await DBStore.logActivity(userId, userName, 'COURSE_UPDATE', `Updated course: "${course.title}"`);
+    return updated;
+  }
+
+  async deleteCourse(userId: string, userName: string, id: string): Promise<void> {
+    const course = await this.getCourseDetails(id);
+    const deleted = await this.courseRepository.delete(id);
+    if (!deleted) {
+      throw new AppError('Failed to delete course', 500);
+    }
+    await DBStore.logActivity(userId, userName, 'COURSE_DELETE', `Deleted course: "${course.title}"`);
   }
 
   async addModuleToCourse(userId: string, userName: string, courseId: string, moduleData: { title: string; description: string; order?: number }): Promise<Module> {

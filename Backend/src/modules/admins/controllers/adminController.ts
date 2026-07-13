@@ -1,17 +1,63 @@
 import { Response, NextFunction } from 'express';
 import { AdminService } from '../services/adminService';
 import { AuthenticatedRequest } from '../../../middlewares/auth';
+import { UserFilterSchema, AdminCreateUserSchema, AdminUpdateUserSchema } from '../validators/adminValidator';
 
 export class AdminController {
   constructor(private adminService: AdminService) {}
 
   async listUsers(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const users = await this.adminService.listUsers();
-      res.json({
+      const validated = await UserFilterSchema.parseAsync(req.query);
+      const result = await this.adminService.listUsers(validated);
+      res.status(200).json({
         status: 'success',
-        data: { users }
+        data: {
+          docs: result.docs,
+          total: result.total,
+          page: validated.page,
+          limit: validated.limit,
+          totalPages: Math.ceil(result.total / validated.limit),
+        },
       });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getUserById(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const user = await this.adminService.getUserById(req.params.id);
+      res.status(200).json({ status: 'success', data: user });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async createUser(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const validated = await AdminCreateUserSchema.parseAsync(req.body);
+      const user = await this.adminService.createUser(validated);
+      res.status(201).json({ status: 'success', data: user });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateUser(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const validated = await AdminUpdateUserSchema.parseAsync(req.body);
+      const user = await this.adminService.updateUser(req.params.id, validated);
+      res.status(200).json({ status: 'success', data: user });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async deleteUser(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      await this.adminService.deleteUser(req.params.id);
+      res.status(200).json({ status: 'success', message: 'User deleted successfully' });
     } catch (error) {
       next(error);
     }

@@ -7,7 +7,7 @@ import { Plus, Award } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function CertificatesPage() {
-  const { data, isLoading } = useCertificates();
+  const { data, isLoading, isError } = useCertificates();
   const { issueCertificate } = useCertificateMutations();
 
   const handleIssue = async () => {
@@ -48,6 +48,8 @@ export function CertificatesPage() {
 
       {isLoading ? (
         <div className="text-slate-400">Loading certificates...</div>
+      ) : isError ? (
+        <div className="text-rose-400">Failed to load certificates. Please try again later.</div>
       ) : (
         <DataTable columns={columns} data={data?.docs || []} pageCount={data?.totalPages || 1} />
       )}

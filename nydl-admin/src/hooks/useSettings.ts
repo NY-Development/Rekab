@@ -1,11 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { settingsApi } from '@/api/settings.api';
 
-export function useSettings(params?: Record<string, any>) {
+export function useSettings() {
   return useQuery({
-    queryKey: ['settings', params],
+    queryKey: ['settings'],
     queryFn: async () => {
-      const res = await settingsApi.getAll(params);
+      const res = await settingsApi.getAll();
       return res.data.data;
     },
   });
@@ -15,8 +15,8 @@ export function useSettingsMutations() {
   const queryClient = useQueryClient();
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, value }: { id: string; value: string }) =>
-      settingsApi.update(id, { value }),
+    mutationFn: (data: { key: string; value: string; category: string; description?: string }) =>
+      settingsApi.update(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings'] });
     },

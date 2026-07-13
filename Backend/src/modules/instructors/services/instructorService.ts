@@ -43,6 +43,13 @@ export class InstructorService {
     return updated;
   }
 
+  async deleteProfile(id: string): Promise<void> {
+    const deleted = await this.instructorRepository.delete(id);
+    if (!deleted) {
+      throw new AppError('Instructor profile not found', 404);
+    }
+  }
+
   async getInstructors(filters: {
     page: number;
     limit: number;

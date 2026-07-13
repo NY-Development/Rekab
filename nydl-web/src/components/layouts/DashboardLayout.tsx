@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 
 const mainNavItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/courses', label: 'My Courses', icon: BookOpen },
+  { to: '/courses/enrolled', label: 'My Courses', icon: BookOpen },
   { to: '/assignments', label: 'Assignments', icon: ClipboardList },
   { to: '/sessions', label: 'Live Sessions', icon: Video },
   { to: '/resources', label: 'Resources', icon: FolderOpen },

@@ -1,4 +1,4 @@
-import { useAnalyticsSummary } from '@/hooks/useAnalytics';
+import { useAnalyticsSummary, useEnrollmentTrends, useRevenueTrends } from '@/hooks/useAnalytics';
 import { StatsCard } from '@/components/common/StatsCard';
 import {
   Users,
@@ -22,7 +22,9 @@ import {
 } from 'recharts';
 
 export function DashboardPage() {
-  const { data: summary, isLoading } = useAnalyticsSummary();
+  const { data: summary, isLoading, isError } = useAnalyticsSummary();
+  const { data: enrollmentTrends } = useEnrollmentTrends({ months: 6 });
+  const { data: revenueTrends } = useRevenueTrends({ months: 6 });
 
   const kpis = [
     { title: 'Total Students', value: summary?.totalStudents ?? 0, icon: GraduationCap, description: 'Enrolled profiles' },
@@ -31,19 +33,27 @@ export function DashboardPage() {
     { title: 'Enrollments', value: summary?.activeEnrollments ?? 0, icon: BookOpen, description: 'Active courses' },
   ];
 
-  const trendData = [
-    { name: 'Jan', enrollments: 12, revenue: 1200 },
-    { name: 'Feb', enrollments: 19, revenue: 1900 },
-    { name: 'Mar', enrollments: 32, revenue: 3200 },
-    { name: 'Apr', enrollments: 45, revenue: 4500 },
-    { name: 'May', enrollments: 48, revenue: 4800 },
-    { name: 'Jun', enrollments: 60, revenue: 6000 },
-  ];
+  const revenueData = (revenueTrends || []).map((t: { month: string; amount: number }) => ({
+    name: t.month,
+    revenue: t.amount,
+  }));
+  const enrollmentData = (enrollmentTrends || []).map((t: { month: string; count: number }) => ({
+    name: t.month,
+    enrollments: t.count,
+  }));
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-slate-400">Loading dashboard...</div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-rose-400">Failed to load dashboard data. Please try again later.</div>
       </div>
     );
   }
@@ -73,7 +83,7 @@ export function DashboardPage() {
           </h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={trendData}>
+              <AreaChart data={revenueData}>
                 <defs>
                   <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
@@ -98,7 +108,7 @@ export function DashboardPage() {
           </h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={trendData}>
+              <BarChart data={enrollmentData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
                 <XAxis dataKey="name" stroke="#64748b" fontSize={12} />
                 <YAxis stroke="#64748b" fontSize={12} />

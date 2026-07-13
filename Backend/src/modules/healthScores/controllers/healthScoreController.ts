@@ -60,12 +60,12 @@ export class HealthScoreController {
       const result = await this.healthScoreService.listHealthRecords(validated);
       res.status(200).json({
         status: 'success',
-        data: result.docs,
-        pagination: {
+        data: {
+          docs: result.docs,
+          total: result.total,
           page: validated.page,
           limit: validated.limit,
-          total: result.total,
-          pages: Math.ceil(result.total / validated.limit),
+          totalPages: Math.ceil(result.total / validated.limit),
         },
       });
     } catch (error) {

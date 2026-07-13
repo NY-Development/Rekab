@@ -8,7 +8,7 @@ import { RefreshCw, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function RiskStudentsPage() {
-  const { data, isLoading } = useHealthScores();
+  const { data, isLoading, isError } = useHealthScores();
   const { recalculateHealthScore } = useHealthScoreMutations();
 
   const handleRecalculate = async (studentId: string) => {
@@ -66,6 +66,8 @@ export function RiskStudentsPage() {
 
       {isLoading ? (
         <div className="text-slate-400">Loading risk dashboard...</div>
+      ) : isError ? (
+        <div className="text-rose-400">Failed to load risk data. Please try again later.</div>
       ) : (
         <DataTable columns={columns} data={data?.docs || []} pageCount={data?.totalPages || 1} />
       )}

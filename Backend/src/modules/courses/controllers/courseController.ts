@@ -1,16 +1,24 @@
 import { Response, NextFunction } from 'express';
 import { CourseService } from '../services/courseService';
 import { AuthenticatedRequest } from '../../../middlewares/auth';
+import { CourseFilterSchema, UpdateCourseSchema } from '../validators/courseValidator';
 
 export class CourseController {
   constructor(private courseService: CourseService) {}
 
   async listCourses(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const courses = await this.courseService.listCourses();
-      res.json({
+      const validated = await CourseFilterSchema.parseAsync(req.query);
+      const result = await this.courseService.listCourses(validated);
+      res.status(200).json({
         status: 'success',
-        data: { courses }
+        data: {
+          docs: result.docs,
+          total: result.total,
+          page: validated.page,
+          limit: validated.limit,
+          totalPages: Math.ceil(result.total / validated.limit),
+        },
       });
     } catch (error) {
       next(error);
@@ -23,7 +31,7 @@ export class CourseController {
       const course = await this.courseService.getCourseDetails(id);
       res.json({
         status: 'success',
-        data: { course }
+        data: course
       });
     } catch (error) {
       next(error);
@@ -48,8 +56,27 @@ export class CourseController {
       );
       res.status(201).json({
         status: 'success',
-        data: { course }
+        data: course
       });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateCourse(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const validated = await UpdateCourseSchema.parseAsync(req.body);
+      const course = await this.courseService.updateCourse(req.user!.id, req.user!.name, req.params.id, validated);
+      res.status(200).json({ status: 'success', data: course });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async deleteCourse(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      await this.courseService.deleteCourse(req.user!.id, req.user!.name, req.params.id);
+      res.status(200).json({ status: 'success', message: 'Course deleted successfully' });
     } catch (error) {
       next(error);
     }

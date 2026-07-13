@@ -7,7 +7,7 @@ export const sessionsApi = {
     api.get<PaginatedResponse<Session>>(API_ROUTES.SESSIONS, { params }),
   getById: (id: string) =>
     api.get<ApiResponse<Session>>(`${API_ROUTES.SESSIONS}/${id}`),
-  create: (data: Partial<Session>) =>
+  create: (data: Record<string, any>) =>
     api.post<ApiResponse<Session>>(API_ROUTES.SESSIONS, data),
   update: (id: string, data: Partial<Session>) =>
     api.put<ApiResponse<Session>>(`${API_ROUTES.SESSIONS}/${id}`, data),

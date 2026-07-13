@@ -1,8 +1,14 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import { useAuthStore } from '@/store/auth.store';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
 const TOKEN_KEY = 'nydl_token';
+
+function clearSession() {
+  Cookies.remove(TOKEN_KEY);
+  useAuthStore.getState().logout();
+}
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -82,15 +88,15 @@ api.interceptors.response.use(
         } catch (refreshError) {
           processQueue(refreshError, null);
           isRefreshing = false;
-          
-          Cookies.remove(TOKEN_KEY);
+
+          clearSession();
           if (!window.location.pathname.startsWith('/login')) {
             window.location.href = '/login';
           }
           return Promise.reject(refreshError);
         }
       } else {
-        Cookies.remove(TOKEN_KEY);
+        clearSession();
         if (!window.location.pathname.startsWith('/login')) {
           window.location.href = '/login';
         }

@@ -51,9 +51,6 @@ export default function CourseDetailPage() {
                   >
                     Enroll for ${course?.price || '999'}
                   </button>
-                  <button className="bg-white text-blue-600 border border-slate-200 px-6 py-3 rounded-md font-semibold text-sm hover:bg-slate-50 transition-colors">
-                    Download Syllabus
-                  </button>
                 </div>
               </div>
               <div className="hidden md:flex rounded-xl overflow-hidden border border-slate-200 shadow-sm h-80 relative bg-slate-100 items-center justify-center">

@@ -34,12 +34,12 @@ export class NotificationController {
       const result = await this.notificationService.listNotifications(validated);
       res.status(200).json({
         status: 'success',
-        data: result.docs,
-        pagination: {
+        data: {
+          docs: result.docs,
+          total: result.total,
           page: validated.page,
           limit: validated.limit,
-          total: result.total,
-          pages: Math.ceil(result.total / validated.limit),
+          totalPages: Math.ceil(result.total / validated.limit),
         },
       });
     } catch (error) {
@@ -65,6 +65,15 @@ export class NotificationController {
       }
       const notification = await this.notificationService.markAsRead(req.params.id, req.user.id);
       res.status(200).json({ status: 'success', data: notification });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async deleteNotification(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      await this.notificationService.deleteNotification(req.params.id);
+      res.status(200).json({ status: 'success', message: 'Notification deleted successfully' });
     } catch (error) {
       next(error);
     }

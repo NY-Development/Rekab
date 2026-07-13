@@ -41,4 +41,34 @@ export class CohortRepository {
   async createEnrollment(enrollmentData: Omit<Enrollment, 'id'>): Promise<Enrollment> {
     return DBStore.createEnrollment(enrollmentData);
   }
+
+  async delete(id: string): Promise<boolean> {
+    if (isMongoConnected) {
+      const result = await CohortM.findByIdAndDelete(id);
+      return !!result;
+    }
+    return false;
+  }
+
+  async findPaginated(filters: {
+    page: number;
+    limit: number;
+    courseId?: string;
+    studentId?: string;
+  }): Promise<{ docs: Cohort[]; total: number }> {
+    if (!isMongoConnected) {
+      return { docs: [], total: 0 };
+    }
+
+    const { page, limit, courseId, studentId } = filters;
+    const query: Record<string, any> = {};
+    if (courseId) query.courseId = courseId;
+    if (studentId) query.students = studentId;
+
+    const skip = (page - 1) * limit;
+    const total = await CohortM.countDocuments(query);
+    const docs = await CohortM.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit);
+
+    return { docs: docs.map((d: any) => d.toJSON() as Cohort), total };
+  }
 }

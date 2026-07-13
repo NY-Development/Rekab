@@ -6,15 +6,13 @@ import { DBStore } from '../../../services/dbStore';
 export class CohortService {
   constructor(private cohortRepository: CohortRepository) {}
 
-  async listCohorts(filters: { courseId?: string; studentId?: string }): Promise<Cohort[]> {
-    let cohorts = await this.cohortRepository.findAll();
-    if (filters.courseId) {
-      cohorts = cohorts.filter(c => c.courseId === filters.courseId);
-    }
-    if (filters.studentId) {
-      cohorts = cohorts.filter(c => c.students && c.students.includes(String(filters.studentId)));
-    }
-    return cohorts;
+  async listCohorts(filters: {
+    page: number;
+    limit: number;
+    courseId?: string;
+    studentId?: string;
+  }): Promise<{ docs: Cohort[]; total: number }> {
+    return this.cohortRepository.findPaginated(filters);
   }
 
   async getCohortDetails(id: string): Promise<Cohort> {
@@ -95,5 +93,24 @@ export class CohortService {
     );
 
     return updated;
+  }
+
+  async updateCohort(userId: string, userName: string, id: string, updateData: Partial<Cohort>): Promise<Cohort> {
+    const cohort = await this.getCohortDetails(id);
+    const updated = await this.cohortRepository.update(id, updateData);
+    if (!updated) {
+      throw new AppError('Cohort not found', 404);
+    }
+    await DBStore.logActivity(userId, userName, 'COHORT_UPDATE', `Updated cohort "${cohort.name}"`);
+    return updated;
+  }
+
+  async deleteCohort(userId: string, userName: string, id: string): Promise<void> {
+    const cohort = await this.getCohortDetails(id);
+    const deleted = await this.cohortRepository.delete(id);
+    if (!deleted) {
+      throw new AppError('Failed to delete cohort', 500);
+    }
+    await DBStore.logActivity(userId, userName, 'COHORT_DELETE', `Deleted cohort "${cohort.name}"`);
   }
 }

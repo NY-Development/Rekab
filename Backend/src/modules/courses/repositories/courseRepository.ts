@@ -44,6 +44,58 @@ export class CourseRepository {
     return DBStore.addModule(courseId, moduleData);
   }
 
+  async update(id: string, updateData: Partial<Course>): Promise<Course | null> {
+    if (isMongoConnected) {
+      const doc = await CourseM.findByIdAndUpdate(
+        id,
+        { $set: { ...updateData, updatedAt: new Date().toISOString() } },
+        { new: true }
+      );
+      return doc ? (doc.toJSON() as Course) : null;
+    }
+    return null;
+  }
+
+  async delete(id: string): Promise<boolean> {
+    if (isMongoConnected) {
+      const result = await CourseM.findByIdAndDelete(id);
+      return !!result;
+    }
+    return false;
+  }
+
+  async findPaginated(filters: {
+    page: number;
+    limit: number;
+    search?: string;
+    category?: string;
+    difficulty?: string;
+    status?: string;
+  }): Promise<{ docs: Course[]; total: number }> {
+    if (!isMongoConnected) {
+      return { docs: [], total: 0 };
+    }
+
+    const { page, limit, search, category, difficulty, status } = filters;
+    const query: Record<string, any> = {};
+
+    if (category) query.category = category;
+    if (difficulty) query.difficulty = difficulty;
+    if (status) query.status = status;
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const skip = (page - 1) * limit;
+    const total = await CourseM.countDocuments(query);
+    const docs = await CourseM.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit);
+
+    return { docs: docs.map((d: any) => d.toJSON() as Course), total };
+  }
+
   async updateCourseModules(courseId: string, modules: Module[]): Promise<Course | null> {
     if (isMongoConnected) {
       const doc = await CourseM.findByIdAndUpdate(

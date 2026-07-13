@@ -1,10 +1,10 @@
 import api from '@/lib/axios';
 import { API_ROUTES } from '@/lib/constants';
-import type { PaginatedResponse, ApiResponse, SystemSetting } from '@/types';
+import type { ApiResponse, SystemSetting } from '@/types';
 
 export const settingsApi = {
-  getAll: (params?: Record<string, any>) =>
-    api.get<PaginatedResponse<SystemSetting>>(API_ROUTES.SETTINGS, { params }),
-  update: (id: string, data: { value: string }) =>
-    api.put<ApiResponse<SystemSetting>>(`${API_ROUTES.SETTINGS}/${id}`, data),
+  getAll: () =>
+    api.get<{ status: string; data: SystemSetting[] }>(API_ROUTES.SETTINGS),
+  update: (data: { key: string; value: string; category: string; description?: string }) =>
+    api.put<ApiResponse<SystemSetting>>(API_ROUTES.SETTINGS, data),
 };

@@ -8,7 +8,7 @@ import { CheckCircle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function PaymentsPage() {
-  const { data, isLoading } = usePayments();
+  const { data, isLoading, isError } = usePayments();
   const { verifyPayment } = usePaymentMutations();
 
   const handleVerify = async (id: string, status: 'VERIFIED' | 'REJECTED') => {
@@ -73,6 +73,8 @@ export function PaymentsPage() {
 
       {isLoading ? (
         <div className="text-slate-400">Loading payment ledger...</div>
+      ) : isError ? (
+        <div className="text-rose-400">Failed to load payments. Please try again later.</div>
       ) : (
         <DataTable columns={columns} data={data?.docs || []} pageCount={data?.totalPages || 1} />
       )}

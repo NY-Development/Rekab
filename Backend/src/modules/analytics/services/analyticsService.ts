@@ -40,4 +40,16 @@ export class AnalyticsService {
   }): Promise<{ docs: StudentActivity[]; total: number }> {
     return this.analyticsRepository.findStudentActivities(filters);
   }
+
+  async getSummary() {
+    return this.analyticsRepository.getSummary();
+  }
+
+  async getEnrollmentTrends(months: number) {
+    return this.analyticsRepository.getEnrollmentTrends(months);
+  }
+
+  async getRevenueTrends(months: number) {
+    return this.analyticsRepository.getRevenueTrends(months);
+  }
 }

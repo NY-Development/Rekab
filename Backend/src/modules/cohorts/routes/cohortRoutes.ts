@@ -18,5 +18,7 @@ router.get('/:id', requireAuthenticated, (req, res, next) => cohortController.ge
 router.post('/', requireStaff, validateBody(CohortSchema), (req, res, next) => cohortController.createCohort(req, res, next));
 router.post('/:cohortId/enroll', requireAuthenticated, (req, res, next) => cohortController.enrollInCohort(req, res, next));
 router.put('/:id/status', requireStaff, (req, res, next) => cohortController.updateCohortStatus(req, res, next));
+router.put('/:id', requireStaff, (req, res, next) => cohortController.updateCohort(req, res, next));
+router.delete('/:id', authorize('ADMIN', 'SUPER_ADMIN'), (req, res, next) => cohortController.deleteCohort(req, res, next));
 
 export default router;

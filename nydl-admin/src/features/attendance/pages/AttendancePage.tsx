@@ -1,13 +1,32 @@
+import { z } from 'zod';
 import { useAttendance, useAttendanceMutations } from '@/hooks/useAttendance';
 import { DataTable } from '@/components/common/DataTable';
 import { StatusBadge } from '@/components/common/StatusBadge';
+import { EntityFormDialog } from '@/components/common/EntityFormDialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { Attendance } from '@/types';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { toast } from 'sonner';
+
+const markAttendanceSchema = z.object({
+  studentId: z.string().min(1, 'Student ID is required'),
+  sessionId: z.string().min(1, 'Session ID is required'),
+  enrollmentId: z.string().min(1, 'Enrollment ID is required'),
+  status: z.enum(['PRESENT', 'LATE', 'ABSENT']),
+});
 
 export function AttendancePage() {
-  const { data, isLoading } = useAttendance();
+  const { data, isLoading, isError } = useAttendance();
+  const { markAttendance } = useAttendanceMutations();
+
+  const handleMark = async (values: z.infer<typeof markAttendanceSchema>) => {
+    try {
+      await markAttendance(values);
+      toast.success('Attendance recorded successfully');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Failed to record attendance');
+      throw err;
+    }
+  };
 
   const columns: ColumnDef<Attendance>[] = [
     { accessorKey: 'student.user.name', header: 'Student', cell: (info) => <span className="font-semibold text-white">{info.row.original.student?.user?.name || 'N/A'}</span> },
@@ -27,13 +46,35 @@ export function AttendancePage() {
           <h1 className="text-xl font-bold text-white uppercase tracking-wider">Attendance Register</h1>
           <p className="text-sm text-slate-400 font-medium">Log session attendance metrics, view tardiness analytics, and mark absences.</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold">
-          <Plus className="mr-2 h-4 w-4" /> Bulk Mark Attendance
-        </Button>
+        <EntityFormDialog
+          triggerLabel="Mark Attendance"
+          title="Record Attendance"
+          schema={markAttendanceSchema}
+          fields={[
+            { name: 'studentId', label: 'Student User ID', placeholder: 'Mongo User ID' },
+            { name: 'sessionId', label: 'Session ID', placeholder: 'Mongo Session ID' },
+            { name: 'enrollmentId', label: 'Enrollment ID', placeholder: 'Mongo Enrollment ID' },
+            {
+              name: 'status',
+              label: 'Status',
+              type: 'select',
+              placeholder: 'Select status',
+              options: [
+                { value: 'PRESENT', label: 'Present' },
+                { value: 'LATE', label: 'Late' },
+                { value: 'ABSENT', label: 'Absent' },
+              ],
+            },
+          ]}
+          onSubmit={handleMark}
+          submitLabel="Record"
+        />
       </div>
 
       {isLoading ? (
         <div className="text-slate-400">Loading attendance...</div>
+      ) : isError ? (
+        <div className="text-rose-400">Failed to load attendance records. Please try again later.</div>
       ) : (
         <DataTable columns={columns} data={data?.docs || []} pageCount={data?.totalPages || 1} />
       )}

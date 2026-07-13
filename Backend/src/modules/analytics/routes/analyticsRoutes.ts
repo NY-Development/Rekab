@@ -15,5 +15,8 @@ const analyticsController = new AnalyticsController(analyticsService);
 router.post('/activity', requireAuthenticated, validateBody(LogStudentActivitySchema), (req, res, next) => analyticsController.logStudentActivity(req, res, next));
 router.get('/activities', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN', 'INSTRUCTOR'), (req, res, next) => analyticsController.getStudentActivities(req, res, next));
 router.get('/system-logs', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN'), (req, res, next) => analyticsController.getActivityLogs(req, res, next));
+router.get('/summary', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN'), (req, res, next) => analyticsController.getSummary(req, res, next));
+router.get('/enrollment-trends', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN'), (req, res, next) => analyticsController.getEnrollmentTrends(req, res, next));
+router.get('/revenue-trends', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN'), (req, res, next) => analyticsController.getRevenueTrends(req, res, next));
 
 export default router;

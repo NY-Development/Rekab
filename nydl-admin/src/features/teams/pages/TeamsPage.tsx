@@ -7,7 +7,7 @@ import { Plus, Trash, Users2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function TeamsPage() {
-  const { data, isLoading } = useTeams();
+  const { data, isLoading, isError } = useTeams();
   const { deleteTeam } = useTeamMutations();
 
   const handleDelete = async (id: string) => {
@@ -63,6 +63,8 @@ export function TeamsPage() {
 
       {isLoading ? (
         <div className="text-slate-400">Loading team rosters...</div>
+      ) : isError ? (
+        <div className="text-rose-400">Failed to load teams. Please try again later.</div>
       ) : (
         <DataTable columns={columns} data={data?.docs || []} pageCount={data?.totalPages || 1} />
       )}

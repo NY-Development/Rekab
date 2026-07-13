@@ -1,4 +1,4 @@
-import { useAnalyticsSummary } from '@/hooks/useAnalytics';
+import { useAnalyticsSummary, useEnrollmentTrends, useRevenueTrends } from '@/hooks/useAnalytics';
 import { StatsCard } from '@/components/common/StatsCard';
 import {
   TrendingUp,
@@ -20,25 +20,28 @@ import {
 } from 'recharts';
 
 export function AnalyticsPage() {
-  const { data: summary, isLoading } = useAnalyticsSummary();
+  const { data: summary, isLoading, isError } = useAnalyticsSummary();
+  const { data: enrollmentTrends } = useEnrollmentTrends({ months: 6 });
+  const { data: revenueTrends } = useRevenueTrends({ months: 6 });
 
   const metrics = [
     { title: 'Gross Revenue', value: `$${summary?.totalRevenue ?? 0}`, icon: DollarSign, description: 'Tuition earnings' },
     { title: 'Enrolled Courses', value: summary?.totalCourses ?? 0, icon: BookOpen, description: 'Academic catalog count' },
     { title: 'Cohort Batches', value: summary?.totalCohorts ?? 0, icon: TrendingUp, description: 'Running classes' },
-    { title: 'Graduate Ratio', value: `${summary?.completedEnrollments ? Math.round((summary?.completedEnrollments / summary?.activeEnrollments) * 100) : 85}%`, icon: Award, description: 'Successful completions' },
+    { title: 'Graduate Ratio', value: `${summary?.activeEnrollments ? Math.round((summary.completedEnrollments / summary.activeEnrollments) * 100) : 0}%`, icon: Award, description: 'Successful completions' },
   ];
 
-  const enrollmentHistory = [
-    { month: 'Jan', code: 45, fullStack: 35 },
-    { month: 'Feb', code: 55, fullStack: 50 },
-    { month: 'Mar', code: 70, fullStack: 65 },
-    { month: 'Apr', code: 85, fullStack: 78 },
-    { month: 'May', code: 92, fullStack: 88 },
-    { month: 'Jun', code: 110, fullStack: 95 },
-  ];
+  const enrollmentHistory = (enrollmentTrends || []).map((t: { month: string; count: number }) => ({
+    month: t.month,
+    enrollments: t.count,
+  }));
+  const revenueHistory = (revenueTrends || []).map((t: { month: string; amount: number }) => ({
+    month: t.month,
+    revenue: t.amount,
+  }));
 
   if (isLoading) return <div className="text-slate-400">Loading analysis charts...</div>;
+  if (isError) return <div className="text-rose-400">Failed to load analytics data. Please try again later.</div>;
 
   return (
     <div className="space-y-8">
@@ -63,8 +66,7 @@ export function AnalyticsPage() {
                 <YAxis stroke="#64748b" fontSize={12} />
                 <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#fff' }} />
                 <Legend />
-                <Bar dataKey="code" fill="#3b82f6" name="Intro to Coding" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="fullStack" fill="#10b981" name="Full Stack Web" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="enrollments" fill="#3b82f6" name="New Enrollments" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -76,14 +78,13 @@ export function AnalyticsPage() {
           </h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={enrollmentHistory}>
+              <LineChart data={revenueHistory}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
                 <XAxis dataKey="month" stroke="#64748b" fontSize={12} />
                 <YAxis stroke="#64748b" fontSize={12} />
                 <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#fff' }} />
                 <Legend />
-                <Line type="monotone" dataKey="code" stroke="#3b82f6" name="Coding revenue" strokeWidth={2} />
-                <Line type="monotone" dataKey="fullStack" stroke="#10b981" name="Fullstack revenue" strokeWidth={2} />
+                <Line type="monotone" dataKey="revenue" stroke="#10b981" name="Revenue ($)" strokeWidth={2} />
               </LineChart>
             </ResponsiveContainer>
           </div>

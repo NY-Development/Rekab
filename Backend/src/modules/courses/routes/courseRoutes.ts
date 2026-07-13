@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { CourseController } from '../controllers/courseController';
 import { CourseService } from '../services/courseService';
 import { CourseRepository } from '../repositories/courseRepository';
-import { authorize } from '../../../middlewares/auth';
+import { requireAdmin, requireInstructor } from '../../../middlewares/auth';
 import { validateBody } from '../../../middlewares/validation';
 import {
   CourseSchema,
@@ -10,11 +10,6 @@ import {
   LessonSchema,
   AssignmentSchema
 } from '../validators/courseValidator';
-
-// Add these exports to src/middlewares/auth.ts
-
-export const requireAdmin = authorize('ADMIN'); // Assumes 'ADMIN' is a valid UserRole
-export const requireInstructor = authorize('INSTRUCTOR'); // Assumes 'INSTRUCTOR' is a valid UserRole
 
 const router = Router();
 const courseRepository = new CourseRepository();
@@ -24,6 +19,8 @@ const courseController = new CourseController(courseService);
 router.get('/', (req, res, next) => courseController.listCourses(req, res, next));
 router.get('/:id', (req, res, next) => courseController.getCourseDetails(req, res, next));
 router.post('/', requireAdmin, validateBody(CourseSchema), (req, res, next) => courseController.createCourse(req, res, next));
+router.put('/:id', requireAdmin, (req, res, next) => courseController.updateCourse(req, res, next));
+router.delete('/:id', requireAdmin, (req, res, next) => courseController.deleteCourse(req, res, next));
 router.post(
   '/:courseId/modules',
   requireInstructor,

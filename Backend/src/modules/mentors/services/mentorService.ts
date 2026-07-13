@@ -43,6 +43,13 @@ export class MentorService {
     return updated;
   }
 
+  async deleteProfile(id: string): Promise<void> {
+    const deleted = await this.mentorRepository.delete(id);
+    if (!deleted) {
+      throw new AppError('Mentor profile not found', 404);
+    }
+  }
+
   async getMentors(filters: {
     page: number;
     limit: number;

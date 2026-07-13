@@ -54,6 +54,14 @@ export class MentorRepository {
     return null;
   }
 
+  async delete(id: string): Promise<boolean> {
+    if (isMongoConnected) {
+      const result = await MentorProfileM.findByIdAndDelete(id);
+      return !!result;
+    }
+    return false;
+  }
+
   async findPaginated(filters: {
     page: number;
     limit: number;

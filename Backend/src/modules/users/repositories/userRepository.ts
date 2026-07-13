@@ -45,5 +45,13 @@ export class UserRepository {
     }
     return DBStore.getUsers();
   }
+
+  async delete(id: string): Promise<boolean> {
+    if (isMongoConnected) {
+      const result = await UserM.findByIdAndDelete(id);
+      return !!result;
+    }
+    return false;
+  }
 }
 

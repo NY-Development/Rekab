@@ -1,14 +1,23 @@
+import { z } from 'zod';
 import { useInstructors, useInstructorMutations } from '@/hooks/useInstructors';
 import { DataTable } from '@/components/common/DataTable';
+import { EntityFormDialog } from '@/components/common/EntityFormDialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { Instructor } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash, BookUser } from 'lucide-react';
+import { Trash } from 'lucide-react';
 import { toast } from 'sonner';
 
+const createInstructorSchema = z.object({
+  userId: z.string().min(1, 'User ID is required'),
+  specialization: z.string().optional(),
+  yearsExperience: z.coerce.number().int().min(0).optional(),
+  bio: z.string().optional(),
+});
+
 export function InstructorsPage() {
-  const { data, isLoading } = useInstructors();
-  const { deleteInstructor } = useInstructorMutations();
+  const { data, isLoading, isError } = useInstructors();
+  const { createInstructor, deleteInstructor } = useInstructorMutations();
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this instructor?')) return;
@@ -17,6 +26,16 @@ export function InstructorsPage() {
       toast.success('Instructor deleted successfully');
     } catch {
       toast.error('Failed to delete instructor');
+    }
+  };
+
+  const handleCreate = async (values: z.infer<typeof createInstructorSchema>) => {
+    try {
+      await createInstructor(values);
+      toast.success('Instructor added successfully');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Failed to add instructor');
+      throw err;
     }
   };
 
@@ -57,13 +76,24 @@ export function InstructorsPage() {
           <h1 className="text-xl font-bold text-white uppercase tracking-wider">Instructor Roster</h1>
           <p className="text-sm text-slate-400 font-medium">Manage teacher accounts, course specializations, and professional bios.</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold">
-          <Plus className="mr-2 h-4 w-4" /> Add Instructor
-        </Button>
+        <EntityFormDialog
+          triggerLabel="Add Instructor"
+          title="Add New Instructor"
+          schema={createInstructorSchema}
+          fields={[
+            { name: 'userId', label: 'User ID', placeholder: 'Mongo User ID of the instructor account' },
+            { name: 'specialization', label: 'Specialization', placeholder: 'Frontend Engineering' },
+            { name: 'yearsExperience', label: 'Years of Experience', type: 'number', placeholder: '5' },
+            { name: 'bio', label: 'Bio', type: 'textarea', placeholder: 'Short professional bio...' },
+          ]}
+          onSubmit={handleCreate}
+        />
       </div>
 
       {isLoading ? (
         <div className="text-slate-400">Loading instructor roster...</div>
+      ) : isError ? (
+        <div className="text-rose-400">Failed to load instructors. Please try again later.</div>
       ) : (
         <DataTable columns={columns} data={data?.docs || []} pageCount={data?.totalPages || 1} />
       )}

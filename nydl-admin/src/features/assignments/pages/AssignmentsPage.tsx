@@ -1,15 +1,27 @@
+import { z } from 'zod';
 import { useAssignments, useAssignmentMutations } from '@/hooks/useAssignments';
 import { DataTable } from '@/components/common/DataTable';
 import { StatusBadge } from '@/components/common/StatusBadge';
+import { EntityFormDialog } from '@/components/common/EntityFormDialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { Assignment } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash } from 'lucide-react';
+import { Trash } from 'lucide-react';
 import { toast } from 'sonner';
 
+const createAssignmentSchema = z.object({
+  courseId: z.string().min(1, 'Course ID is required'),
+  cohortId: z.string().min(1, 'Cohort ID is required'),
+  moduleId: z.string().min(1, 'Module ID is required'),
+  title: z.string().min(3, 'Title must be at least 3 characters'),
+  description: z.string().min(5, 'Description must be at least 5 characters'),
+  maxPoints: z.coerce.number().int().min(1, 'Max points must be at least 1'),
+  dueDate: z.string().min(1, 'Due date is required'),
+});
+
 export function AssignmentsPage() {
-  const { data, isLoading } = useAssignments();
-  const { deleteAssignment } = useAssignmentMutations();
+  const { data, isLoading, isError } = useAssignments();
+  const { createAssignment, deleteAssignment } = useAssignmentMutations();
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this assignment?')) return;
@@ -18,6 +30,19 @@ export function AssignmentsPage() {
       toast.success('Assignment deleted successfully');
     } catch {
       toast.error('Failed to delete assignment');
+    }
+  };
+
+  const handleCreate = async (values: z.infer<typeof createAssignmentSchema>) => {
+    try {
+      await createAssignment({
+        ...values,
+        dueDate: new Date(values.dueDate).toISOString(),
+      });
+      toast.success('Assignment created successfully');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Failed to create assignment');
+      throw err;
     }
   };
 
@@ -52,13 +77,27 @@ export function AssignmentsPage() {
           <h1 className="text-xl font-bold text-white uppercase tracking-wider">Assignments Manager</h1>
           <p className="text-sm text-slate-400 font-medium">Issue assignments, specify grading rubrics, set deadlines, and manage publish states.</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold">
-          <Plus className="mr-2 h-4 w-4" /> Create Assignment
-        </Button>
+        <EntityFormDialog
+          triggerLabel="Create Assignment"
+          title="Create New Assignment"
+          schema={createAssignmentSchema}
+          fields={[
+            { name: 'courseId', label: 'Course ID', placeholder: 'Mongo Course ID' },
+            { name: 'cohortId', label: 'Cohort ID', placeholder: 'Mongo Cohort ID' },
+            { name: 'moduleId', label: 'Module ID', placeholder: 'Module identifier' },
+            { name: 'title', label: 'Title', placeholder: 'Build a REST API' },
+            { name: 'description', label: 'Description', type: 'textarea', placeholder: 'Assignment instructions...' },
+            { name: 'maxPoints', label: 'Max Points', type: 'number', placeholder: '100' },
+            { name: 'dueDate', label: 'Due Date', type: 'datetime' },
+          ]}
+          onSubmit={handleCreate}
+        />
       </div>
 
       {isLoading ? (
         <div className="text-slate-400">Loading assignments...</div>
+      ) : isError ? (
+        <div className="text-rose-400">Failed to load assignments. Please try again later.</div>
       ) : (
         <DataTable columns={columns} data={data?.docs || []} pageCount={data?.totalPages || 1} />
       )}

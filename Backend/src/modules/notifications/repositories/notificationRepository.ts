@@ -55,6 +55,14 @@ export class NotificationRepository {
     return false;
   }
 
+  async delete(id: string): Promise<boolean> {
+    if (isMongoConnected) {
+      const result = await NotificationM.findByIdAndDelete(id);
+      return !!result;
+    }
+    return false;
+  }
+
   async findPaginated(filters: {
     page: number;
     limit: number;

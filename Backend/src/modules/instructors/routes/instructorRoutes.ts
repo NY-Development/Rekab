@@ -17,5 +17,6 @@ router.get('/', requireAuthenticated, (req, res, next) => instructorController.l
 router.get('/:id', requireAuthenticated, (req, res, next) => instructorController.getProfileById(req, res, next));
 router.post('/', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN'), validateBody(CreateInstructorProfileSchema), (req, res, next) => instructorController.createProfile(req, res, next));
 router.put('/:id', requireAuthenticated, validateBody(UpdateInstructorProfileSchema), (req, res, next) => instructorController.updateProfile(req, res, next));
+router.delete('/:id', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN'), (req, res, next) => instructorController.deleteProfile(req, res, next));
 
 export default router;

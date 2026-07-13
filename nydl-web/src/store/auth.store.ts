@@ -25,7 +25,7 @@ export const useAuthStore = create<AuthState>()(
       isLoading: true,
 
       setAuth: (token: string, user: User) => {
-        Cookies.set('nydl_token', token, { expires: 7, sameSite: 'lax' });
+        Cookies.set('nydl_token', token, { expires: 1 / 96, secure: true, sameSite: 'lax' });
         set({ token, user, isAuthenticated: true, isLoading: false });
       },
 
