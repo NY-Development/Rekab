@@ -10,6 +10,7 @@ import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { Session } from '@/types';
 import { Button } from '@/components/ui/button';
+import { getPopulated } from '@/utils/registration';
 import { Trash, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -32,7 +33,10 @@ export function SessionsPage() {
   const { data: instructorsData } = useUsers({ role: 'INSTRUCTOR', limit: 100 });
 
   const courseOptions = (coursesData?.docs || []).map((c) => ({ value: c.id, label: c.title }));
-  const cohortOptions = (cohortsData?.docs || []).map((co) => ({ value: co.id, label: `${co.name}${co.course?.title ? ` (${co.course.title})` : ''}` }));
+  const cohortOptions = (cohortsData?.docs || []).map((co) => {
+    const courseTitle = getPopulated(co.courseId)?.title;
+    return { value: co.id, label: `${co.name}${courseTitle ? ` (${courseTitle})` : ''}` };
+  });
   const instructorOptions = (instructorsData?.docs || []).map((u) => ({ value: u.id, label: `${u.name} (${u.email})` }));
 
   const handleDelete = async (id: string) => {
@@ -59,7 +63,7 @@ export function SessionsPage() {
 
   const columns: ColumnDef<Session>[] = [
     { accessorKey: 'title', header: 'Session Title', cell: (info) => <span className="font-bold text-white">{info.getValue() as string}</span> },
-    { accessorKey: 'cohort.name', header: 'Cohort', cell: (info) => <span>{info.row.original.cohort?.name || 'N/A'}</span> },
+    { id: 'cohort', header: 'Cohort', cell: (info) => <span>{getPopulated(info.row.original.cohortId)?.name || 'N/A'}</span> },
     { accessorKey: 'type', header: 'Type' },
     {
       accessorKey: 'scheduledAt',

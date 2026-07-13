@@ -108,9 +108,9 @@ export class AuthController {
     if (!req.user) {
       return next(new AppError('Not authenticated', 401));
     }
-    const { name, avatar } = req.body;
+    const { name, avatar, phone } = req.body;
     try {
-      const updatedUser = await this.authService.updateProfile(req.user.id, { name, avatar });
+      const updatedUser = await this.authService.updateProfile(req.user.id, { name, avatar, phone });
       res.json({
         status: 'success',
         data: {

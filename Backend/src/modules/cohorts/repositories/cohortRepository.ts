@@ -8,7 +8,7 @@ const CohortM = CohortModel as any;
 export class CohortRepository {
   async findAll(): Promise<Cohort[]> {
     if (isMongoConnected) {
-      const docs = await CohortM.find({});
+      const docs = await CohortM.find({}).populate('courseId', 'title category code');
       return docs.map((d: any) => d.toJSON() as Cohort);
     }
     return DBStore.getCohorts();
@@ -16,7 +16,7 @@ export class CohortRepository {
 
   async findById(id: string): Promise<Cohort | null> {
     if (isMongoConnected) {
-      const doc = await CohortM.findById(id);
+      const doc = await CohortM.findById(id).populate('courseId', 'title category code');
       return doc ? (doc.toJSON() as Cohort) : null;
     }
     return DBStore.getCohortById(id);
@@ -67,7 +67,11 @@ export class CohortRepository {
 
     const skip = (page - 1) * limit;
     const total = await CohortM.countDocuments(query);
-    const docs = await CohortM.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit);
+    const docs = await CohortM.find(query)
+      .populate('courseId', 'title category code')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
     return { docs: docs.map((d: any) => d.toJSON() as Cohort), total };
   }

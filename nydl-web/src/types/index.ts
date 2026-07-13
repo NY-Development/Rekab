@@ -5,8 +5,10 @@ export interface User {
   firstName: string;
   lastName: string;
   email: string;
+  phone?: string;
   role: UserRole;
   avatar: string;
+  authProvider?: 'LOCAL' | 'GITHUB';
   isActive: boolean;
   isBlocked: boolean;
   createdAt: string;

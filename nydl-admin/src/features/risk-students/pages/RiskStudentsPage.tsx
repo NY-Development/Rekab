@@ -4,6 +4,7 @@ import { StatusBadge } from '@/components/common/StatusBadge';
 import { ColumnDef } from '@tanstack/react-table';
 import { HealthScore } from '@/types';
 import { Button } from '@/components/ui/button';
+import { getPopulated } from '@/utils/registration';
 import { RefreshCw, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -21,8 +22,8 @@ export function RiskStudentsPage() {
   };
 
   const columns: ColumnDef<HealthScore>[] = [
-    { accessorKey: 'student.studentCode', header: 'Student Code', cell: (info) => <span className="font-mono text-xs text-white">{info.row.original.student?.studentCode}</span> },
-    { accessorKey: 'student.user.name', header: 'Name', cell: (info) => <span className="font-semibold text-slate-200">{info.row.original.student?.user?.name || 'N/A'}</span> },
+    { id: 'email', header: 'Email', cell: (info) => <span className="font-mono text-xs text-white">{getPopulated(info.row.original.studentId)?.email || 'N/A'}</span> },
+    { id: 'name', header: 'Name', cell: (info) => <span className="font-semibold text-slate-200">{getPopulated(info.row.original.studentId)?.name || 'N/A'}</span> },
     {
       accessorKey: 'score',
       header: 'Health Score',
@@ -43,7 +44,7 @@ export function RiskStudentsPage() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => handleRecalculate(info.row.original.studentId)}
+            onClick={() => handleRecalculate(getPopulated(info.row.original.studentId)?.id || String(info.row.original.studentId))}
             className="text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 h-8 w-8"
             title="Recalculate score"
           >

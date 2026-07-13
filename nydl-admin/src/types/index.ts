@@ -24,10 +24,10 @@ export interface AuthResponse {
 }
 
 // ─── Student Profile ───
+// userId is a Mongoose-populated ref: the User document arrives on this same key
 export interface StudentProfile {
   id: string;
-  userId: string;
-  user?: User;
+  userId: Populated<User>;
   studentCode: string;
   currentLevel: string;
   graduationStatus: string;
@@ -44,8 +44,7 @@ export interface StudentProfile {
 // ─── Instructor ───
 export interface Instructor {
   id: string;
-  userId: string;
-  user?: User;
+  userId: Populated<User>;
   specialization: string;
   bio: string;
   assignedCourses: string[];
@@ -56,8 +55,7 @@ export interface Instructor {
 // ─── Mentor ───
 export interface Mentor {
   id: string;
-  userId: string;
-  user?: User;
+  userId: Populated<User>;
   expertise: string;
   bio: string;
   assignedTeams: string[];
@@ -100,31 +98,33 @@ export interface CurriculumModule {
 }
 
 // ─── Cohort ───
+// courseId is a Mongoose-populated ref
 export interface Cohort {
   id: string;
   name: string;
-  courseId: string;
-  course?: Course;
+  code: string;
+  courseId: Populated<Course>;
   startDate: string;
   endDate: string;
-  capacity: number;
-  enrolledCount: number;
-  status: 'UPCOMING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
-  instructorIds: string[];
-  mentorIds: string[];
+  maxCapacity: number;
+  students: string[];
+  schedule: string;
+  status: 'upcoming' | 'active' | 'completed' | 'cancelled' | string;
+  instructors: string[];
   createdAt: string;
   updatedAt: string;
 }
 
 // ─── Team ───
+// cohortId/mentorId/leaderId are Mongoose-populated refs
 export interface Team {
   id: string;
   name: string;
-  cohortId: string;
-  cohort?: Cohort;
-  leaderId: string;
+  teamCode: string;
+  cohortId: Populated<Cohort>;
+  leaderId?: Populated<User>;
   memberIds: string[];
-  mentorId: string;
+  mentorId?: Populated<User>;
   createdAt: string;
   updatedAt: string;
 }
@@ -232,8 +232,8 @@ export interface Payment {
 // ─── Session ───
 export interface Session {
   id: string;
-  cohortId: string;
-  cohort?: Cohort;
+  cohortId: Populated<Cohort>;
+  courseId?: Populated<Course>;
   title: string;
   description: string;
   type: string;
@@ -247,23 +247,24 @@ export interface Session {
 }
 
 // ─── Attendance ───
+// studentId/sessionId are Mongoose-populated refs
 export interface Attendance {
   id: string;
-  sessionId: string;
-  session?: Session;
-  studentId: string;
-  student?: StudentProfile;
+  sessionId: Populated<Session>;
+  studentId: Populated<User>;
+  enrollmentId?: Populated<Enrollment>;
   status: 'PRESENT' | 'ABSENT' | 'LATE' | 'EXCUSED';
-  joinedAt?: string;
-  leftAt?: string;
+  checkInTime?: string;
+  remarks?: string;
   createdAt: string;
 }
 
 // ─── Assignment ───
+// courseId/cohortId are Mongoose-populated refs
 export interface Assignment {
   id: string;
-  courseId: string;
-  course?: Course;
+  courseId: Populated<Course>;
+  cohortId?: Populated<Cohort>;
   moduleId: string;
   title: string;
   description: string;
@@ -341,10 +342,10 @@ export interface Notification {
 }
 
 // ─── Health Score ───
+// studentId is a Mongoose-populated User ref
 export interface HealthScore {
   id: string;
-  studentId: string;
-  student?: StudentProfile;
+  studentId: Populated<User>;
   score: number;
   attendanceWeight: number;
   assignmentWeight: number;
@@ -382,15 +383,16 @@ export interface AuditLog {
 }
 
 // ─── Certificate ───
+// studentId/courseId/cohortId are Mongoose-populated refs
 export interface Certificate {
   id: string;
-  studentId: string;
-  student?: StudentProfile;
-  courseId: string;
-  course?: Course;
+  studentId: Populated<User>;
+  courseId: Populated<Course>;
+  cohortId: Populated<Cohort>;
   certificateNumber: string;
-  issuedAt: string;
-  templateId?: string;
+  issueDate: string;
+  credentialUrl?: string;
+  pdfUrl?: string;
   createdAt: string;
 }
 

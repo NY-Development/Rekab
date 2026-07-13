@@ -9,6 +9,7 @@ import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { Assignment } from '@/types';
 import { Button } from '@/components/ui/button';
+import { getPopulated } from '@/utils/registration';
 import { Trash } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -28,7 +29,10 @@ export function AssignmentsPage() {
   const { data: coursesData } = useCourses({ limit: 100 });
   const { data: cohortsData } = useCohorts({ limit: 100 });
   const courseOptions = (coursesData?.docs || []).map((c) => ({ value: c.id, label: c.title }));
-  const cohortOptions = (cohortsData?.docs || []).map((co) => ({ value: co.id, label: `${co.name}${co.course?.title ? ` (${co.course.title})` : ''}` }));
+  const cohortOptions = (cohortsData?.docs || []).map((co) => {
+    const courseTitle = getPopulated(co.courseId)?.title;
+    return { value: co.id, label: `${co.name}${courseTitle ? ` (${courseTitle})` : ''}` };
+  });
 
   const handleDelete = async (id: string) => {
     try {
@@ -54,7 +58,7 @@ export function AssignmentsPage() {
 
   const columns: ColumnDef<Assignment>[] = [
     { accessorKey: 'title', header: 'Title', cell: (info) => <span className="font-bold text-white">{info.getValue() as string}</span> },
-    { accessorKey: 'course.title', header: 'Course', cell: (info) => <span>{info.row.original.course?.title || 'N/A'}</span> },
+    { id: 'course', header: 'Course', cell: (info) => <span>{getPopulated(info.row.original.courseId)?.title || 'N/A'}</span> },
     { accessorKey: 'maxScore', header: 'Max Score', cell: (info) => <span className="font-mono text-slate-350">{info.getValue() as number} pts</span> },
     { accessorKey: 'dueDate', header: 'Due Date', cell: (info) => <span>{new Date(info.getValue() as string).toLocaleDateString()}</span> },
     { accessorKey: 'status', header: 'Status', cell: (info) => <StatusBadge status={info.getValue() as string} /> },

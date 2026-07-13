@@ -7,6 +7,7 @@ import { DataTable } from '@/components/common/DataTable';
 import { EntityFormDialog } from '@/components/common/EntityFormDialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { Certificate } from '@/types';
+import { getPopulated } from '@/utils/registration';
 import { toast } from 'sonner';
 
 const issueCertificateSchema = z.object({
@@ -24,7 +25,10 @@ export function CertificatesPage() {
 
   const studentOptions = (studentsData?.docs || []).map((u) => ({ value: u.id, label: `${u.name} (${u.email})` }));
   const courseOptions = (coursesData?.docs || []).map((c) => ({ value: c.id, label: c.title }));
-  const cohortOptions = (cohortsData?.docs || []).map((co) => ({ value: co.id, label: `${co.name}${co.course?.title ? ` (${co.course.title})` : ''}` }));
+  const cohortOptions = (cohortsData?.docs || []).map((co) => {
+    const courseTitle = getPopulated(co.courseId)?.title;
+    return { value: co.id, label: `${co.name}${courseTitle ? ` (${courseTitle})` : ''}` };
+  });
 
   const handleIssue = async (values: z.infer<typeof issueCertificateSchema>) => {
     try {
@@ -38,12 +42,12 @@ export function CertificatesPage() {
 
   const columns: ColumnDef<Certificate>[] = [
     { accessorKey: 'certificateNumber', header: 'Certificate Number', cell: (info) => <span className="font-mono text-white text-xs">{info.getValue() as string}</span> },
-    { accessorKey: 'student.user.name', header: 'Graduate', cell: (info) => <span className="font-semibold text-slate-200">{info.row.original.student?.user?.name || 'N/A'}</span> },
-    { accessorKey: 'course.title', header: 'Course', cell: (info) => <span>{info.row.original.course?.title || 'N/A'}</span> },
+    { id: 'graduate', header: 'Graduate', cell: (info) => <span className="font-semibold text-slate-200">{getPopulated(info.row.original.studentId)?.name || 'N/A'}</span> },
+    { id: 'course', header: 'Course', cell: (info) => <span>{getPopulated(info.row.original.courseId)?.title || 'N/A'}</span> },
     {
-      accessorKey: 'issuedAt',
+      accessorKey: 'issueDate',
       header: 'Issued Date',
-      cell: (info) => <span>{new Date(info.getValue() as string).toLocaleDateString()}</span>,
+      cell: (info) => <span>{info.getValue() ? new Date(info.getValue() as string).toLocaleDateString() : 'N/A'}</span>,
     },
   ];
 

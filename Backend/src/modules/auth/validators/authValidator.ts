@@ -4,7 +4,10 @@ export const SignupSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  role: z.enum(['student', 'instructor', 'admin']).default('student')
+  role: z.preprocess(
+    (v) => (typeof v === 'string' ? v.toLowerCase() : v),
+    z.enum(['student', 'instructor', 'admin']).default('student')
+  ),
 });
 
 export const LoginSchema = z.object({
@@ -14,5 +17,6 @@ export const LoginSchema = z.object({
 
 export const ProfileUpdateSchema = z.object({
   name: z.string().min(2).optional(),
-  avatar: z.string().url().optional()
+  avatar: z.string().url().optional(),
+  phone: z.string().min(6, 'Phone number must be at least 6 characters').optional(),
 });

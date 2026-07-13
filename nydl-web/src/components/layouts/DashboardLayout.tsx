@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { useAuthStore } from '@/store/auth.store';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { EnrollmentGate } from '@/components/common/EnrollmentGate';
 
 const mainNavItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -42,6 +43,7 @@ export default function DashboardLayout() {
 
   return (
     <div className="flex min-h-screen bg-background">
+      <EnrollmentGate />
       {/* ─── Sidebar ─── */}
       <aside
         className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-border bg-[#0F172A] text-white transition-transform duration-300 md:translate-x-0 ${

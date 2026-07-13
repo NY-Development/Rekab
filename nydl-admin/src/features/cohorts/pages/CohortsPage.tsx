@@ -9,6 +9,7 @@ import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { Cohort } from '@/types';
 import { Button } from '@/components/ui/button';
+import { getPopulated } from '@/utils/registration';
 import { Trash } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -54,10 +55,10 @@ export function CohortsPage() {
 
   const columns: ColumnDef<Cohort>[] = [
     { accessorKey: 'name', header: 'Cohort Name', cell: (info) => <span className="font-bold text-white">{info.getValue() as string}</span> },
-    { accessorKey: 'course.title', header: 'Course', cell: (info) => <span>{info.row.original.course?.title || 'N/A'}</span> },
+    { id: 'course', header: 'Course', cell: (info) => <span>{getPopulated(info.row.original.courseId)?.title || 'N/A'}</span> },
     { accessorKey: 'startDate', header: 'Start Date', cell: (info) => <span>{new Date(info.getValue() as string).toLocaleDateString()}</span> },
     { accessorKey: 'endDate', header: 'End Date', cell: (info) => <span>{new Date(info.getValue() as string).toLocaleDateString()}</span> },
-    { accessorKey: 'enrolledCount', header: 'Students', cell: (info) => <span>{info.getValue() as number} / {info.row.original.capacity}</span> },
+    { id: 'students', header: 'Students', cell: (info) => <span>{info.row.original.students?.length || 0} / {info.row.original.maxCapacity}</span> },
     { accessorKey: 'status', header: 'Status', cell: (info) => <StatusBadge status={info.getValue() as string} /> },
     {
       id: 'actions',

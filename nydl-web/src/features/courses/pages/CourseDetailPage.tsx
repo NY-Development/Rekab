@@ -1,11 +1,16 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCourse, useCourseModules } from '@/hooks/useCourses';
 import { useCohorts } from '@/hooks/useCohorts';
+import { useAuthStore } from '@/store/auth.store';
+import { AuthRequiredDialog } from '@/components/common/AuthRequiredDialog';
 import { levelBadgeClass, categoryIcon, skillIcon } from '@/utils/course';
 
 export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
 
   const { data: courseRes, isLoading, error } = useCourse(id || '');
   const { data: modulesRes, isLoading: isModulesLoading } = useCourseModules(id || '');
@@ -21,6 +26,15 @@ export default function CourseDetailPage() {
 
   const scrollToCurriculum = () => {
     document.getElementById('curriculum')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleEnroll = () => {
+    if (!course) return;
+    if (isAuthenticated) {
+      navigate(`/enroll/${course.id}`);
+    } else {
+      setShowAuthPrompt(true);
+    }
   };
 
   return (
@@ -58,7 +72,7 @@ export default function CourseDetailPage() {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 pt-4">
                   <button
-                    onClick={() => navigate(`/enroll/${course.id}`)}
+                    onClick={handleEnroll}
                     className="bg-primary hover:bg-blue-700 text-white px-6 py-3 rounded-md font-semibold text-sm transition-colors shadow-sm"
                   >
                     Enroll for {course.price > 0 ? `${course.currency} ${course.price}` : 'Free'}
@@ -217,7 +231,7 @@ export default function CourseDetailPage() {
                   </>
                 )}
                 <button
-                  onClick={() => navigate(`/enroll/${course.id}`)}
+                  onClick={handleEnroll}
                   className="w-full bg-primary text-white py-3 rounded-md font-semibold text-sm hover:bg-blue-700 transition-colors shadow-sm"
                 >
                   Reserve Your Spot
@@ -256,6 +270,12 @@ export default function CourseDetailPage() {
           </section>
         </>
       )}
+
+      <AuthRequiredDialog
+        open={showAuthPrompt}
+        onOpenChange={setShowAuthPrompt}
+        courseTitle={course?.title}
+      />
     </div>
   );
 }

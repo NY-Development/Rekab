@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCourses } from '@/hooks/useCourses';
+import { useAuthStore } from '@/store/auth.store';
+import { AuthRequiredDialog } from '@/components/common/AuthRequiredDialog';
 import { levelBadgeClass, categoryIcon } from '@/utils/course';
 import type { Course } from '@/types';
 
@@ -10,8 +12,18 @@ export default function CourseCatalogPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
+  const [authPromptCourse, setAuthPromptCourse] = useState<Course | null>(null);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   const { data: courses, isLoading, error } = useCourses();
+
+  const handleEnroll = (course: Course) => {
+    if (isAuthenticated) {
+      navigate(`/enroll/${course.id}`);
+    } else {
+      setAuthPromptCourse(course);
+    }
+  };
 
   const filteredCourses = courses?.data?.docs?.filter((course: Course) => {
     const matchesSearch =
@@ -80,7 +92,7 @@ export default function CourseCatalogPage() {
             <article
               key={course.id}
               className="bg-white border border-slate-200 rounded-lg overflow-hidden group hover:shadow-md hover:border-slate-350 transition-all duration-200 flex flex-col cursor-pointer"
-              onClick={() => navigate(`/courses/${course.id}`)}
+              onClick={() => handleEnroll(course)}
             >
               <div
                 className="h-48 bg-slate-100 w-full bg-cover bg-center flex items-center justify-center border-b border-slate-200"
@@ -112,10 +124,7 @@ export default function CourseCatalogPage() {
                     {course.price > 0 ? `${course.currency} ${course.price}` : 'Free'}
                   </span>
                   <button
-                    onClick={() => {
-                      window.location.href = 'https://nydev-form-generation.vercel.app/f/nydev-learning-nydl-summer-cohort-registration-2026';
-                      // navigate(`/enroll/${course.id}`)
-                    }}
+                    onClick={() => handleEnroll(course)}
                     className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded-md transition-colors shadow-sm"
                   >
                     Enroll Now
@@ -126,6 +135,12 @@ export default function CourseCatalogPage() {
           ))}
         </div>
       )}
+
+      <AuthRequiredDialog
+        open={!!authPromptCourse}
+        onOpenChange={(open) => !open && setAuthPromptCourse(null)}
+        courseTitle={authPromptCourse?.title}
+      />
     </div>
   );
 }

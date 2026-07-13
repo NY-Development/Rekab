@@ -44,12 +44,12 @@ export function AttendancePage() {
   };
 
   const columns: ColumnDef<Attendance>[] = [
-    { accessorKey: 'student.user.name', header: 'Student', cell: (info) => <span className="font-semibold text-white">{info.row.original.student?.user?.name || 'N/A'}</span> },
-    { accessorKey: 'session.title', header: 'Lecture / Session', cell: (info) => <span>{info.row.original.session?.title || 'N/A'}</span> },
+    { id: 'student', header: 'Student', cell: (info) => <span className="font-semibold text-white">{getPopulated(info.row.original.studentId)?.name || 'N/A'}</span> },
+    { id: 'session', header: 'Lecture / Session', cell: (info) => <span>{getPopulated(info.row.original.sessionId)?.title || 'N/A'}</span> },
     { accessorKey: 'status', header: 'Status', cell: (info) => <StatusBadge status={info.getValue() as string} /> },
     {
-      accessorKey: 'joinedAt',
-      header: 'Joined At',
+      accessorKey: 'checkInTime',
+      header: 'Checked In At',
       cell: (info) => <span>{info.getValue() ? new Date(info.getValue() as string).toLocaleTimeString() : '-'}</span>,
     },
   ];

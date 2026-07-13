@@ -5,8 +5,9 @@ import { DataTable } from '@/components/common/DataTable';
 import { EntityFormDialog } from '@/components/common/EntityFormDialog';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { ColumnDef } from '@tanstack/react-table';
-import { StudentProfile } from '@/types';
+import { StudentProfile, User } from '@/types';
 import { Button } from '@/components/ui/button';
+import { getPopulated } from '@/utils/registration';
 import { Trash } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -43,8 +44,8 @@ export function StudentsPage() {
 
   const columns: ColumnDef<StudentProfile>[] = [
     { accessorKey: 'studentCode', header: 'Student Code', cell: (info) => <span className="font-mono text-xs text-white">{info.getValue() as string}</span> },
-    { accessorKey: 'user.name', header: 'Name', cell: (info) => <span className="font-semibold text-white">{info.row.original.user?.name || 'N/A'}</span> },
-    { accessorKey: 'user.email', header: 'Email', cell: (info) => <span>{info.row.original.user?.email || 'N/A'}</span> },
+    { id: 'name', header: 'Name', cell: (info) => <span className="font-semibold text-white">{getPopulated<User>(info.row.original.userId)?.name || 'N/A'}</span> },
+    { id: 'email', header: 'Email', cell: (info) => <span>{getPopulated<User>(info.row.original.userId)?.email || 'N/A'}</span> },
     { accessorKey: 'currentLevel', header: 'Current Level' },
     {
       accessorKey: 'healthScore',

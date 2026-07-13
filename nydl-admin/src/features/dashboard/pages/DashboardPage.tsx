@@ -1,5 +1,9 @@
+import { Link } from 'react-router-dom';
 import { useAnalyticsSummary, useEnrollmentTrends, useRevenueTrends } from '@/hooks/useAnalytics';
+import { useEnrollments } from '@/hooks/useEnrollments';
 import { StatsCard } from '@/components/common/StatsCard';
+import { StatusBadge } from '@/components/common/StatusBadge';
+import { getPopulated, getRegistrationStatusMeta } from '@/utils/registration';
 import {
   Users,
   GraduationCap,
@@ -7,6 +11,10 @@ import {
   CalendarDays,
   CreditCard,
   TrendingUp,
+  ClipboardCheck,
+  Hourglass,
+  BadgeCheck,
+  ArrowRight,
 } from 'lucide-react';
 import {
   AreaChart,
@@ -25,12 +33,23 @@ export function DashboardPage() {
   const { data: summary, isLoading, isError } = useAnalyticsSummary();
   const { data: enrollmentTrends } = useEnrollmentTrends({ months: 6 });
   const { data: revenueTrends } = useRevenueTrends({ months: 6 });
+  const { data: recentRegistrationsData } = useEnrollments({ limit: 6 });
+  const { data: pendingApprovalData } = useEnrollments({ status: 'PENDING_APPROVAL', limit: 1 });
+  const { data: approvedData } = useEnrollments({ status: 'APPROVED', limit: 1 });
+
+  const recentRegistrations = recentRegistrationsData?.docs || [];
+  const pendingApprovalCount = pendingApprovalData?.total ?? 0;
+  const awaitingAccessCount = approvedData?.total ?? 0;
 
   const kpis = [
     { title: 'Total Students', value: summary?.totalStudents ?? 0, icon: GraduationCap, description: 'Enrolled profiles' },
     { title: 'Total Instructors', value: summary?.totalInstructors ?? 0, icon: Users, description: 'Active faculty' },
     { title: 'Total Revenue', value: `$${summary?.totalRevenue ?? 0}`, icon: CreditCard, description: 'Net earnings' },
-    { title: 'Enrollments', value: summary?.activeEnrollments ?? 0, icon: BookOpen, description: 'Active courses' },
+    { title: 'Active Enrollments', value: summary?.activeEnrollments ?? 0, icon: BookOpen, description: 'Course access granted' },
+    { title: 'Registrations', value: recentRegistrationsData?.total ?? 0, icon: ClipboardCheck, description: 'All-time applications' },
+    { title: 'Pending Approval', value: pendingApprovalCount, icon: Hourglass, description: 'Payment verified, awaiting review' },
+    { title: 'Awaiting Access', value: awaitingAccessCount, icon: BadgeCheck, description: 'Approved, access not granted yet' },
+    { title: 'Total Courses', value: summary?.totalCourses ?? 0, icon: CalendarDays, description: 'In catalog' },
   ];
 
   const revenueData = (revenueTrends || []).map((t: { month: string; amount: number }) => ({
@@ -71,6 +90,51 @@ export function DashboardPage() {
             description={kpi.description}
           />
         ))}
+      </div>
+
+      {/* Recent Registrations */}
+      <div className="bg-slate-950 border border-slate-800 rounded-xl p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="font-bold text-white text-sm uppercase tracking-wider flex items-center gap-2">
+            <ClipboardCheck className="h-4 w-4 text-blue-500" />
+            Recent Registrations
+          </h3>
+          <Link
+            to="/enrollments"
+            className="text-xs font-semibold text-blue-500 hover:text-blue-400 flex items-center gap-1"
+          >
+            View All <ArrowRight className="h-3 w-3" />
+          </Link>
+        </div>
+        {recentRegistrations.length === 0 ? (
+          <p className="text-sm text-slate-500 py-6 text-center border border-dashed border-slate-800 rounded-lg">
+            No registrations yet. New student applications will appear here.
+          </p>
+        ) : (
+          <div className="divide-y divide-slate-800">
+            {recentRegistrations.map((reg) => {
+              const student = getPopulated(reg.studentId);
+              const course = getPopulated(reg.courseId);
+              const meta = getRegistrationStatusMeta(reg);
+              return (
+                <div key={reg.id} className="flex items-center justify-between py-3 gap-4">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-white truncate">{student?.name || 'Unknown Student'}</p>
+                    <p className="text-xs text-slate-500 truncate">
+                      {student?.email || ''}{course?.title ? ` — ${course.title}` : ''}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4 shrink-0">
+                    <StatusBadge status={meta.key} />
+                    <span className="text-xs text-slate-500 hidden sm:block">
+                      {new Date(reg.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Grid for Charts */}

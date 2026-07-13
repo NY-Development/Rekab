@@ -3,6 +3,7 @@ import { DataTable } from '@/components/common/DataTable';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { Team } from '@/types';
+import { getPopulated } from '@/utils/registration';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash, Users2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -22,7 +23,7 @@ export function TeamsPage() {
 
   const columns: ColumnDef<Team>[] = [
     { accessorKey: 'name', header: 'Team Name', cell: (info) => <span className="font-bold text-white">{info.getValue() as string}</span> },
-    { accessorKey: 'cohort.name', header: 'Cohort', cell: (info) => <span>{info.row.original.cohort?.name || 'N/A'}</span> },
+    { id: 'cohort', header: 'Cohort', cell: (info) => <span>{getPopulated(info.row.original.cohortId)?.name || 'N/A'}</span> },
     {
       accessorKey: 'memberIds',
       header: 'Members',

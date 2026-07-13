@@ -96,7 +96,7 @@ export class AuthService {
     return { token: accessToken, refreshToken, user: sanitizeUser(user) };
   }
 
-  async updateProfile(userId: string, updateData: { name?: string; avatar?: string }): Promise<User> {
+  async updateProfile(userId: string, updateData: { name?: string; avatar?: string; phone?: string }): Promise<User> {
     const user = await this.userRepository.findById(userId);
     if (!user) {
       throw new AppError('User not found', 404);
