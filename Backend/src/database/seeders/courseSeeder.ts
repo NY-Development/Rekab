@@ -10,6 +10,7 @@ interface SeedCourse {
   level: 'Beginner' | 'Intermediate' | 'Advanced';
   durationWeeks: number;
   skills: string[];
+  price: number;
 }
 
 const SEED_COURSES: SeedCourse[] = [
@@ -23,6 +24,7 @@ const SEED_COURSES: SeedCourse[] = [
     level: 'Beginner',
     durationWeeks: 8,
     skills: ['HTML', 'CSS', 'JavaScript'],
+    price: 2000,
   },
   {
     title: 'Frontend Intermediate',
@@ -34,6 +36,7 @@ const SEED_COURSES: SeedCourse[] = [
     level: 'Intermediate',
     durationWeeks: 10,
     skills: ['React.js', 'Hooks', 'State Management', 'Routing', 'API Integration'],
+    price: 2500,
   },
   {
     title: 'Backend Beginner',
@@ -45,6 +48,7 @@ const SEED_COURSES: SeedCourse[] = [
     level: 'Beginner',
     durationWeeks: 10,
     skills: ['Node.js', 'Express.js', 'MongoDB', 'REST APIs', 'Authentication'],
+    price: 2000,
   },
   {
     title: 'Backend Intermediate',
@@ -56,6 +60,7 @@ const SEED_COURSES: SeedCourse[] = [
     level: 'Intermediate',
     durationWeeks: 10,
     skills: ['NestJS', 'Architecture', 'Modules', 'Guards', 'Interceptors', 'Testing'],
+    price: 2500,
   },
   {
     title: 'Cybersecurity Beginner',
@@ -67,6 +72,7 @@ const SEED_COURSES: SeedCourse[] = [
     level: 'Beginner',
     durationWeeks: 8,
     skills: ['Networking Basics', 'OWASP', 'Authentication', 'Authorization', 'Security Fundamentals'],
+    price: 2000,
   },
   {
     title: 'Networking Beginner',
@@ -78,6 +84,7 @@ const SEED_COURSES: SeedCourse[] = [
     level: 'Beginner',
     durationWeeks: 6,
     skills: ['Networking Fundamentals', 'TCP/IP', 'DNS', 'HTTP', 'OSI Model', 'LAN/WAN'],
+    price: 2000,
   },
   {
     title: 'Mobile App Development',
@@ -89,6 +96,7 @@ const SEED_COURSES: SeedCourse[] = [
     level: 'Intermediate',
     durationWeeks: 10,
     skills: ['React Native', 'Expo', 'Navigation', 'Native APIs', 'Publishing'],
+    price: 2500,
   },
 ];
 

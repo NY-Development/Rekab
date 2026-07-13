@@ -103,7 +103,7 @@ export default function CourseCatalogPage() {
                   {course.description}
                 </p>
                 <div className="flex justify-between items-center mt-auto border-t border-slate-100 pt-4" onClick={(e) => e.stopPropagation()}>
-                  <span className="text-lg font-semibold text-slate-900">${course.price || '999'}</span>
+                  <span className="text-lg font-semibold text-slate-900">ETB{course.price || '999'}</span>
                   <button
                     onClick={() => navigate(`/enroll/${course.id}`)}
                     className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded-md transition-colors shadow-sm"
