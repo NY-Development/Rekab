@@ -57,7 +57,7 @@ const onSubmit = async (data: LoginFields) => {
     // 3. Handle routing based on normalized role strings
     if (backendRole === 'ADMIN' || backendRole === 'SUPER_ADMIN') {
       // Redirect to separate admin application instance
-      window.location.href = 'http://localhost:5174/dashboard';
+      window.location.href = `${import.meta.env.REDIRECT_URI}` || 'http://localhost:5174/dashboard';
     } else {
       // React Router DOM path navigation
       navigate('/dashboard');

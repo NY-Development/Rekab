@@ -7,6 +7,7 @@ import App from "./App.tsx";
 import { ThemeProvider } from "@/components/theme-provider.tsx";
 import { TooltipProvider } from "@/components/ui/tooltip.tsx";
 import {queryClient} from "@/app/query-client.ts"
+import { Toaster } from "sonner";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -14,6 +15,7 @@ createRoot(document.getElementById("root")!).render(
       <ThemeProvider>
         <TooltipProvider>
           <App />
+          <Toaster position="top-right" richColors />
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
