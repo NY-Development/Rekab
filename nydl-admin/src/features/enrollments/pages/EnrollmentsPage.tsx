@@ -1,6 +1,7 @@
 import { useEnrollments, useEnrollmentMutations } from '@/hooks/useEnrollments';
 import { DataTable } from '@/components/common/DataTable';
 import { StatusBadge } from '@/components/common/StatusBadge';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { Enrollment } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,6 @@ export function EnrollmentsPage() {
   const { deleteEnrollment, updateEnrollment } = useEnrollmentMutations();
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to drop this enrollment?')) return;
     try {
       await deleteEnrollment(id);
       toast.success('Enrollment dropped successfully');
@@ -55,14 +55,22 @@ export function EnrollmentsPage() {
               Approve
             </Button>
           )}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => handleDelete(info.row.original.id)}
-            className="text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 h-8 w-8"
+          <ConfirmDialog
+            trigger={
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 h-8 w-8"
+              />
+            }
+            title="Drop Enrollment?"
+            description="This action cannot be undone. The student will be unenrolled and their progress for this course will be permanently removed."
+            confirmLabel="Drop"
+            loadingLabel="Dropping..."
+            onConfirm={() => handleDelete(info.row.original.id)}
           >
             <Trash className="h-4 w-4" />
-          </Button>
+          </ConfirmDialog>
         </div>
       ),
     },

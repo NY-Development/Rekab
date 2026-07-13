@@ -1,5 +1,6 @@
 import { useTeams, useTeamMutations } from '@/hooks/useTeams';
 import { DataTable } from '@/components/common/DataTable';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { Team } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -11,7 +12,6 @@ export function TeamsPage() {
   const { deleteTeam } = useTeamMutations();
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this team?')) return;
     try {
       await deleteTeam(id);
       toast.success('Team deleted successfully');
@@ -36,14 +36,20 @@ export function TeamsPage() {
       header: 'Actions',
       cell: (info) => (
         <div className="flex gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => handleDelete(info.row.original.id)}
-            className="text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 h-8 w-8"
+          <ConfirmDialog
+            trigger={
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 h-8 w-8"
+              />
+            }
+            title="Delete Team?"
+            description="This action cannot be undone. The team and its member assignments will be permanently removed."
+            onConfirm={() => handleDelete(info.row.original.id)}
           >
             <Trash className="h-4 w-4" />
-          </Button>
+          </ConfirmDialog>
         </div>
       ),
     },

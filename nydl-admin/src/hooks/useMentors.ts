@@ -29,6 +29,7 @@ export function useMentorMutations() {
     mutationFn: mentorsApi.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mentors'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics-summary'] });
     },
   });
 
@@ -44,6 +45,7 @@ export function useMentorMutations() {
     mutationFn: mentorsApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mentors'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics-summary'] });
     },
   });
 

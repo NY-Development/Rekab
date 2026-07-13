@@ -31,6 +31,9 @@ export function usePaymentMutations() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['payments'] });
       queryClient.invalidateQueries({ queryKey: ['payment', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['enrollments'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['revenue-trends'] });
     },
   });
 
@@ -38,6 +41,8 @@ export function usePaymentMutations() {
     mutationFn: paymentsApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payments'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['revenue-trends'] });
     },
   });
 

@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { seedCourses } from '@/database/seeders/courseSeeder';
 
 export let isMongoConnected = false;
 
@@ -9,6 +10,12 @@ export async function connectDB(): Promise<void> {
     await mongoose.connect(mongoUri);
     isMongoConnected = true;
     console.log('✅ MongoDB connected successfully');
+
+    try {
+      await seedCourses();
+    } catch (seedError) {
+      console.error('❌ Course seeding error:', seedError);
+    }
   } catch (error) {
     console.error('❌ MongoDB connection error:', error);
     isMongoConnected = false;

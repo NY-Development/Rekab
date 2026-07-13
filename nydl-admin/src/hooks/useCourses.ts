@@ -29,6 +29,7 @@ export function useCourseMutations() {
     mutationFn: coursesApi.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics-summary'] });
     },
   });
 
@@ -37,6 +38,7 @@ export function useCourseMutations() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
       queryClient.invalidateQueries({ queryKey: ['course', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['analytics-summary'] });
     },
   });
 
@@ -44,6 +46,7 @@ export function useCourseMutations() {
     mutationFn: coursesApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics-summary'] });
     },
   });
 

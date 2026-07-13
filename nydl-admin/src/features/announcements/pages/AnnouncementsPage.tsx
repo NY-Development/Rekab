@@ -3,6 +3,7 @@ import { useAnnouncements, useAnnouncementMutations } from '@/hooks/useAnnouncem
 import { DataTable } from '@/components/common/DataTable';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { EntityFormDialog } from '@/components/common/EntityFormDialog';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { Announcement } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -20,7 +21,6 @@ export function AnnouncementsPage() {
   const { createAnnouncement, deleteAnnouncement } = useAnnouncementMutations();
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this announcement?')) return;
     try {
       await deleteAnnouncement(id);
       toast.success('Announcement deleted successfully');
@@ -53,14 +53,20 @@ export function AnnouncementsPage() {
       header: 'Actions',
       cell: (info) => (
         <div className="flex gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => handleDelete(info.row.original.id)}
-            className="text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 h-8 w-8"
+          <ConfirmDialog
+            trigger={
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 h-8 w-8"
+              />
+            }
+            title="Delete Announcement?"
+            description="This action cannot be undone. The announcement will be permanently removed and unpublished from all feeds."
+            onConfirm={() => handleDelete(info.row.original.id)}
           >
             <Trash className="h-4 w-4" />
-          </Button>
+          </ConfirmDialog>
         </div>
       ),
     },

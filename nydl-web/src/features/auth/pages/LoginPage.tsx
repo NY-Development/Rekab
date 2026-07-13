@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
 import { authApi } from '@/api/auth.api';
 import { useAuthStore } from '@/store/auth.store';
 import { Button } from '@/components/ui/button';
@@ -154,7 +155,13 @@ const onSubmit = async (data: LoginFields) => {
 
             <div>
               <Button type="submit" className="w-full justify-center" disabled={isSubmitting}>
-                {isSubmitting ? 'Signing In...' : 'Sign In'}
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Signing In...
+                  </>
+                ) : (
+                  'Sign In'
+                )}
               </Button>
             </div>
           </form>

@@ -29,6 +29,7 @@ export function useStudentMutations() {
     mutationFn: studentsApi.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['students'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics-summary'] });
     },
   });
 
@@ -44,6 +45,7 @@ export function useStudentMutations() {
     mutationFn: studentsApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['students'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics-summary'] });
     },
   });
 

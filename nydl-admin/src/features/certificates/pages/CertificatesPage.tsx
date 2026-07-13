@@ -1,25 +1,27 @@
+import { z } from 'zod';
 import { useCertificates, useCertificateMutations } from '@/hooks/useCertificates';
 import { DataTable } from '@/components/common/DataTable';
+import { EntityFormDialog } from '@/components/common/EntityFormDialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { Certificate } from '@/types';
-import { Button } from '@/components/ui/button';
-import { Plus, Award } from 'lucide-react';
 import { toast } from 'sonner';
+
+const issueCertificateSchema = z.object({
+  studentId: z.string().min(1, 'Student ID is required'),
+  courseId: z.string().min(1, 'Course ID is required'),
+});
 
 export function CertificatesPage() {
   const { data, isLoading, isError } = useCertificates();
   const { issueCertificate } = useCertificateMutations();
 
-  const handleIssue = async () => {
-    const studentId = prompt('Enter Student ID:');
-    const courseId = prompt('Enter Course ID:');
-    if (!studentId || !courseId) return;
-
+  const handleIssue = async (values: z.infer<typeof issueCertificateSchema>) => {
     try {
-      await issueCertificate({ studentId, courseId });
+      await issueCertificate(values);
       toast.success('Certificate issued successfully');
-    } catch {
-      toast.error('Failed to issue certificate');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Failed to issue certificate');
+      throw err;
     }
   };
 
@@ -41,9 +43,17 @@ export function CertificatesPage() {
           <h1 className="text-xl font-bold text-white uppercase tracking-wider">Certificates Registry</h1>
           <p className="text-sm text-slate-400 font-medium">Log verified course graduate credentials, search certificate numbers, and issue records.</p>
         </div>
-        <Button onClick={handleIssue} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold">
-          <Plus className="mr-2 h-4 w-4" /> Issue Certificate
-        </Button>
+        <EntityFormDialog
+          triggerLabel="Issue Certificate"
+          title="Issue Certificate"
+          schema={issueCertificateSchema}
+          fields={[
+            { name: 'studentId', label: 'Student ID', placeholder: 'Mongo Student ID' },
+            { name: 'courseId', label: 'Course ID', placeholder: 'Mongo Course ID' },
+          ]}
+          onSubmit={handleIssue}
+          submitLabel="Issue"
+        />
       </div>
 
       {isLoading ? (

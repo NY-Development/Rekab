@@ -1,32 +1,36 @@
+import { z } from 'zod';
 import { useNotifications, useNotificationMutations } from '@/hooks/useNotifications';
 import { DataTable } from '@/components/common/DataTable';
+import { EntityFormDialog } from '@/components/common/EntityFormDialog';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { Notification } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash } from 'lucide-react';
+import { Trash } from 'lucide-react';
 import { toast } from 'sonner';
+
+const sendNotificationSchema = z.object({
+  userId: z.string().min(1, 'User ID is required'),
+  title: z.string().min(2, 'Title must be at least 2 characters'),
+  message: z.string().min(2, 'Message must be at least 2 characters'),
+  type: z.enum(['INFO', 'ALERT', 'SUCCESS', 'WARNING']),
+});
 
 export function NotificationsPage() {
   const { data, isLoading, isError } = useNotifications();
   const { sendNotification, deleteNotification } = useNotificationMutations();
 
-  const handleSend = async () => {
-    const userId = prompt('Enter User ID:');
-    const title = prompt('Enter Title:');
-    const message = prompt('Enter Message:');
-    const type = prompt('Enter Type (e.g. INFO, ALERT):') || 'INFO';
-    if (!userId || !title || !message) return;
-
+  const handleSend = async (values: z.infer<typeof sendNotificationSchema>) => {
     try {
-      await sendNotification({ userId, title, message, type });
+      await sendNotification(values);
       toast.success('Notification sent successfully');
-    } catch {
-      toast.error('Failed to send notification');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Failed to send notification');
+      throw err;
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this notification?')) return;
     try {
       await deleteNotification(id);
       toast.success('Notification deleted successfully');
@@ -49,14 +53,20 @@ export function NotificationsPage() {
       header: 'Actions',
       cell: (info) => (
         <div className="flex gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => handleDelete(info.row.original.id)}
-            className="text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 h-8 w-8"
+          <ConfirmDialog
+            trigger={
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 h-8 w-8"
+              />
+            }
+            title="Delete Notification?"
+            description="This action cannot be undone. The notification will be permanently removed."
+            onConfirm={() => handleDelete(info.row.original.id)}
           >
             <Trash className="h-4 w-4" />
-          </Button>
+          </ConfirmDialog>
         </div>
       ),
     },
@@ -69,9 +79,30 @@ export function NotificationsPage() {
           <h1 className="text-xl font-bold text-white uppercase tracking-wider">System Notifications</h1>
           <p className="text-sm text-slate-400 font-medium">Verify system alerts, browse push messages history, and trigger direct announcements.</p>
         </div>
-        <Button onClick={handleSend} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold">
-          <Plus className="mr-2 h-4 w-4" /> Send Direct Notification
-        </Button>
+        <EntityFormDialog
+          triggerLabel="Send Direct Notification"
+          title="Send Direct Notification"
+          schema={sendNotificationSchema}
+          fields={[
+            { name: 'userId', label: 'User ID', placeholder: 'Mongo User ID' },
+            { name: 'title', label: 'Title', placeholder: 'Assignment Reminder' },
+            { name: 'message', label: 'Message', type: 'textarea', placeholder: 'Your assignment is due soon...' },
+            {
+              name: 'type',
+              label: 'Type',
+              type: 'select',
+              placeholder: 'Select a type',
+              options: [
+                { value: 'INFO', label: 'Info' },
+                { value: 'ALERT', label: 'Alert' },
+                { value: 'SUCCESS', label: 'Success' },
+                { value: 'WARNING', label: 'Warning' },
+              ],
+            },
+          ]}
+          onSubmit={handleSend}
+          submitLabel="Send"
+        />
       </div>
 
       {isLoading ? (

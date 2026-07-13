@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactElement, type ReactNode } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -39,6 +39,8 @@ interface EntityFormDialogProps<Schema extends z.ZodTypeAny> {
   defaultValues?: Partial<z.infer<Schema>>;
   onSubmit: (data: z.infer<Schema>) => Promise<unknown>;
   submitLabel?: string;
+  trigger?: ReactElement;
+  triggerContent?: ReactNode;
 }
 
 export function EntityFormDialog<Schema extends z.ZodTypeAny>({
@@ -49,6 +51,8 @@ export function EntityFormDialog<Schema extends z.ZodTypeAny>({
   defaultValues,
   onSubmit,
   submitLabel = 'Create',
+  trigger,
+  triggerContent,
 }: EntityFormDialogProps<Schema>) {
   const [open, setOpen] = useState(false);
   type FormValues = z.infer<Schema> & Record<string, any>;
@@ -78,8 +82,14 @@ export function EntityFormDialog<Schema extends z.ZodTypeAny>({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold" />}>
-        <Plus className="mr-2 h-4 w-4" /> {triggerLabel}
+      <DialogTrigger render={trigger ?? <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold" />}>
+        {trigger ? (
+          triggerContent
+        ) : (
+          <>
+            <Plus className="mr-2 h-4 w-4" /> {triggerLabel}
+          </>
+        )}
       </DialogTrigger>
       <DialogContent className="bg-slate-950 border-slate-800 text-white sm:max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>

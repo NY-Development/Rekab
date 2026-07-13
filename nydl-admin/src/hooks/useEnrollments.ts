@@ -29,6 +29,9 @@ export function useEnrollmentMutations() {
     mutationFn: enrollmentsApi.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['enrollments'] });
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['enrollment-trends'] });
     },
   });
 
@@ -37,6 +40,9 @@ export function useEnrollmentMutations() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['enrollments'] });
       queryClient.invalidateQueries({ queryKey: ['enrollment', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['enrollment-trends'] });
     },
   });
 
@@ -44,6 +50,9 @@ export function useEnrollmentMutations() {
     mutationFn: enrollmentsApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['enrollments'] });
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['enrollment-trends'] });
     },
   });
 

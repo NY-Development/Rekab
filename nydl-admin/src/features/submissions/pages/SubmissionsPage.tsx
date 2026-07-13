@@ -1,33 +1,29 @@
+import { z } from 'zod';
 import { useSubmissions, useSubmissionMutations } from '@/hooks/useSubmissions';
 import { DataTable } from '@/components/common/DataTable';
 import { StatusBadge } from '@/components/common/StatusBadge';
+import { EntityFormDialog } from '@/components/common/EntityFormDialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { Submission } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Check, ClipboardList } from 'lucide-react';
-import { useState } from 'react';
 import { toast } from 'sonner';
+
+const gradeSubmissionSchema = z.object({
+  score: z.coerce.number().min(0, 'Score must be zero or greater'),
+  feedback: z.string().optional(),
+});
 
 export function SubmissionsPage() {
   const { data, isLoading, isError } = useSubmissions();
   const { gradeSubmission } = useSubmissionMutations();
 
-  const handleGrade = async (id: string) => {
-    const scoreStr = prompt('Enter score:');
-    if (scoreStr === null) return;
-    const score = parseFloat(scoreStr);
-    const feedback = prompt('Enter feedback:') || '';
-
-    if (isNaN(score)) {
-      toast.error('Invalid score entered');
-      return;
-    }
-
+  const handleGrade = async (id: string, values: z.infer<typeof gradeSubmissionSchema>) => {
     try {
-      await gradeSubmission({ id, data: { score, feedback } });
+      await gradeSubmission({ id, data: { score: values.score, feedback: values.feedback || '' } });
       toast.success('Graded successfully');
-    } catch {
-      toast.error('Failed to submit grade');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Failed to submit grade');
+      throw err;
     }
   };
 
@@ -51,14 +47,25 @@ export function SubmissionsPage() {
       cell: (info) => (
         <div className="flex gap-2">
           {info.row.original.status !== 'GRADED' && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleGrade(info.row.original.id)}
-              className="border-blue-600 text-blue-500 hover:bg-blue-600/10 text-xs px-2 h-7"
-            >
-              Grade
-            </Button>
+            <EntityFormDialog
+              triggerLabel="Grade"
+              title="Grade Submission"
+              schema={gradeSubmissionSchema}
+              fields={[
+                { name: 'score', label: 'Score', type: 'number', placeholder: `Out of ${info.row.original.assignment?.maxScore ?? 100}` },
+                { name: 'feedback', label: 'Feedback', type: 'textarea', placeholder: 'Optional feedback for the student...' },
+              ]}
+              onSubmit={(values) => handleGrade(info.row.original.id, values)}
+              submitLabel="Submit Grade"
+              trigger={
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-blue-600 text-blue-500 hover:bg-blue-600/10 text-xs px-2 h-7"
+                />
+              }
+              triggerContent="Grade"
+            />
           )}
         </div>
       ),

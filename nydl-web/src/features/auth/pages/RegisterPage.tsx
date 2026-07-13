@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
 import { authApi } from '@/api/auth.api';
 import { Button } from '@/components/ui/button';
 
@@ -124,7 +125,13 @@ export default function RegisterPage() {
 
           <div>
             <Button type="submit" className="w-full justify-center" disabled={isSubmitting}>
-              {isSubmitting ? 'Creating account...' : 'Create account'}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating account...
+                </>
+              ) : (
+                'Create account'
+              )}
             </Button>
           </div>
         </form>

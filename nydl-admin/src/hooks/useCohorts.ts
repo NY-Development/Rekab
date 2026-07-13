@@ -29,6 +29,8 @@ export function useCohortMutations() {
     mutationFn: cohortsApi.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cohorts'] });
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics-summary'] });
     },
   });
 
@@ -37,6 +39,8 @@ export function useCohortMutations() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['cohorts'] });
       queryClient.invalidateQueries({ queryKey: ['cohort', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics-summary'] });
     },
   });
 
@@ -44,6 +48,8 @@ export function useCohortMutations() {
     mutationFn: cohortsApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cohorts'] });
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics-summary'] });
     },
   });
 

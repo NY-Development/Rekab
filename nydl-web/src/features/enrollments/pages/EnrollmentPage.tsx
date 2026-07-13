@@ -185,7 +185,8 @@ export default function EnrollmentPage() {
 
               <div className="border-t border-slate-100 pt-6 flex justify-end">
                 <Button type="submit" disabled={applyMutation.isPending || cohorts.length === 0} className="flex items-center gap-1.5 focus:none border hover:cursor-pointer">
-                  <span>Register & Continue</span> <ArrowRight className="h-4 w-4" />
+                  <span>{applyMutation.isPending ? 'Submitting Application...' : 'Register & Continue'}</span>
+                  {!applyMutation.isPending && <ArrowRight className="h-4 w-4" />}
                 </Button>
               </div>
 

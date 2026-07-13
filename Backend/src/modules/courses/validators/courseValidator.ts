@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const CourseSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
-  category: z.enum(['Frontend', 'Backend', 'DevOps', 'Full-Stack']),
+  category: z.enum(['Frontend', 'Backend', 'DevOps', 'Full-Stack', 'Cybersecurity', 'Networking', 'Mobile']),
   difficulty: z.enum(['Beginner', 'Intermediate', 'Advanced']),
   durationWeeks: z.number().int().positive('Duration must be a positive number'),
   image: z.string().url('Please provide a valid image URL'),

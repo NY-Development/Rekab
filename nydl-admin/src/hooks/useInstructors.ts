@@ -29,6 +29,7 @@ export function useInstructorMutations() {
     mutationFn: instructorsApi.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['instructors'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics-summary'] });
     },
   });
 
@@ -44,6 +45,7 @@ export function useInstructorMutations() {
     mutationFn: instructorsApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['instructors'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics-summary'] });
     },
   });
 

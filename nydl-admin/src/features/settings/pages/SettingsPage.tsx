@@ -1,24 +1,28 @@
+import { z } from 'zod';
 import { useSettings, useSettingsMutations } from '@/hooks/useSettings';
 import { DataTable } from '@/components/common/DataTable';
+import { EntityFormDialog } from '@/components/common/EntityFormDialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { SystemSetting } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Edit } from 'lucide-react';
 import { toast } from 'sonner';
 
+const updateSettingSchema = z.object({
+  value: z.string().min(1, 'Value is required'),
+});
+
 export function SettingsPage() {
   const { data, isLoading } = useSettings();
   const { updateSetting } = useSettingsMutations();
 
-  const handleEdit = async (key: string, category: string, currentVal: string) => {
-    const newVal = prompt(`Update value for "${key}":`, currentVal);
-    if (newVal === null || newVal === currentVal) return;
-
+  const handleEdit = async (key: string, category: string, values: z.infer<typeof updateSettingSchema>) => {
     try {
-      await updateSetting({ key, value: newVal, category });
+      await updateSetting({ key, value: values.value, category });
       toast.success('Setting updated successfully');
-    } catch {
-      toast.error('Failed to update setting');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Failed to update setting');
+      throw err;
     }
   };
 
@@ -31,14 +35,23 @@ export function SettingsPage() {
       header: 'Actions',
       cell: (info) => (
         <div className="flex gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => handleEdit(info.row.original.key, info.row.original.category, info.row.original.value)}
-            className="text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 h-8 w-8"
-          >
-            <Edit className="h-4 w-4" />
-          </Button>
+          <EntityFormDialog
+            triggerLabel="Edit"
+            title={`Update "${info.row.original.key}"`}
+            schema={updateSettingSchema}
+            defaultValues={{ value: info.row.original.value }}
+            fields={[{ name: 'value', label: 'Value', placeholder: 'New value' }]}
+            onSubmit={(values) => handleEdit(info.row.original.key, info.row.original.category, values)}
+            submitLabel="Save Changes"
+            trigger={
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 h-8 w-8"
+              />
+            }
+            triggerContent={<Edit className="h-4 w-4" />}
+          />
         </div>
       ),
     },

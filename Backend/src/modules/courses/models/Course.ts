@@ -11,7 +11,7 @@ const CourseSchema = new Schema<ICourseDocument>({
   description: { type: String, required: true },
   thumbnail: { type: String },
   coverImage: { type: String },
-  category: { type: String, enum: ['Frontend', 'Backend', 'DevOps', 'Full-Stack'], required: true },
+  category: { type: String, enum: ['Frontend', 'Backend', 'DevOps', 'Full-Stack', 'Cybersecurity', 'Networking', 'Mobile'], required: true },
   level: { type: String, default: 'Intermediate' },
   language: { type: String, default: 'English' },
   durationWeeks: { type: Number, required: true },
