@@ -44,20 +44,28 @@ export interface StudentProfile {
 export interface Course {
   id: string;
   title: string;
+  slug: string;
+  code: string;
   description: string;
   shortDescription: string;
   thumbnail: string;
+  image: string;
+  coverImage?: string;
   category: string;
   level: string;
-  duration: string;
+  language: string;
+  durationWeeks: number;
+  estimatedHours?: number;
   price: number;
+  discountPrice?: number;
   currency: string;
-  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
-  maxStudents: number;
-  enrolledCount: number;
-  tags: string[];
+  status: 'draft' | 'published' | 'archived';
+  enrollmentEnabled: boolean;
+  totalEnrollments: number;
+  skills: string[];
   prerequisites: string[];
   learningOutcomes: string[];
+  syllabusSummary: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -66,14 +74,15 @@ export interface Course {
 export interface Cohort {
   id: string;
   name: string;
+  code: string;
   courseId: string;
   startDate: string;
   endDate: string;
-  capacity: number;
-  enrolledCount: number;
-  status: 'UPCOMING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
-  instructorIds: string[];
-  mentorIds: string[];
+  maxCapacity: number;
+  students: string[];
+  status: 'upcoming' | 'active' | 'completed' | 'cancelled';
+  schedule: string;
+  instructors: string[];
   createdAt: string;
   updatedAt: string;
 }

@@ -47,9 +47,9 @@ export default function CourseDetailPage() {
                 <div className="flex flex-col sm:flex-row gap-4 pt-4">
                   <button
                     onClick={() => navigate(`/enroll/${course?.id}`)}
-                    className="bg-blue-650 hover:bg-blue-700 text-white px-6 py-3 rounded-md font-semibold text-sm transition-colors shadow-sm"
+                    className="bg-primary hover:bg-blue-700 text-white px-6 py-3 rounded-md font-semibold text-sm transition-colors shadow-sm"
                   >
-                    Enroll for ${course?.price || '999'}
+                    Enroll for ETB {course?.price || '999'}
                   </button>
                 </div>
               </div>
