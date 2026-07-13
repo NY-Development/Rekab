@@ -57,7 +57,7 @@ const onSubmit = async (data: LoginFields) => {
     // 3. Handle routing based on normalized role strings
     if (backendRole === 'ADMIN' || backendRole === 'SUPER_ADMIN') {
       // Redirect to separate admin application instance
-      window.location.href = `${import.meta.env.REDIRECT_URI}` || 'https://nydl-admin-v1.vercel.app';
+      window.location.href = 'https://nydl-admin-v1.vercel.app';
     } else {
       // React Router DOM path navigation
       navigate('/dashboard');
