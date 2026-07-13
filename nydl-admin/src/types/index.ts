@@ -279,19 +279,23 @@ export interface Assignment {
 export interface Submission {
   id: string;
   assignmentId: string;
-  assignment?: Assignment;
+  assignmentTitle?: string;
+  assignmentMaxScore?: number;
   studentId: string;
-  student?: StudentProfile;
-  content: string;
-  fileUrl?: string;
+  studentName?: string;
+  cohortId: string;
+  repoUrl?: string;
+  content?: string;
+  notes?: string;
   submittedAt: string;
-  score?: number;
+  points?: number;
   feedback?: string;
   gradedBy?: string;
+  gradedByName?: string;
   gradedAt?: string;
-  status: 'SUBMITTED' | 'GRADED' | 'RETURNED' | 'LATE';
-  createdAt: string;
-  updatedAt: string;
+  status: 'submitted' | 'graded' | 'late';
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // ─── Resource ───

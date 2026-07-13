@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { useStudents, useStudentMutations } from '@/hooks/useStudents';
+import { useUsers } from '@/hooks/useUsers';
 import { DataTable } from '@/components/common/DataTable';
 import { EntityFormDialog } from '@/components/common/EntityFormDialog';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
@@ -18,6 +19,8 @@ const createStudentSchema = z.object({
 export function StudentsPage() {
   const { data, isLoading, isError } = useStudents();
   const { createStudent, deleteStudent } = useStudentMutations();
+  const { data: studentUsersData } = useUsers({ role: 'STUDENT', limit: 100 });
+  const userOptions = (studentUsersData?.docs || []).map((u) => ({ value: u.id, label: `${u.name} (${u.email})` }));
 
   const handleDelete = async (id: string) => {
     try {
@@ -94,7 +97,7 @@ export function StudentsPage() {
           title="Create Student Profile"
           schema={createStudentSchema}
           fields={[
-            { name: 'userId', label: 'User ID', placeholder: 'Mongo User ID of the student account' },
+            { name: 'userId', label: 'User', type: 'select', placeholder: 'Select a student account', options: userOptions },
             { name: 'studentCode', label: 'Student Code', placeholder: 'STU-123456' },
             { name: 'currentLevel', label: 'Current Level', placeholder: 'Beginner' },
           ]}

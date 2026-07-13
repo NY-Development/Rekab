@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { useInstructors, useInstructorMutations } from '@/hooks/useInstructors';
+import { useUsers } from '@/hooks/useUsers';
 import { DataTable } from '@/components/common/DataTable';
 import { EntityFormDialog } from '@/components/common/EntityFormDialog';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
@@ -19,6 +20,8 @@ const createInstructorSchema = z.object({
 export function InstructorsPage() {
   const { data, isLoading, isError } = useInstructors();
   const { createInstructor, deleteInstructor } = useInstructorMutations();
+  const { data: instructorUsersData } = useUsers({ role: 'INSTRUCTOR', limit: 100 });
+  const userOptions = (instructorUsersData?.docs || []).map((u) => ({ value: u.id, label: `${u.name} (${u.email})` }));
 
   const handleDelete = async (id: string) => {
     try {
@@ -87,7 +90,7 @@ export function InstructorsPage() {
           title="Add New Instructor"
           schema={createInstructorSchema}
           fields={[
-            { name: 'userId', label: 'User ID', placeholder: 'Mongo User ID of the instructor account' },
+            { name: 'userId', label: 'User', type: 'select', placeholder: 'Select an instructor account', options: userOptions },
             { name: 'specialization', label: 'Specialization', placeholder: 'Frontend Engineering' },
             { name: 'yearsExperience', label: 'Years of Experience', type: 'number', placeholder: '5' },
             { name: 'bio', label: 'Bio', type: 'textarea', placeholder: 'Short professional bio...' },

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { useMentors, useMentorMutations } from '@/hooks/useMentors';
+import { useUsers } from '@/hooks/useUsers';
 import { DataTable } from '@/components/common/DataTable';
 import { EntityFormDialog } from '@/components/common/EntityFormDialog';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
@@ -19,6 +20,8 @@ const createMentorSchema = z.object({
 export function MentorsPage() {
   const { data, isLoading, isError } = useMentors();
   const { createMentor, deleteMentor } = useMentorMutations();
+  const { data: mentorUsersData } = useUsers({ role: 'MENTOR', limit: 100 });
+  const userOptions = (mentorUsersData?.docs || []).map((u) => ({ value: u.id, label: `${u.name} (${u.email})` }));
 
   const handleDelete = async (id: string) => {
     try {
@@ -87,7 +90,7 @@ export function MentorsPage() {
           title="Add New Mentor"
           schema={createMentorSchema}
           fields={[
-            { name: 'userId', label: 'User ID', placeholder: 'Mongo User ID of the mentor account' },
+            { name: 'userId', label: 'User', type: 'select', placeholder: 'Select a mentor account', options: userOptions },
             { name: 'specialization', label: 'Specialization', placeholder: 'Career Coaching' },
             { name: 'availability', label: 'Availability', placeholder: 'Weekday evenings' },
             { name: 'bio', label: 'Bio', type: 'textarea', placeholder: 'Short professional bio...' },

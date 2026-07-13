@@ -1,10 +1,14 @@
 import { z } from 'zod';
 import { useAttendance, useAttendanceMutations } from '@/hooks/useAttendance';
+import { useUsers } from '@/hooks/useUsers';
+import { useSessions } from '@/hooks/useSessions';
+import { useEnrollments } from '@/hooks/useEnrollments';
 import { DataTable } from '@/components/common/DataTable';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { EntityFormDialog } from '@/components/common/EntityFormDialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { Attendance } from '@/types';
+import { getPopulated } from '@/utils/registration';
 import { toast } from 'sonner';
 
 const markAttendanceSchema = z.object({
@@ -17,6 +21,17 @@ const markAttendanceSchema = z.object({
 export function AttendancePage() {
   const { data, isLoading, isError } = useAttendance();
   const { markAttendance } = useAttendanceMutations();
+  const { data: studentsData } = useUsers({ role: 'STUDENT', limit: 100 });
+  const { data: sessionsData } = useSessions({ limit: 100 });
+  const { data: enrollmentsData } = useEnrollments({ limit: 100 });
+
+  const studentOptions = (studentsData?.docs || []).map((u) => ({ value: u.id, label: `${u.name} (${u.email})` }));
+  const sessionOptions = (sessionsData?.docs || []).map((s) => ({ value: s.id, label: s.title }));
+  const enrollmentOptions = (enrollmentsData?.docs || []).map((e) => {
+    const student = getPopulated<any>(e.studentId);
+    const course = getPopulated<any>(e.courseId);
+    return { value: e.id, label: `${student?.name || 'Unknown'} — ${course?.title || 'Unknown Course'}` };
+  });
 
   const handleMark = async (values: z.infer<typeof markAttendanceSchema>) => {
     try {
@@ -51,9 +66,9 @@ export function AttendancePage() {
           title="Record Attendance"
           schema={markAttendanceSchema}
           fields={[
-            { name: 'studentId', label: 'Student User ID', placeholder: 'Mongo User ID' },
-            { name: 'sessionId', label: 'Session ID', placeholder: 'Mongo Session ID' },
-            { name: 'enrollmentId', label: 'Enrollment ID', placeholder: 'Mongo Enrollment ID' },
+            { name: 'studentId', label: 'Student', type: 'select', placeholder: 'Select a student', options: studentOptions },
+            { name: 'sessionId', label: 'Session', type: 'select', placeholder: 'Select a session', options: sessionOptions },
+            { name: 'enrollmentId', label: 'Enrollment', type: 'select', placeholder: 'Select an enrollment', options: enrollmentOptions },
             {
               name: 'status',
               label: 'Status',

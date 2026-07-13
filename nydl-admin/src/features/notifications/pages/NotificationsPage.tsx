@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { useNotifications, useNotificationMutations } from '@/hooks/useNotifications';
+import { useUsers } from '@/hooks/useUsers';
 import { DataTable } from '@/components/common/DataTable';
 import { EntityFormDialog } from '@/components/common/EntityFormDialog';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
@@ -19,6 +20,8 @@ const sendNotificationSchema = z.object({
 export function NotificationsPage() {
   const { data, isLoading, isError } = useNotifications();
   const { sendNotification, deleteNotification } = useNotificationMutations();
+  const { data: usersData } = useUsers({ limit: 100 });
+  const userOptions = (usersData?.docs || []).map((u) => ({ value: u.id, label: `${u.name} (${u.email}) — ${u.role}` }));
 
   const handleSend = async (values: z.infer<typeof sendNotificationSchema>) => {
     try {
@@ -84,7 +87,7 @@ export function NotificationsPage() {
           title="Send Direct Notification"
           schema={sendNotificationSchema}
           fields={[
-            { name: 'userId', label: 'User ID', placeholder: 'Mongo User ID' },
+            { name: 'userId', label: 'Recipient', type: 'select', placeholder: 'Select a user', options: userOptions },
             { name: 'title', label: 'Title', placeholder: 'Assignment Reminder' },
             { name: 'message', label: 'Message', type: 'textarea', placeholder: 'Your assignment is due soon...' },
             {

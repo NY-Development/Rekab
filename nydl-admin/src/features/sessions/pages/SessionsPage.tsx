@@ -1,5 +1,8 @@
 import { z } from 'zod';
 import { useSessions, useSessionMutations } from '@/hooks/useSessions';
+import { useCourses } from '@/hooks/useCourses';
+import { useCohorts } from '@/hooks/useCohorts';
+import { useUsers } from '@/hooks/useUsers';
 import { DataTable } from '@/components/common/DataTable';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { EntityFormDialog } from '@/components/common/EntityFormDialog';
@@ -24,6 +27,13 @@ const createSessionSchema = z.object({
 export function SessionsPage() {
   const { data, isLoading, isError } = useSessions();
   const { createSession, deleteSession } = useSessionMutations();
+  const { data: coursesData } = useCourses({ limit: 100 });
+  const { data: cohortsData } = useCohorts({ limit: 100 });
+  const { data: instructorsData } = useUsers({ role: 'INSTRUCTOR', limit: 100 });
+
+  const courseOptions = (coursesData?.docs || []).map((c) => ({ value: c.id, label: c.title }));
+  const cohortOptions = (cohortsData?.docs || []).map((co) => ({ value: co.id, label: `${co.name}${co.course?.title ? ` (${co.course.title})` : ''}` }));
+  const instructorOptions = (instructorsData?.docs || []).map((u) => ({ value: u.id, label: `${u.name} (${u.email})` }));
 
   const handleDelete = async (id: string) => {
     try {
@@ -104,9 +114,9 @@ export function SessionsPage() {
           title="Schedule New Session"
           schema={createSessionSchema}
           fields={[
-            { name: 'courseId', label: 'Course ID', placeholder: 'Mongo Course ID' },
-            { name: 'cohortId', label: 'Cohort ID', placeholder: 'Mongo Cohort ID' },
-            { name: 'instructorId', label: 'Instructor User ID', placeholder: 'Mongo User ID' },
+            { name: 'courseId', label: 'Course', type: 'select', placeholder: 'Select a course', options: courseOptions },
+            { name: 'cohortId', label: 'Cohort', type: 'select', placeholder: 'Select a cohort', options: cohortOptions },
+            { name: 'instructorId', label: 'Instructor', type: 'select', placeholder: 'Select an instructor', options: instructorOptions },
             { name: 'title', label: 'Session Title', placeholder: 'Intro to React Hooks' },
             { name: 'description', label: 'Description', type: 'textarea', placeholder: 'Optional session notes...' },
             { name: 'sessionDate', label: 'Date & Time', type: 'datetime' },

@@ -1,5 +1,8 @@
 import { z } from 'zod';
 import { useCertificates, useCertificateMutations } from '@/hooks/useCertificates';
+import { useUsers } from '@/hooks/useUsers';
+import { useCourses } from '@/hooks/useCourses';
+import { useCohorts } from '@/hooks/useCohorts';
 import { DataTable } from '@/components/common/DataTable';
 import { EntityFormDialog } from '@/components/common/EntityFormDialog';
 import { ColumnDef } from '@tanstack/react-table';
@@ -9,11 +12,19 @@ import { toast } from 'sonner';
 const issueCertificateSchema = z.object({
   studentId: z.string().min(1, 'Student ID is required'),
   courseId: z.string().min(1, 'Course ID is required'),
+  cohortId: z.string().min(1, 'Cohort ID is required'),
 });
 
 export function CertificatesPage() {
   const { data, isLoading, isError } = useCertificates();
   const { issueCertificate } = useCertificateMutations();
+  const { data: studentsData } = useUsers({ role: 'STUDENT', limit: 100 });
+  const { data: coursesData } = useCourses({ limit: 100 });
+  const { data: cohortsData } = useCohorts({ limit: 100 });
+
+  const studentOptions = (studentsData?.docs || []).map((u) => ({ value: u.id, label: `${u.name} (${u.email})` }));
+  const courseOptions = (coursesData?.docs || []).map((c) => ({ value: c.id, label: c.title }));
+  const cohortOptions = (cohortsData?.docs || []).map((co) => ({ value: co.id, label: `${co.name}${co.course?.title ? ` (${co.course.title})` : ''}` }));
 
   const handleIssue = async (values: z.infer<typeof issueCertificateSchema>) => {
     try {
@@ -48,8 +59,9 @@ export function CertificatesPage() {
           title="Issue Certificate"
           schema={issueCertificateSchema}
           fields={[
-            { name: 'studentId', label: 'Student ID', placeholder: 'Mongo Student ID' },
-            { name: 'courseId', label: 'Course ID', placeholder: 'Mongo Course ID' },
+            { name: 'studentId', label: 'Student', type: 'select', placeholder: 'Select a student', options: studentOptions },
+            { name: 'courseId', label: 'Course', type: 'select', placeholder: 'Select a course', options: courseOptions },
+            { name: 'cohortId', label: 'Cohort', type: 'select', placeholder: 'Select a cohort', options: cohortOptions },
           ]}
           onSubmit={handleIssue}
           submitLabel="Issue"

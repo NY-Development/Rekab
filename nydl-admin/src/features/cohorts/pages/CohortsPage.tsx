@@ -1,5 +1,7 @@
 import { z } from 'zod';
 import { useCohorts, useCohortMutations } from '@/hooks/useCohorts';
+import { useCourses } from '@/hooks/useCourses';
+import { useUsers } from '@/hooks/useUsers';
 import { DataTable } from '@/components/common/DataTable';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { EntityFormDialog } from '@/components/common/EntityFormDialog';
@@ -24,6 +26,11 @@ const createCohortSchema = z.object({
 export function CohortsPage() {
   const { data, isLoading, isError } = useCohorts();
   const { createCohort, deleteCohort } = useCohortMutations();
+  const { data: coursesData } = useCourses({ limit: 100 });
+  const { data: instructorsData } = useUsers({ role: 'INSTRUCTOR', limit: 100 });
+
+  const courseOptions = (coursesData?.docs || []).map((c) => ({ value: c.id, label: c.title }));
+  const instructorOptions = (instructorsData?.docs || []).map((u) => ({ value: u.id, label: `${u.name} (${u.email})` }));
 
   const handleDelete = async (id: string) => {
     try {
@@ -88,13 +95,13 @@ export function CohortsPage() {
           title="Create New Cohort"
           schema={createCohortSchema}
           fields={[
-            { name: 'courseId', label: 'Course ID', placeholder: 'Mongo Course ID' },
+            { name: 'courseId', label: 'Course', type: 'select', placeholder: 'Select a course', options: courseOptions },
             { name: 'name', label: 'Cohort Name', placeholder: 'Fall 2026 - Batch A' },
             { name: 'code', label: 'Cohort Code', placeholder: 'NYDL-2026-FS-A' },
             { name: 'startDate', label: 'Start Date', type: 'date' },
             { name: 'endDate', label: 'End Date', type: 'date' },
             { name: 'maxCapacity', label: 'Max Capacity', type: 'number', placeholder: '30' },
-            { name: 'instructorId', label: 'Instructor User ID', placeholder: 'Mongo User ID' },
+            { name: 'instructorId', label: 'Instructor', type: 'select', placeholder: 'Select an instructor', options: instructorOptions },
             { name: 'schedule', label: 'Schedule', placeholder: 'Mon, Wed 7:00 PM - 9:00 PM EST' },
           ]}
           onSubmit={handleCreate}

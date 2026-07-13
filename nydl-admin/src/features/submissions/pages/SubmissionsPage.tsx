@@ -9,17 +9,18 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 const gradeSubmissionSchema = z.object({
-  score: z.coerce.number().min(0, 'Score must be zero or greater'),
+  points: z.coerce.number().min(0, 'Score must be zero or greater'),
   feedback: z.string().optional(),
 });
 
 export function SubmissionsPage() {
   const { data, isLoading, isError } = useSubmissions();
   const { gradeSubmission } = useSubmissionMutations();
+  const submissions = data?.submissions || [];
 
   const handleGrade = async (id: string, values: z.infer<typeof gradeSubmissionSchema>) => {
     try {
-      await gradeSubmission({ id, data: { score: values.score, feedback: values.feedback || '' } });
+      await gradeSubmission({ id, data: { points: values.points, feedback: values.feedback || '' } });
       toast.success('Graded successfully');
     } catch (err: any) {
       toast.error(err?.response?.data?.message || 'Failed to submit grade');
@@ -28,15 +29,15 @@ export function SubmissionsPage() {
   };
 
   const columns: ColumnDef<Submission>[] = [
-    { accessorKey: 'student.user.name', header: 'Student', cell: (info) => <span className="font-semibold text-white">{info.row.original.student?.user?.name || 'N/A'}</span> },
-    { accessorKey: 'assignment.title', header: 'Assignment', cell: (info) => <span>{info.row.original.assignment?.title || 'N/A'}</span> },
+    { accessorKey: 'studentName', header: 'Student', cell: (info) => <span className="font-semibold text-white">{info.getValue() as string || 'N/A'}</span> },
+    { accessorKey: 'assignmentTitle', header: 'Assignment', cell: (info) => <span>{info.getValue() as string || 'N/A'}</span> },
     { accessorKey: 'submittedAt', header: 'Submitted At', cell: (info) => <span>{new Date(info.getValue() as string).toLocaleString()}</span> },
     {
-      accessorKey: 'score',
+      accessorKey: 'points',
       header: 'Score',
       cell: (info) => (
         <span className="font-semibold text-slate-200">
-          {info.getValue() !== undefined ? `${info.getValue()}/${info.row.original.assignment?.maxScore ?? 100}` : 'Not graded'}
+          {info.getValue() !== undefined ? `${info.getValue()}/${info.row.original.assignmentMaxScore ?? 100}` : 'Not graded'}
         </span>
       ),
     },
@@ -46,13 +47,13 @@ export function SubmissionsPage() {
       header: 'Actions',
       cell: (info) => (
         <div className="flex gap-2">
-          {info.row.original.status !== 'GRADED' && (
+          {info.row.original.status !== 'graded' && (
             <EntityFormDialog
               triggerLabel="Grade"
               title="Grade Submission"
               schema={gradeSubmissionSchema}
               fields={[
-                { name: 'score', label: 'Score', type: 'number', placeholder: `Out of ${info.row.original.assignment?.maxScore ?? 100}` },
+                { name: 'points', label: 'Score', type: 'number', placeholder: `Out of ${info.row.original.assignmentMaxScore ?? 100}` },
                 { name: 'feedback', label: 'Feedback', type: 'textarea', placeholder: 'Optional feedback for the student...' },
               ]}
               onSubmit={(values) => handleGrade(info.row.original.id, values)}
@@ -84,7 +85,7 @@ export function SubmissionsPage() {
       ) : isError ? (
         <div className="text-rose-400">Failed to load submissions. Please try again later.</div>
       ) : (
-        <DataTable columns={columns} data={data?.docs || []} pageCount={data?.totalPages || 1} />
+        <DataTable columns={columns} data={submissions} pageCount={1} />
       )}
     </div>
   );

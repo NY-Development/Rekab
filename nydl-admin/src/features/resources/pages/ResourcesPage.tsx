@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { useResources, useResourceMutations } from '@/hooks/useResources';
+import { useCourses } from '@/hooks/useCourses';
 import { DataTable } from '@/components/common/DataTable';
 import { EntityFormDialog } from '@/components/common/EntityFormDialog';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
@@ -20,6 +21,8 @@ const createResourceSchema = z.object({
 export function ResourcesPage() {
   const { data, isLoading, isError } = useResources();
   const { createResource, deleteResource } = useResourceMutations();
+  const { data: coursesData } = useCourses({ limit: 100 });
+  const courseOptions = (coursesData?.docs || []).map((c) => ({ value: c.id, label: c.title }));
 
   const handleDelete = async (id: string) => {
     try {
@@ -93,7 +96,7 @@ export function ResourcesPage() {
           title="Add New Resource"
           schema={createResourceSchema}
           fields={[
-            { name: 'courseId', label: 'Course ID', placeholder: 'Mongo Course ID' },
+            { name: 'courseId', label: 'Course', type: 'select', placeholder: 'Select a course', options: courseOptions },
             { name: 'title', label: 'Title', placeholder: 'Week 1 Slides' },
             { name: 'description', label: 'Description', type: 'textarea', placeholder: 'Optional description...' },
             {

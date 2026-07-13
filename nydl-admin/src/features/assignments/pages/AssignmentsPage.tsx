@@ -1,5 +1,7 @@
 import { z } from 'zod';
 import { useAssignments, useAssignmentMutations } from '@/hooks/useAssignments';
+import { useCourses } from '@/hooks/useCourses';
+import { useCohorts } from '@/hooks/useCohorts';
 import { DataTable } from '@/components/common/DataTable';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { EntityFormDialog } from '@/components/common/EntityFormDialog';
@@ -23,6 +25,10 @@ const createAssignmentSchema = z.object({
 export function AssignmentsPage() {
   const { data, isLoading, isError } = useAssignments();
   const { createAssignment, deleteAssignment } = useAssignmentMutations();
+  const { data: coursesData } = useCourses({ limit: 100 });
+  const { data: cohortsData } = useCohorts({ limit: 100 });
+  const courseOptions = (coursesData?.docs || []).map((c) => ({ value: c.id, label: c.title }));
+  const cohortOptions = (cohortsData?.docs || []).map((co) => ({ value: co.id, label: `${co.name}${co.course?.title ? ` (${co.course.title})` : ''}` }));
 
   const handleDelete = async (id: string) => {
     try {
@@ -88,9 +94,9 @@ export function AssignmentsPage() {
           title="Create New Assignment"
           schema={createAssignmentSchema}
           fields={[
-            { name: 'courseId', label: 'Course ID', placeholder: 'Mongo Course ID' },
-            { name: 'cohortId', label: 'Cohort ID', placeholder: 'Mongo Cohort ID' },
-            { name: 'moduleId', label: 'Module ID', placeholder: 'Module identifier' },
+            { name: 'courseId', label: 'Course', type: 'select', placeholder: 'Select a course', options: courseOptions },
+            { name: 'cohortId', label: 'Cohort', type: 'select', placeholder: 'Select a cohort', options: cohortOptions },
+            { name: 'moduleId', label: 'Module Name', placeholder: 'e.g. Module 1: Fundamentals' },
             { name: 'title', label: 'Title', placeholder: 'Build a REST API' },
             { name: 'description', label: 'Description', type: 'textarea', placeholder: 'Assignment instructions...' },
             { name: 'maxPoints', label: 'Max Points', type: 'number', placeholder: '100' },
