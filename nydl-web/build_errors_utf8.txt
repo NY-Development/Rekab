@@ -1,0 +1,45 @@
+﻿src/components/layouts/DashboardLayout.tsx(5,11): error TS6133: 'GraduationCap' is declared but its value is never read.
+src/components/layouts/DashboardLayout.tsx(5,32): error TS6133: 'X' is declared but its value is never read.
+src/components/layouts/PublicLayout.tsx(2,10): error TS6133: 'BookOpen' is declared but its value is never read.
+src/features/about/pages/AboutPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/announcements/pages/AnnouncementsPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/courses/pages/CourseCatalogPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/features/courses/pages/CourseCatalogPage.tsx(16,36): error TS2339: Property 'filter' does not exist on type 'NoInfer<PaginatedResponse<Course>>'.
+src/features/courses/pages/CourseCatalogPage.tsx(16,44): error TS7006: Parameter 'course' implicitly has an 'any' type.
+src/features/courses/pages/CourseCatalogPage.tsx(78,33): error TS7006: Parameter 'course' implicitly has an 'any' type.
+src/features/courses/pages/CourseDetailPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/courses/pages/CourseDetailPage.tsx(36,30): error TS2339: Property 'difficulty' does not exist on type 'ApiResponse<Course>'.
+src/features/courses/pages/CourseDetailPage.tsx(40,28): error TS2339: Property 'title' does not exist on type 'ApiResponse<Course>'.
+src/features/courses/pages/CourseDetailPage.tsx(43,28): error TS2339: Property 'description' does not exist on type 'ApiResponse<Course>'.
+src/features/courses/pages/CourseDetailPage.tsx(47,64): error TS2339: Property 'id' does not exist on type 'ApiResponse<Course>'.
+src/features/courses/pages/CourseDetailPage.tsx(50,42): error TS2339: Property 'price' does not exist on type 'ApiResponse<Course>'.
+src/features/courses/pages/CourseDetailPage.tsx(59,28): error TS2339: Property 'category' does not exist on type 'ApiResponse<Course>'.
+src/features/courses/pages/CourseDetailPage.tsx(59,71): error TS2339: Property 'category' does not exist on type 'ApiResponse<Course>'.
+src/features/courses/pages/CourseDetailPage.tsx(77,40): error TS2339: Property 'length' does not exist on type 'ApiResponse<{ modules: unknown[]; }>'.
+src/features/courses/pages/CourseDetailPage.tsx(83,29): error TS2339: Property 'map' does not exist on type 'ApiResponse<{ modules: unknown[]; }>'.
+src/features/courses/pages/CourseDetailPage.tsx(83,34): error TS7006: Parameter 'mod' implicitly has an 'any' type.
+src/features/courses/pages/CourseDetailPage.tsx(83,39): error TS7006: Parameter 'idx' implicitly has an 'any' type.
+src/features/help/pages/HelpPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/landing/pages/LandingPage.tsx(24,33): error TS2322: Type '{ children: Element; size: "lg"; asChild: true; }' is not assignable to type 'IntrinsicAttributes & ButtonProps & VariantProps<(props?: (ConfigVariants<{ variant: { default: string; outline: string; secondary: string; ghost: string; destructive: string; link: string; }; size: { ...; }; }> & ClassProp) | undefined) => string>'.
+  Property 'asChild' does not exist on type 'IntrinsicAttributes & ButtonProps & VariantProps<(props?: (ConfigVariants<{ variant: { default: string; outline: string; secondary: string; ghost: string; destructive: string; link: string; }; size: { ...; }; }> & ClassProp) | undefined) => string>'.
+src/features/landing/pages/LandingPage.tsx(27,87): error TS2322: Type '{ children: Element; size: "lg"; variant: "outline"; className: string; asChild: true; }' is not assignable to type 'IntrinsicAttributes & ButtonProps & VariantProps<(props?: (ConfigVariants<{ variant: { default: string; outline: string; secondary: string; ghost: string; destructive: string; link: string; }; size: { ...; }; }> & ClassProp) | undefined) => string>'.
+  Property 'asChild' does not exist on type 'IntrinsicAttributes & ButtonProps & VariantProps<(props?: (ConfigVariants<{ variant: { default: string; outline: string; secondary: string; ghost: string; destructive: string; link: string; }; size: { ...; }; }> & ClassProp) | undefined) => string>'.
+src/features/landing/pages/LandingPage.tsx(178,29): error TS2322: Type '{ children: Element; size: "lg"; asChild: true; }' is not assignable to type 'IntrinsicAttributes & ButtonProps & VariantProps<(props?: (ConfigVariants<{ variant: { default: string; outline: string; secondary: string; ghost: string; destructive: string; link: string; }; size: { ...; }; }> & ClassProp) | undefined) => string>'.
+  Property 'asChild' does not exist on type 'IntrinsicAttributes & ButtonProps & VariantProps<(props?: (ConfigVariants<{ variant: { default: string; outline: string; secondary: string; ghost: string; destructive: string; link: string; }; size: { ...; }; }> & ClassProp) | undefined) => string>'.
+src/features/notifications/pages/NotificationsPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/profile/pages/ProfilePage.tsx(22,25): error TS2339: Property 'firstName' does not exist on type '{ user: User; }'.
+src/features/profile/pages/ProfilePage.tsx(23,24): error TS2339: Property 'lastName' does not exist on type '{ user: User; }'.
+src/features/profile/pages/ProfilePage.tsx(24,21): error TS2339: Property 'email' does not exist on type '{ user: User; }'.
+src/features/profile/pages/ProfilePage.tsx(32,9): error TS2353: Object literal may only specify known properties, and 'firstName' does not exist in type '{ name?: string | undefined; avatar?: string | undefined; }'.
+src/features/progress/pages/ProgressPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/progress/pages/ProgressPage.tsx(4,29): error TS6133: 'CardHeader' is declared but its value is never read.
+src/features/progress/pages/ProgressPage.tsx(4,41): error TS6133: 'CardTitle' is declared but its value is never read.
+src/features/progress/pages/ProgressPage.tsx(4,52): error TS6133: 'CardDescription' is declared but its value is never read.
+src/features/progress/pages/ProgressPage.tsx(15,9): error TS6133: 'activeCount' is declared but its value is never read.
+src/features/resources/pages/ResourcesPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/features/sessions/pages/SessionsPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/features/sessions/pages/SessionsPage.tsx(3,10): error TS1484: 'Session' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/features/settings/pages/SettingsPage.tsx(9,10): error TS6133: 'privacyMode' is declared but its value is never read.
+src/features/settings/pages/SettingsPage.tsx(9,23): error TS6133: 'setPrivacyMode' is declared but its value is never read.
+src/features/teams/pages/TeamPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/teams/pages/TeamPage.tsx(3,1): error TS6133: 'Badge' is declared but its value is never read.

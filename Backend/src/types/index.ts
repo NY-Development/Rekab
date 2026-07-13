@@ -5,7 +5,7 @@ export interface User {
   // Existing fields for compatibility with views
   name: string;
   email: string;
-  passwordHash: string;
+  passwordHash?: string;
   role: UserRole;
   avatar?: string;
   createdAt: string;
@@ -27,6 +27,8 @@ export interface User {
   refreshTokenVersion?: number;
   passwordChangedAt?: string;
   updatedAt?: string;
+  githubId?: string;
+  authProvider?: 'LOCAL' | 'GITHUB';
 }
 
 export interface StudentProfile {

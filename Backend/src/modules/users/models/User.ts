@@ -11,7 +11,9 @@ const UserSchema = new Schema<IUserDocument>({
   username: { type: String },
   email: { type: String, required: true, unique: true, index: true },
   phone: { type: String },
-  passwordHash: { type: String, required: true },
+  passwordHash: { type: String },
+  githubId: { type: String },
+  authProvider: { type: String, enum: ['LOCAL', 'GITHUB'], default: 'LOCAL' },
   role: { 
     type: String, 
     enum: ['SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR', 'MENTOR', 'STUDENT', 'student', 'instructor', 'admin'], 

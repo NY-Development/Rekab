@@ -1,0 +1,15 @@
+﻿src/components/ui/scroll-area.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/attendance/pages/AttendancePage.tsx(1,25): error TS6133: 'useAttendanceMutations' is declared but its value is never read.
+src/features/certificates/pages/CertificatesPage.tsx(6,16): error TS6133: 'Award' is declared but its value is never read.
+src/features/cohorts/pages/CohortsPage.tsx(7,23): error TS6133: 'Calendar' is declared but its value is never read.
+src/features/courses/pages/CoursesPage.tsx(7,23): error TS6133: 'Edit' is declared but its value is never read.
+src/features/enrollments/pages/EnrollmentsPage.tsx(7,17): error TS6133: 'ClipboardCheck' is declared but its value is never read.
+src/features/instructors/pages/InstructorsPage.tsx(6,23): error TS6133: 'BookUser' is declared but its value is never read.
+src/features/mentors/pages/MentorsPage.tsx(6,23): error TS6133: 'Heart' is declared but its value is never read.
+src/features/settings/pages/SettingsPage.tsx(11,9): error TS6133: 'updateSettingProfile' is declared but its value is never read.
+src/features/students/pages/StudentsPage.tsx(3,1): error TS6133: 'StatusBadge' is declared but its value is never read.
+src/features/students/pages/StudentsPage.tsx(7,17): error TS6133: 'Shield' is declared but its value is never read.
+src/features/submissions/pages/SubmissionsPage.tsx(7,1): error TS6192: All imports in import declaration are unused.
+src/features/submissions/pages/SubmissionsPage.tsx(8,1): error TS6133: 'useState' is declared but its value is never read.
+src/features/teams/pages/TeamsPage.tsx(6,23): error TS6133: 'Users2' is declared but its value is never read.
+src/features/users/pages/UsersPage.tsx(7,23): error TS6133: 'ShieldAlert' is declared but its value is never read.

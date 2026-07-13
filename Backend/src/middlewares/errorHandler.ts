@@ -4,11 +4,13 @@ import { z } from 'zod';
 export class AppError extends Error {
   public statusCode: number;
   public isOperational: boolean;
+  public code?: string;
 
-  constructor(message: string, statusCode: number, isOperational = true) {
+  constructor(message: string, statusCode: number, isOperational = true, code?: string) {
     super(message);
     this.statusCode = statusCode;
     this.isOperational = isOperational;
+    this.code = code;
     Object.setPrototypeOf(this, AppError.prototype);
   }
 }
@@ -42,6 +44,7 @@ export function globalErrorHandler(
     res.status(err.statusCode).json({
       status: 'error',
       message: err.message,
+      code: err.code,
     });
     return;
   }

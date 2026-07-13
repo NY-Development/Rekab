@@ -3,6 +3,7 @@ import express, { Application, Request, Response } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
 import { connectDB } from '@/configs/db';
 import { globalErrorHandler } from '@/middlewares/errorHandler';
 import waitlistRoutes from './modules/waitlist/routes/waitlist.routes';
@@ -12,6 +13,8 @@ import apiRouter from '@/routes/api';
 dotenv.config();
 
 const app: Application = express();
+
+app.use(cookieParser());
 
 app.use(
   helmet({
@@ -26,11 +29,20 @@ app.use(
   })
 );
 
+const allowedOrigins = process.env.CLIENT_URL?.split(',') || ['http://localhost:5173', 'http://localhost:5174', 'https://nydev-learning-v1.vercel.app'];
+
 app.use(cors({ 
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true 
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/api/v1', apiRouter);

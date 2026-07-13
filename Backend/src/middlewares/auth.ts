@@ -35,6 +35,7 @@ export async function requireAuthenticated(
     }
 
     const user = userDoc.toJSON() as User;
+    delete user.passwordHash;
 
     if (user.isBlocked) {
       throw new AppError('Your account has been blocked. Contact support.', 403);
@@ -52,7 +53,7 @@ export async function requireAuthenticated(
     } else if (error instanceof jwt.JsonWebTokenError) {
       next(new AppError('Invalid token. Please log in again.', 401));
     } else if (error instanceof jwt.TokenExpiredError) {
-      next(new AppError('Token expired. Please log in again.', 401));
+      next(new AppError('Token expired. Please log in again.', 401, true, 'TOKEN_EXPIRED'));
     } else {
       next(error);
     }
@@ -87,5 +88,5 @@ export function authorize(...allowedRoles: UserRole[]) {
 }
 
 
-export const requireAdmin = authorize('ADMIN');
+export const requireAdmin = authorize('ADMIN', 'SUPER_ADMIN');
 export const requireInstructor = authorize('INSTRUCTOR');
