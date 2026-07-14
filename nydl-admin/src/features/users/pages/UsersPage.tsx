@@ -7,8 +7,16 @@ import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { User } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Trash } from 'lucide-react';
+import { Trash, UserCog } from 'lucide-react';
 import { toast } from 'sonner';
+
+const ROLE_OPTIONS = [
+  { value: 'STUDENT', label: 'Student' },
+  { value: 'INSTRUCTOR', label: 'Instructor' },
+  { value: 'MENTOR', label: 'Mentor' },
+  { value: 'ADMIN', label: 'Admin' },
+  { value: 'SUPER_ADMIN', label: 'Super Admin' },
+];
 
 const createUserSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -17,9 +25,13 @@ const createUserSchema = z.object({
   role: z.enum(['SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR', 'MENTOR', 'STUDENT']),
 });
 
+const updateRoleSchema = z.object({
+  role: z.enum(['SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR', 'MENTOR', 'STUDENT']),
+});
+
 export function UsersPage() {
   const { data, isLoading, isError } = useUsers();
-  const { createUser, deleteUser } = useUserMutations();
+  const { createUser, updateUser, deleteUser } = useUserMutations();
 
   const handleDelete = async (id: string) => {
     try {
@@ -40,6 +52,20 @@ export function UsersPage() {
     }
   };
 
+  const handleRoleUpdate = async (user: User, values: z.infer<typeof updateRoleSchema>) => {
+    if (values.role === user.role.toUpperCase()) {
+      toast.info(`${user.name} already has the ${values.role.toLowerCase().replace('_', ' ')} role.`);
+      return;
+    }
+    try {
+      await updateUser({ id: user.id, data: { role: values.role } });
+      toast.success(`${user.name}'s role updated to ${values.role.toLowerCase().replace('_', ' ')}.`);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Failed to update user role');
+      throw err;
+    }
+  };
+
   const columns: ColumnDef<User>[] = [
     { accessorKey: 'name', header: 'Name', cell: (info) => <span className="font-semibold text-white">{info.getValue() as string}</span> },
     { accessorKey: 'email', header: 'Email' },
@@ -54,6 +80,32 @@ export function UsersPage() {
       header: 'Actions',
       cell: (info) => (
         <div className="flex gap-2">
+          <EntityFormDialog
+            triggerLabel="Change Role"
+            title={`Change Role — ${info.row.original.name}`}
+            schema={updateRoleSchema}
+            defaultValues={{ role: info.row.original.role.toUpperCase() as z.infer<typeof updateRoleSchema>['role'] }}
+            fields={[
+              {
+                name: 'role',
+                label: 'Role',
+                type: 'select',
+                placeholder: 'Select a role',
+                options: ROLE_OPTIONS,
+              },
+            ]}
+            onSubmit={(values) => handleRoleUpdate(info.row.original, values)}
+            submitLabel="Update Role"
+            trigger={
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 h-8 w-8"
+                title="Change role"
+              />
+            }
+            triggerContent={<UserCog className="h-4 w-4" />}
+          />
           <ConfirmDialog
             trigger={
               <Button
