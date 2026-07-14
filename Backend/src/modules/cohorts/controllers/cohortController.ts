@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import { CohortService } from '../services/cohortService';
 import { AuthenticatedRequest } from '../../../middlewares/auth';
 import { CohortFilterSchema, UpdateCohortSchema } from '../validators/cohortValidator';
+import { assertCohortAccess } from '../../../services/accessControl.service';
 
 export class CohortController {
   constructor(private cohortService: CohortService) {}
@@ -66,6 +67,7 @@ export class CohortController {
 
   async updateCohort(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
+      await assertCohortAccess(req.user!, req.params.id);
       const validated = await UpdateCohortSchema.parseAsync(req.body);
       const cohort = await this.cohortService.updateCohort(req.user!.id, req.user!.name, req.params.id, validated);
       res.status(200).json({ status: 'success', data: cohort });
@@ -106,6 +108,7 @@ export class CohortController {
     const { id } = req.params;
     const { status } = req.body;
     try {
+      await assertCohortAccess(req.user!, id);
       const cohort = await this.cohortService.updateCohortStatus(
         req.user!.id,
         req.user!.name,

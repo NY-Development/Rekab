@@ -2,7 +2,22 @@ import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from '../../../middlewares/auth';
 import { AnnouncementService } from '../services/announcementService';
 import { CreateAnnouncementSchema, UpdateAnnouncementSchema, AnnouncementFilterSchema } from '../validators/announcementValidator';
-import { getStudentAccessScope } from '../../../utils/studentAccess';
+import { getContentScope, assertCourseAccess, assertCohortAccess, refId } from '../../../services/accessControl.service';
+import { isAdminRole } from '../../../configs/permissions';
+import { AppError } from '../../../middlewares/errorHandler';
+import { User } from '../../../types';
+
+/**
+ * Non-admins may only manage announcements that target a course/cohort in
+ * their ownership scope. Global announcements (no course/cohort) are
+ * admin-only.
+ */
+async function assertAnnouncementScope(user: User, courseId?: string, cohortId?: string): Promise<void> {
+  if (isAdminRole(user.role)) return;
+  if (cohortId) return assertCohortAccess(user, cohortId);
+  if (courseId) return assertCourseAccess(user, courseId);
+  throw new AppError('Only administrators can manage platform-wide announcements.', 403);
+}
 
 export class AnnouncementController {
   constructor(private announcementService: AnnouncementService) {}
@@ -20,8 +35,11 @@ export class AnnouncementController {
     try {
       const validated: any = await AnnouncementFilterSchema.parseAsync(req.query);
 
-      if (req.user && req.user.role.toUpperCase() === 'STUDENT') {
-        validated.accessScope = await getStudentAccessScope(req.user.id);
+      // Everyone can read global announcements; course/cohort-targeted ones
+      // are filtered to the caller's scope for non-admins.
+      if (req.user && !isAdminRole(req.user.role)) {
+        const scope = await getContentScope(req.user);
+        if (scope) validated.accessScope = scope;
       }
 
       const result = await this.announcementService.listAnnouncements(validated);
@@ -47,6 +65,7 @@ export class AnnouncementController {
         return;
       }
       const validated = await CreateAnnouncementSchema.parseAsync(req.body);
+      await assertAnnouncementScope(req.user, (validated as any).courseId, (validated as any).cohortId);
       const announcement = await this.announcementService.createAnnouncement(req.user.id, validated as any);
       res.status(201).json({ status: 'success', data: announcement });
     } catch (error) {
@@ -56,6 +75,8 @@ export class AnnouncementController {
 
   async updateAnnouncement(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
+      const existing = await this.announcementService.getAnnouncementById(req.params.id);
+      await assertAnnouncementScope(req.user!, refId(existing.courseId), refId(existing.cohortId));
       const validated = await UpdateAnnouncementSchema.parseAsync(req.body);
       const announcement = await this.announcementService.updateAnnouncement(req.params.id, validated);
       res.status(200).json({ status: 'success', data: announcement });
@@ -66,6 +87,8 @@ export class AnnouncementController {
 
   async deleteAnnouncement(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
+      const existing = await this.announcementService.getAnnouncementById(req.params.id);
+      await assertAnnouncementScope(req.user!, refId(existing.courseId), refId(existing.cohortId));
       await this.announcementService.deleteAnnouncement(req.params.id);
       res.status(200).json({ status: 'success', message: 'Announcement deleted successfully' });
     } catch (error) {

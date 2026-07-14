@@ -15,11 +15,15 @@ export function EnrollmentGate() {
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
 
+  // The payment gate only applies to students — instructors and mentors
+  // don't enroll in courses.
+  const isStudent = (user?.role || '').toUpperCase() === 'STUDENT';
+
   const { data: enrollmentsRes, isLoading, isError } = useEnrollments();
   const enrollments = enrollmentsRes?.data || [];
 
   const isEnrollFlow = pathname.startsWith('/enroll');
-  if (isEnrollFlow || isLoading || isError || enrollments.length > 0) {
+  if (!isStudent || isEnrollFlow || isLoading || isError || enrollments.length > 0) {
     return null;
   }
 

@@ -2,7 +2,8 @@ import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from '../../../middlewares/auth';
 import { ResourceService } from '../services/resourceService';
 import { CreateResourceSchema, UpdateResourceSchema, ResourceFilterSchema } from '../validators/resourceValidator';
-import { getStudentAccessScope } from '../../../utils/studentAccess';
+import { getContentScope, assertCourseAccess, refId } from '../../../services/accessControl.service';
+import { isAdminRole } from '../../../configs/permissions';
 
 export class ResourceController {
   constructor(private resourceService: ResourceService) {}
@@ -20,16 +21,18 @@ export class ResourceController {
     try {
       const validated: any = await ResourceFilterSchema.parseAsync(req.query);
 
-      if (req.user && req.user.role.toUpperCase() === 'STUDENT') {
-        const { courseIds } = await getStudentAccessScope(req.user.id);
-        if (courseIds.length === 0) {
+      // Non-admins only see resources for courses in their scope
+      // (students: enrolled courses, instructors/mentors: assigned courses).
+      if (req.user && !isAdminRole(req.user.role)) {
+        const scope = await getContentScope(req.user);
+        if (!scope || scope.courseIds.length === 0) {
           res.status(200).json({
             status: 'success',
             data: { docs: [], total: 0, page: validated.page, limit: validated.limit, totalPages: 0 },
           });
           return;
         }
-        validated.courseIds = courseIds;
+        validated.courseIds = scope.courseIds;
       }
 
       const result = await this.resourceService.listResources(validated);
@@ -55,6 +58,7 @@ export class ResourceController {
         return;
       }
       const validated = await CreateResourceSchema.parseAsync(req.body);
+      await assertCourseAccess(req.user, (validated as any).courseId);
       const resource = await this.resourceService.createResource(req.user.id, validated);
       res.status(251).json({ status: 'success', data: resource });
     } catch (error) {
@@ -64,6 +68,8 @@ export class ResourceController {
 
   async updateResource(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
+      const existing = await this.resourceService.getResourceById(req.params.id);
+      await assertCourseAccess(req.user!, refId(existing.courseId));
       const validated = await UpdateResourceSchema.parseAsync(req.body);
       const resource = await this.resourceService.updateResource(req.params.id, validated);
       res.status(200).json({ status: 'success', data: resource });
@@ -74,6 +80,8 @@ export class ResourceController {
 
   async deleteResource(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
+      const existing = await this.resourceService.getResourceById(req.params.id);
+      await assertCourseAccess(req.user!, refId(existing.courseId));
       await this.resourceService.deleteResource(req.params.id);
       res.status(200).json({ status: 'success', message: 'Resource deleted successfully' });
     } catch (error) {

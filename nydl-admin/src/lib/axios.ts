@@ -2,7 +2,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useAuthStore } from '@/store/auth.store';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://rekab-api-v1.vercel.app/api/v1';
 const TOKEN_KEY = 'nydl_admin_token';
 
 function clearSession() {

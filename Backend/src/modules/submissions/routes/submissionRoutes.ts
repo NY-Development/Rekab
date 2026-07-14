@@ -30,6 +30,7 @@ router.get('/mine', requireAuthenticated, (req: Request, res: Response, next: Ne
   
   next();
 }, (req, res, next) => submissionController.listSubmissions(req, res, next));
-router.post('/:id/grade', requireAuthenticated, requireInstructor, validateBody(GradeSchema), (req, res, next) => submissionController.gradeSubmission(req, res, next));
+// Admins may grade anywhere; instructors only within assigned cohorts (asserted in the service).
+router.post('/:id/grade', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN', 'INSTRUCTOR'), validateBody(GradeSchema), (req, res, next) => submissionController.gradeSubmission(req, res, next));
 
 export default router;

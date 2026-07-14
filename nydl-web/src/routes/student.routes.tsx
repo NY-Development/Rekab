@@ -2,6 +2,7 @@ import { lazy } from "react";
 import type { RouteObject } from "react-router-dom";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import ProtectedRoute from "@/components/common/ProtectedRoute";
+import { RoleGuard } from "@/components/common/RoleGuard";
 
 const DashboardPage = lazy(
   () => import("@/features/dashboard/pages/DashboardPage")
@@ -51,18 +52,48 @@ export const studentRoutes: RouteObject[] = [
         element: <DashboardLayout />,
         children: [
           { path: "/dashboard", element: <DashboardPage /> },
-          { path: "/courses/enrolled", element: <MyCoursesPage /> },
+          // Student-only learning flows — staff are redirected to their dashboard.
+          {
+            path: "/courses/enrolled",
+            element: (
+              <RoleGuard allow={["STUDENT"]} mode="redirect">
+                <MyCoursesPage />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: "/assignments/:id/submit",
+            element: (
+              <RoleGuard allow={["STUDENT"]} mode="redirect">
+                <SubmitAssignmentPage />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: "/progress",
+            element: (
+              <RoleGuard allow={["STUDENT"]} mode="redirect">
+                <ProgressPage />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: "/enroll/:courseId",
+            element: (
+              <RoleGuard allow={["STUDENT"]} mode="redirect">
+                <EnrollmentPage />
+              </RoleGuard>
+            ),
+          },
+          // Shared modules — backend scopes the data per role/ownership.
           { path: "/assignments", element: <AssignmentsPage /> },
-          { path: "/assignments/:id/submit", element: <SubmitAssignmentPage /> },
           { path: "/sessions", element: <SessionsPage /> },
           { path: "/resources", element: <ResourcesPage /> },
           { path: "/announcements", element: <AnnouncementsPage /> },
           { path: "/teams", element: <TeamPage /> },
-          { path: "/progress", element: <ProgressPage /> },
           { path: "/profile", element: <ProfilePage /> },
           { path: "/notifications", element: <NotificationsPage /> },
           { path: "/settings", element: <SettingsPage /> },
-          { path: "/enroll/:courseId", element: <EnrollmentPage /> },
         ],
       },
     ],

@@ -2,35 +2,58 @@ import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, BookOpen, ClipboardList, Users, TrendingUp,
   Video, FolderOpen, Megaphone, Bell, Settings, HelpCircle,
-  LogOut, Menu, Search
+  LogOut, Menu, Search, GraduationCap
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthStore } from '@/store/auth.store';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { EnrollmentGate } from '@/components/common/EnrollmentGate';
+import { normalizeRole } from '@/lib/permissions';
+import type { UserRole } from '@/types';
 
-const mainNavItems = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/courses/enrolled', label: 'My Courses', icon: BookOpen },
-  { to: '/assignments', label: 'Assignments', icon: ClipboardList },
-  { to: '/sessions', label: 'Live Sessions', icon: Video },
-  { to: '/resources', label: 'Resources', icon: FolderOpen },
-  { to: '/announcements', label: 'Announcements', icon: Megaphone },
-  { to: '/teams', label: 'Teams', icon: Users },
-  { to: '/progress', label: 'Progress', icon: TrendingUp },
+/**
+ * Navigation is generated from this single config: each item declares which
+ * roles may see it, and the sidebar renders only the current role's modules.
+ * Modules a role cannot access simply do not appear.
+ */
+interface NavItem {
+  to: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  roles: UserRole[];
+}
+
+const mainNavItems: NavItem[] = [
+  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['STUDENT', 'INSTRUCTOR', 'MENTOR'] },
+  { to: '/courses/enrolled', label: 'My Courses', icon: BookOpen, roles: ['STUDENT'] },
+  { to: '/courses', label: 'Courses', icon: GraduationCap, roles: ['INSTRUCTOR', 'MENTOR'] },
+  { to: '/assignments', label: 'Assignments', icon: ClipboardList, roles: ['STUDENT', 'INSTRUCTOR'] },
+  { to: '/sessions', label: 'Live Sessions', icon: Video, roles: ['STUDENT', 'INSTRUCTOR', 'MENTOR'] },
+  { to: '/resources', label: 'Resources', icon: FolderOpen, roles: ['STUDENT', 'INSTRUCTOR', 'MENTOR'] },
+  { to: '/announcements', label: 'Announcements', icon: Megaphone, roles: ['STUDENT', 'INSTRUCTOR', 'MENTOR'] },
+  { to: '/teams', label: 'Teams', icon: Users, roles: ['STUDENT', 'INSTRUCTOR', 'MENTOR'] },
+  { to: '/progress', label: 'Progress', icon: TrendingUp, roles: ['STUDENT'] },
 ];
 
-const bottomNavItems = [
-  { to: '/notifications', label: 'Notifications', icon: Bell },
-  { to: '/settings', label: 'Settings', icon: Settings },
-  { to: '/help', label: 'Help', icon: HelpCircle },
+const bottomNavItems: NavItem[] = [
+  { to: '/notifications', label: 'Notifications', icon: Bell, roles: ['STUDENT', 'INSTRUCTOR', 'MENTOR'] },
+  { to: '/settings', label: 'Settings', icon: Settings, roles: ['STUDENT', 'INSTRUCTOR', 'MENTOR'] },
+  { to: '/help', label: 'Help', icon: HelpCircle, roles: ['STUDENT', 'INSTRUCTOR', 'MENTOR'] },
 ];
+
+function visibleFor(items: NavItem[], role: UserRole | null): NavItem[] {
+  if (!role) return [];
+  return items.filter((item) => item.roles.includes(role));
+}
 
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
+  const role = normalizeRole(user?.role);
+  const visibleMainNav = visibleFor(mainNavItems, role);
+  const visibleBottomNav = visibleFor(bottomNavItems, role);
 
   const handleLogout = () => {
     logout();
@@ -64,8 +87,8 @@ export default function DashboardLayout() {
         {/* Main Nav */}
         <nav className="flex-1 overflow-y-auto px-3 py-2">
           <ul className="space-y-1">
-            {mainNavItems.map((item) => (
-              <li key={item.to}>
+            {visibleMainNav.map((item) => (
+              <li key={`${item.to}-${item.label}`}>
                 <NavLink
                   to={item.to}
                   onClick={() => setSidebarOpen(false)}
@@ -88,7 +111,7 @@ export default function DashboardLayout() {
         {/* Bottom Nav */}
         <div className="border-t border-white/10 px-3 py-3">
           <ul className="space-y-1">
-            {bottomNavItems.map((item) => (
+            {visibleBottomNav.map((item) => (
               <li key={item.to}>
                 <NavLink
                   to={item.to}

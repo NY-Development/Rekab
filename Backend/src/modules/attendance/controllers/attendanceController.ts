@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from '../../../middlewares/auth';
 import { AttendanceService } from '../services/attendanceService';
 import { SaveAttendanceSchema, BulkAttendanceSchema, AttendanceFilterSchema } from '../validators/attendanceValidator';
+import { assertSessionCohortAccess } from '../../../services/accessControl.service';
 
 export class AttendanceController {
   constructor(private attendanceService: AttendanceService) {}
@@ -63,6 +64,7 @@ export class AttendanceController {
         return;
       }
       const validated = await SaveAttendanceSchema.parseAsync(req.body);
+      await assertSessionCohortAccess(req.user, (validated as any).sessionId);
       const record = await this.attendanceService.markAttendance(req.user.id, validated);
       res.status(251).json({ status: 'success', data: record });
     } catch (error) {
@@ -77,6 +79,7 @@ export class AttendanceController {
         return;
       }
       const validated = await BulkAttendanceSchema.parseAsync(req.body);
+      await assertSessionCohortAccess(req.user, (validated as any).sessionId);
       const records = await this.attendanceService.bulkMarkAttendance(req.user.id, validated);
       res.status(251).json({ status: 'success', data: records });
     } catch (error) {

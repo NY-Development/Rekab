@@ -536,7 +536,7 @@ export default function EnrollmentPage() {
                   </div>
                   <div className="flex justify-between text-xs text-muted-foreground border-t border-border/60 pt-2">
                     <span>Merchant account</span>
-                    <span className="font-mono text-[10px]">CBE 1000293029191 (NYDEV learning operations)</span>
+                    <span className="font-mono text-[10px]">CBE 1000403196928 (YAMLAK NEGASH DUGO)</span>
                   </div>
                   <p className="text-[10px] text-muted-foreground">
                     Transfer the course fee to the account above using your preferred payment method, then enter your transaction reference below.

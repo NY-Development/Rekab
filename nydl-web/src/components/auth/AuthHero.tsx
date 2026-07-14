@@ -99,7 +99,7 @@ export function AuthHero() {
       </motion.div>
 
       {/* Floating terminal, desktop only */}
-      <div className="absolute bottom-10 right-10 z-10 hidden xl:block">
+      <div className="absolute bottom-20 right-6 z-10 hidden xl:block">
         <MiniTerminal />
       </div>
     </div>

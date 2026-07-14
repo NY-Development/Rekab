@@ -1,5 +1,6 @@
 import { lazy } from 'react';
 import { RouteObject } from 'react-router-dom';
+import { ProtectedRoute } from '@/components/common/ProtectedRoute';
 
 const DashboardPage = lazy(() => import('@/features/dashboard/pages/DashboardPage'));
 const UsersPage = lazy(() => import('@/features/users/pages/UsersPage'));
@@ -110,8 +111,12 @@ export const adminRoutes: RouteObject[] = [
     element: <RiskStudentsPage />,
   },
   {
+    // System settings are SUPER_ADMIN-only (permission matrix: platform configuration).
     path: 'settings',
-    element: <SettingsPage />,
+    element: (
+      <ProtectedRoute allowedRoles={['SUPER_ADMIN']} />
+    ),
+    children: [{ index: true, element: <SettingsPage /> }],
   },
 ];
 

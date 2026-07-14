@@ -16,6 +16,7 @@ router.get('/', requireAuthenticated, (req, res, next) => sessionController.getS
 router.get('/:id', requireAuthenticated, (req, res, next) => sessionController.getSessionById(req, res, next));
 router.post('/', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN', 'INSTRUCTOR'), validateBody(CreateSessionSchema), (req, res, next) => sessionController.createSession(req, res, next));
 router.put('/:id', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN', 'INSTRUCTOR'), validateBody(UpdateSessionSchema), (req, res, next) => sessionController.updateSession(req, res, next));
-router.delete('/:id', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN'), (req, res, next) => sessionController.deleteSession(req, res, next));
+// Instructors may delete only sessions in their assigned cohorts (asserted in the controller).
+router.delete('/:id', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN', 'INSTRUCTOR'), (req, res, next) => sessionController.deleteSession(req, res, next));
 
 export default router;

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { useUsers, useUserMutations } from '@/hooks/useUsers';
+import { useAuthStore } from '@/store/auth.store';
 import { DataTable } from '@/components/common/DataTable';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { EntityFormDialog } from '@/components/common/EntityFormDialog';
@@ -32,6 +33,9 @@ const updateRoleSchema = z.object({
 export function UsersPage() {
   const { data, isLoading, isError } = useUsers();
   const { createUser, updateUser, deleteUser } = useUserMutations();
+  const currentUser = useAuthStore((state) => state.user);
+  // Role management is a SUPER_ADMIN capability (permission matrix: roles).
+  const isSuperAdmin = (currentUser?.role || '').toUpperCase() === 'SUPER_ADMIN';
 
   const handleDelete = async (id: string) => {
     try {
@@ -78,50 +82,59 @@ export function UsersPage() {
     {
       id: 'actions',
       header: 'Actions',
-      cell: (info) => (
-        <div className="flex gap-2">
-          <EntityFormDialog
-            triggerLabel="Change Role"
-            title={`Change Role — ${info.row.original.name}`}
-            schema={updateRoleSchema}
-            defaultValues={{ role: info.row.original.role.toUpperCase() as z.infer<typeof updateRoleSchema>['role'] }}
-            fields={[
-              {
-                name: 'role',
-                label: 'Role',
-                type: 'select',
-                placeholder: 'Select a role',
-                options: ROLE_OPTIONS,
-              },
-            ]}
-            onSubmit={(values) => handleRoleUpdate(info.row.original, values)}
-            submitLabel="Update Role"
-            trigger={
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 h-8 w-8"
-                title="Change role"
+      cell: (info) => {
+        const targetIsSuperAdmin = info.row.original.role.toUpperCase() === 'SUPER_ADMIN';
+        // Role changes: SUPER_ADMIN only. Deleting a super admin: SUPER_ADMIN only.
+        const canDelete = isSuperAdmin || !targetIsSuperAdmin;
+        return (
+          <div className="flex gap-2">
+            {isSuperAdmin && (
+              <EntityFormDialog
+                triggerLabel="Change Role"
+                title={`Change Role — ${info.row.original.name}`}
+                schema={updateRoleSchema}
+                defaultValues={{ role: info.row.original.role.toUpperCase() as z.infer<typeof updateRoleSchema>['role'] }}
+                fields={[
+                  {
+                    name: 'role',
+                    label: 'Role',
+                    type: 'select',
+                    placeholder: 'Select a role',
+                    options: ROLE_OPTIONS,
+                  },
+                ]}
+                onSubmit={(values) => handleRoleUpdate(info.row.original, values)}
+                submitLabel="Update Role"
+                trigger={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 h-8 w-8"
+                    title="Change role"
+                  />
+                }
+                triggerContent={<UserCog className="h-4 w-4" />}
               />
-            }
-            triggerContent={<UserCog className="h-4 w-4" />}
-          />
-          <ConfirmDialog
-            trigger={
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 h-8 w-8"
-              />
-            }
-            title="Delete User?"
-            description="This action cannot be undone. The user account and all associated access will be permanently removed."
-            onConfirm={() => handleDelete(info.row.original.id)}
-          >
-            <Trash className="h-4 w-4" />
-          </ConfirmDialog>
-        </div>
-      ),
+            )}
+            {canDelete && (
+              <ConfirmDialog
+                trigger={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 h-8 w-8"
+                  />
+                }
+                title="Delete User?"
+                description="This action cannot be undone. The user account and all associated access will be permanently removed."
+                onConfirm={() => handleDelete(info.row.original.id)}
+              >
+                <Trash className="h-4 w-4" />
+              </ConfirmDialog>
+            )}
+          </div>
+        );
+      },
     },
   ];
 
@@ -145,13 +158,10 @@ export function UsersPage() {
               label: 'Role',
               type: 'select',
               placeholder: 'Select a role',
-              options: [
-                { value: 'STUDENT', label: 'Student' },
-                { value: 'INSTRUCTOR', label: 'Instructor' },
-                { value: 'MENTOR', label: 'Mentor' },
-                { value: 'ADMIN', label: 'Admin' },
-                { value: 'SUPER_ADMIN', label: 'Super Admin' },
-              ],
+              // Only super admins may mint admin-tier accounts (backend enforces too).
+              options: isSuperAdmin
+                ? ROLE_OPTIONS
+                : ROLE_OPTIONS.filter((o) => o.value !== 'ADMIN' && o.value !== 'SUPER_ADMIN'),
             },
           ]}
           onSubmit={handleCreate}

@@ -4,12 +4,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { authApi } from '@/api/auth.api';
 import { useAuthStore } from '@/store/auth.store';
 import { Button } from '@/components/ui/button';
-import type { UserRole } from '@/types';
-import {Eye, EyeOff} from 'lucide-react'
+import { isAdminRole, ADMIN_APP_URL } from '@/lib/permissions';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -19,7 +18,6 @@ const loginSchema = z.object({
 type LoginFields = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const [activeRole, setActiveRole] = useState<UserRole>('STUDENT');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const setAuth = useAuthStore((state) => state.setAuth);
@@ -33,43 +31,28 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema),
   });
 
-const onSubmit = async (data: LoginFields) => {
-  setIsSubmitting(true);
-  try {
-    const res = await authApi.login({ ...data });
-    const { token, user } = res.data.data;
+  // Single login form — the backend knows the role; we just route on it.
+  const onSubmit = async (data: LoginFields) => {
+    setIsSubmitting(true);
+    try {
+      const res = await authApi.login({ ...data });
+      const { token, user } = res.data.data;
 
-    // Normalize roles to uppercase to prevent case-sensitive mismatches (e.g., "student" vs "STUDENT")
-    const backendRole = user.role.toUpperCase();
-    const selectedRole = activeRole.toUpperCase();
+      setAuth(token, user);
+      toast.success('Successfully signed in!');
 
-    // Check if user has the selected role or is an admin logging in
-    if (backendRole !== selectedRole && !(backendRole === 'ADMIN' && selectedRole === 'ADMIN')) {
-      toast.error(`You do not have the ${activeRole.toLowerCase()} role assigned to this account.`);
+      if (isAdminRole(user.role)) {
+        // Platform administrators live in the separate admin application.
+        window.location.href = ADMIN_APP_URL;
+      } else {
+        navigate('/dashboard');
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Invalid email or password');
+    } finally {
       setIsSubmitting(false);
-      return;
     }
-
-    // 1. Commit auth state first
-    setAuth(token, user);
-    
-    // 2. Trigger success toast
-    toast.success('Successfully signed in!');
-
-    // 3. Handle routing based on normalized role strings
-    if (backendRole === 'ADMIN' || backendRole === 'SUPER_ADMIN') {
-      // Redirect to separate admin application instance
-      window.location.href = 'https://nydl-admin-v1.vercel.app';
-    } else {
-      // React Router DOM path navigation
-      navigate('/dashboard');
-    }
-  } catch (err: any) {
-    toast.error(err.response?.data?.message || 'Invalid email or password');
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+  };
 
 
   const handleGithubLogin = () => {
@@ -93,25 +76,6 @@ const onSubmit = async (data: LoginFields) => {
       </div>
 
       <div className="mt-8">
-        {/* Role Tabs */}
-        <div className="flex rounded-lg bg-muted p-1 mb-6" role="tablist">
-          {(['STUDENT', 'INSTRUCTOR', 'ADMIN'] as const).map((role) => (
-            <button
-              key={role}
-              aria-selected={activeRole === role}
-              className={`flex-1 rounded-md py-2 text-xs font-semibold uppercase tracking-wider transition-all duration-150 ${
-                activeRole === role
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-              onClick={() => setActiveRole(role as UserRole)}
-              type="button"
-            >
-              {role.toLowerCase()}
-            </button>
-          ))}
-        </div>
-
         <div className="mt-4">
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div>

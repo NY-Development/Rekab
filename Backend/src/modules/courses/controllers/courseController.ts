@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import { CourseService } from '../services/courseService';
 import { AuthenticatedRequest } from '../../../middlewares/auth';
 import { CourseFilterSchema, UpdateCourseSchema } from '../validators/courseValidator';
+import { assertCourseAccess } from '../../../services/accessControl.service';
 
 export class CourseController {
   constructor(private courseService: CourseService) {}
@@ -66,6 +67,7 @@ export class CourseController {
 
   async updateCourse(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
+      await assertCourseAccess(req.user!, req.params.id);
       const validated = await UpdateCourseSchema.parseAsync(req.body);
       const course = await this.courseService.updateCourse(req.user!.id, req.user!.name, req.params.id, validated);
       res.status(200).json({ status: 'success', data: course });

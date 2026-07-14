@@ -14,10 +14,18 @@ export default function CourseCatalogPage() {
   const [category, setCategory] = useState('All');
   const [authPromptCourse, setAuthPromptCourse] = useState<Course | null>(null);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const role = useAuthStore((state) => state.user?.role);
 
   const { data: courses, isLoading, error } = useCourses();
 
+  // Only students enroll; instructors/mentors browse the catalog read-only.
+  const isStaff = isAuthenticated && (role || '').toUpperCase() !== 'STUDENT';
+
   const handleEnroll = (course: Course) => {
+    if (isStaff) {
+      navigate(`/courses/${course.id}`);
+      return;
+    }
     if (isAuthenticated) {
       navigate(`/enroll/${course.id}`);
     } else {
@@ -123,12 +131,14 @@ export default function CourseCatalogPage() {
                   <span className="text-lg font-semibold text-foreground">
                     {course.price > 0 ? `${course.currency} ${course.price}` : 'Free'}
                   </span>
-                  <button
-                    onClick={() => handleEnroll(course)}
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold px-4 py-2 rounded-md transition-colors shadow-sm"
-                  >
-                    Enroll Now
-                  </button>
+                  {!isStaff && (
+                    <button
+                      onClick={() => handleEnroll(course)}
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold px-4 py-2 rounded-md transition-colors shadow-sm"
+                    >
+                      Enroll Now
+                    </button>
+                  )}
                 </div>
               </div>
             </article>

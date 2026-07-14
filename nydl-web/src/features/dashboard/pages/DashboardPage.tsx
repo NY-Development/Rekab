@@ -13,8 +13,21 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { normalizeRole } from '@/lib/permissions';
+import StaffDashboard from './StaffDashboard';
 
+// Role-aware entry point: staff get their own dashboard; students get the
+// learning dashboard below. Split into separate components so student-only
+// queries never fire for staff (and vice versa).
 export default function DashboardPage() {
+  const role = normalizeRole(useAuthStore((state) => state.user?.role));
+  if (role === 'INSTRUCTOR' || role === 'MENTOR') {
+    return <StaffDashboard role={role} />;
+  }
+  return <StudentDashboard />;
+}
+
+function StudentDashboard() {
   const { user } = useAuthStore();
 
   // Queries

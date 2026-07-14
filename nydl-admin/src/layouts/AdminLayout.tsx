@@ -12,6 +12,13 @@ export function AdminLayout() {
   const location = useLocation();
   const { theme, setTheme } = useThemeStore();
 
+  // Navigation is filtered by admin tier: items with a `roles` restriction
+  // (e.g. system Settings → SUPER_ADMIN) simply don't render for plain admins.
+  const currentRole = (user?.role || '').toUpperCase() as 'ADMIN' | 'SUPER_ADMIN';
+  const visibleNavItems = NAV_ITEMS.filter(
+    (item) => !item.roles || item.roles.includes(currentRole)
+  );
+
   useEffect(() => {
     const root = window.document.documentElement;
     if (theme === 'dark') {
@@ -46,7 +53,7 @@ export function AdminLayout() {
 
         {/* Navigation list */}
         <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-1 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
-          {NAV_ITEMS.map((item) => {
+          {visibleNavItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <Link

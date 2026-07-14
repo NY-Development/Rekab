@@ -11,14 +11,16 @@ const cohortRepository = new CohortRepository();
 const cohortService = new CohortService(cohortRepository);
 const cohortController = new CohortController(cohortService);
 
-const requireStaff = authorize('INSTRUCTOR', 'MENTOR', 'ADMIN', 'SUPER_ADMIN');
+const requireCohortEditor = authorize('INSTRUCTOR', 'ADMIN', 'SUPER_ADMIN');
 
 router.get('/', requireAuthenticated, (req, res, next) => cohortController.listCohorts(req, res, next));
 router.get('/:id', requireAuthenticated, (req, res, next) => cohortController.getCohortDetails(req, res, next));
-router.post('/', requireAuthenticated, requireStaff, validateBody(CohortSchema), (req, res, next) => cohortController.createCohort(req, res, next));
+// Cohort creation is an administrative act; instructors work within assigned cohorts.
+router.post('/', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN'), validateBody(CohortSchema), (req, res, next) => cohortController.createCohort(req, res, next));
 router.post('/:cohortId/enroll', requireAuthenticated, (req, res, next) => cohortController.enrollInCohort(req, res, next));
-router.put('/:id/status', requireAuthenticated, requireStaff, (req, res, next) => cohortController.updateCohortStatus(req, res, next));
-router.put('/:id', requireAuthenticated, requireStaff, (req, res, next) => cohortController.updateCohort(req, res, next));
+// Instructors may update only their assigned cohorts (ownership asserted in the controller).
+router.put('/:id/status', requireAuthenticated, requireCohortEditor, (req, res, next) => cohortController.updateCohortStatus(req, res, next));
+router.put('/:id', requireAuthenticated, requireCohortEditor, (req, res, next) => cohortController.updateCohort(req, res, next));
 router.delete('/:id', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN'), (req, res, next) => cohortController.deleteCohort(req, res, next));
 
 export default router;

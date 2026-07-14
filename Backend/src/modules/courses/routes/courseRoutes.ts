@@ -3,6 +3,7 @@ import { CourseController } from '../controllers/courseController';
 import { CourseService } from '../services/courseService';
 import { CourseRepository } from '../repositories/courseRepository';
 import { requireAuthenticated, requireAdmin, requireInstructor } from '../../../middlewares/auth';
+import { requirePermission } from '../../../middlewares/rbac';
 import { validateBody } from '../../../middlewares/validation';
 import {
   CourseSchema,
@@ -18,9 +19,10 @@ const courseController = new CourseController(courseService);
 
 router.get('/', (req, res, next) => courseController.listCourses(req, res, next));
 router.get('/:id', (req, res, next) => courseController.getCourseDetails(req, res, next));
-router.post('/', requireAuthenticated, requireAdmin, validateBody(CourseSchema), (req, res, next) => courseController.createCourse(req, res, next));
-router.put('/:id', requireAuthenticated, requireAdmin, (req, res, next) => courseController.updateCourse(req, res, next));
-router.delete('/:id', requireAuthenticated, requireAdmin, (req, res, next) => courseController.deleteCourse(req, res, next));
+router.post('/', requireAuthenticated, requirePermission('courses', 'create'), validateBody(CourseSchema), (req, res, next) => courseController.createCourse(req, res, next));
+// Instructors may update only their assigned courses — ownership asserted in the controller.
+router.put('/:id', requireAuthenticated, requirePermission('courses', 'update'), (req, res, next) => courseController.updateCourse(req, res, next));
+router.delete('/:id', requireAuthenticated, requirePermission('courses', 'delete'), (req, res, next) => courseController.deleteCourse(req, res, next));
 router.post(
   '/:courseId/modules',
   requireAuthenticated,

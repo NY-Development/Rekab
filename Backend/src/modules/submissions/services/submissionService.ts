@@ -1,9 +1,10 @@
 import { SubmissionRepository } from '../repositories/submissionRepository';
 import { AssignmentRepository } from '../../assignments/repositories/assignmentRepository';
 import { EnrollmentRepository } from '../../enrollments/repositories/enrollmentRepository';
-import { Submission } from '../../../types';
+import { Submission, User } from '../../../types';
 import { AppError } from '../../../middlewares/errorHandler';
 import { DBStore } from '../../../services/dbStore';
+import { assertCohortAccess } from '../../../services/accessControl.service';
 
 const ACTIVE_STATUSES = ['ACTIVE', 'COMPLETED', 'active', 'enrolled', 'completed'];
 
@@ -101,8 +102,7 @@ export class SubmissionService {
   }
 
   async gradeSubmission(
-    userId: string,
-    userName: string,
+    grader: User,
     id: string,
     gradeData: { points: number; feedback: string }
   ): Promise<Submission> {
@@ -110,6 +110,12 @@ export class SubmissionService {
     if (!sub) {
       throw new AppError('Submission not found', 404);
     }
+
+    // Instructors may only grade submissions in their assigned cohorts.
+    await assertCohortAccess(grader, sub.cohortId);
+
+    const userId = grader.id;
+    const userName = grader.name;
 
     const updated = await this.submissionRepository.grade(id, {
       points: gradeData.points,

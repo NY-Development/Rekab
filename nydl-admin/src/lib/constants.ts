@@ -38,7 +38,16 @@ export const RISK_LEVELS = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as const;
 export const USER_ROLES = ['STUDENT', 'INSTRUCTOR', 'MENTOR', 'ADMIN', 'SUPER_ADMIN'] as const;
 
 // ─── Navigation Items ───
-export const NAV_ITEMS = [
+// `roles` controls which admin tier sees the module; omitted = both.
+// System settings are reserved for SUPER_ADMIN per the permission matrix.
+export interface AdminNavItem {
+  label: string;
+  path: string;
+  icon: string;
+  roles?: readonly ('ADMIN' | 'SUPER_ADMIN')[];
+}
+
+export const NAV_ITEMS: readonly AdminNavItem[] = [
   { label: 'Dashboard', path: '/dashboard', icon: 'LayoutDashboard' },
   { label: 'Users', path: '/users', icon: 'Users' },
   { label: 'Students', path: '/students', icon: 'GraduationCap' },
@@ -60,5 +69,5 @@ export const NAV_ITEMS = [
   { label: 'Notifications', path: '/notifications', icon: 'Bell' },
   { label: 'Audit Logs', path: '/audit-logs', icon: 'ScrollText' },
   { label: 'Risk Students', path: '/risk-students', icon: 'ShieldAlert' },
-  { label: 'Settings', path: '/settings', icon: 'Settings' },
+  { label: 'Settings', path: '/settings', icon: 'Settings', roles: ['SUPER_ADMIN'] },
 ] as const;

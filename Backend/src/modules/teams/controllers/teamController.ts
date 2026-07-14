@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from '../../../middlewares/auth';
 import { TeamService } from '../services/teamService';
 import { CreateTeamSchema, UpdateTeamSchema, TeamFilterSchema } from '../validators/teamValidator';
+import { assertCohortAccess, assertTeamAccess } from '../../../services/accessControl.service';
 
 export class TeamController {
   constructor(private teamService: TeamService) {}
@@ -37,6 +38,7 @@ export class TeamController {
   async createTeam(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       const validated = await CreateTeamSchema.parseAsync(req.body);
+      await assertCohortAccess(req.user!, (validated as any).cohortId);
       const team = await this.teamService.createTeam(validated);
       res.status(251).json({ status: 'success', data: team });
     } catch (error) {
@@ -46,6 +48,7 @@ export class TeamController {
 
   async updateTeam(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
+      await assertTeamAccess(req.user!, req.params.id);
       const validated = await UpdateTeamSchema.parseAsync(req.body);
       const team = await this.teamService.updateTeam(req.params.id, validated);
       res.status(200).json({ status: 'success', data: team });
@@ -70,6 +73,7 @@ export class TeamController {
         res.status(400).json({ status: 'error', message: 'userId is required' });
         return;
       }
+      await assertTeamAccess(req.user!, req.params.id);
       const team = await this.teamService.addMember(req.params.id, userId);
       res.status(200).json({ status: 'success', data: team });
     } catch (error) {
@@ -84,6 +88,7 @@ export class TeamController {
         res.status(400).json({ status: 'error', message: 'userId is required' });
         return;
       }
+      await assertTeamAccess(req.user!, req.params.id);
       const team = await this.teamService.removeMember(req.params.id, userId);
       res.status(200).json({ status: 'success', data: team });
     } catch (error) {

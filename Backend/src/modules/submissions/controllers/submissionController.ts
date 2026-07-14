@@ -44,8 +44,7 @@ export class SubmissionController {
     const { points, feedback } = req.body;
     try {
       const submission = await this.submissionService.gradeSubmission(
-        req.user!.id,
-        req.user!.name,
+        req.user!,
         id,
         { points, feedback }
       );

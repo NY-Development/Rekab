@@ -17,8 +17,10 @@ router.get('/session/:sessionId', requireAuthenticated, authorize('ADMIN', 'SUPE
 router.get('/', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN', 'INSTRUCTOR', 'MENTOR'), (req, res, next) => attendanceController.listAttendance(req, res, next));
 router.get('/:id', requireAuthenticated, (req, res, next) => attendanceController.getAttendanceById(req, res, next));
 
-router.post('/', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN', 'INSTRUCTOR', 'MENTOR'), validateBody(SaveAttendanceSchema), (req, res, next) => attendanceController.markAttendance(req, res, next));
-router.post('/bulk', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN', 'INSTRUCTOR', 'MENTOR'), validateBody(BulkAttendanceSchema), (req, res, next) => attendanceController.bulkMarkAttendance(req, res, next));
+// Mentors are view-only for attendance; instructors are limited to sessions
+// in their assigned cohorts (ownership asserted in the controller).
+router.post('/', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN', 'INSTRUCTOR'), validateBody(SaveAttendanceSchema), (req, res, next) => attendanceController.markAttendance(req, res, next));
+router.post('/bulk', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN', 'INSTRUCTOR'), validateBody(BulkAttendanceSchema), (req, res, next) => attendanceController.bulkMarkAttendance(req, res, next));
 router.delete('/:id', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN'), (req, res, next) => attendanceController.deleteAttendance(req, res, next));
 
 export default router;

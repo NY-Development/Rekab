@@ -8,6 +8,7 @@ import { Loader2 } from 'lucide-react';
 import api from '@/api/axios';
 import { profileApi } from '@/api/profile.api';
 import { useAuthStore } from '@/store/auth.store';
+import { isAdminRole, ADMIN_APP_URL } from '@/lib/permissions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { User } from '@/types';
@@ -54,6 +55,12 @@ export function OAuthCallbackPage() {
 
         const user: User = response.data.data.user;
         setAuth(token, user);
+
+        // Platform administrators belong in the admin application.
+        if (isAdminRole(user.role)) {
+          window.location.href = ADMIN_APP_URL;
+          return;
+        }
 
         // GitHub doesn't provide a phone number (and often only a username, not
         // a real full name) — collect what's missing before entering the app.

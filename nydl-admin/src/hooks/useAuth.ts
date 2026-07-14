@@ -11,6 +11,16 @@ export function useAuth() {
   const loginMutation = useMutation({
     mutationFn: async (data: Parameters<typeof authApi.login>[0]) => {
       const res = await authApi.login(data);
+      // This application is exclusively for platform administrators.
+      // Students, instructors, and mentors belong in the learning app.
+      const role = (res.data.data.user.role || '').toUpperCase();
+      if (role !== 'ADMIN' && role !== 'SUPER_ADMIN') {
+        const webUrl = (import.meta.env.VITE_WEB_URL as string | undefined) || 'https://nydev-learning-v1.vercel.app';
+        setTimeout(() => {
+          window.location.href = webUrl;
+        }, 2000);
+        throw new Error('This account does not have admin access. Redirecting you to the learning platform...');
+      }
       return res.data;
     },
     onSuccess: (data) => {

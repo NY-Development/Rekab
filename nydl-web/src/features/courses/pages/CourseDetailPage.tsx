@@ -10,7 +10,11 @@ export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const role = useAuthStore((state) => state.user?.role);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+
+  // Only students enroll; instructors/mentors view the course read-only.
+  const isStaff = isAuthenticated && (role || '').toUpperCase() !== 'STUDENT';
 
   const { data: courseRes, isLoading, error } = useCourse(id || '');
   const { data: modulesRes, isLoading: isModulesLoading } = useCourseModules(id || '');
@@ -71,12 +75,14 @@ export default function CourseDetailPage() {
                   {course.description}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                  <button
-                    onClick={handleEnroll}
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-md font-semibold text-sm transition-colors shadow-sm"
-                  >
-                    Enroll for {course.price > 0 ? `${course.currency} ${course.price}` : 'Free'}
-                  </button>
+                  {!isStaff && (
+                    <button
+                      onClick={handleEnroll}
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-md font-semibold text-sm transition-colors shadow-sm"
+                    >
+                      Enroll for {course.price > 0 ? `${course.currency} ${course.price}` : 'Free'}
+                    </button>
+                  )}
                   <button
                     onClick={scrollToCurriculum}
                     className="bg-background text-primary border border-border px-6 py-3 rounded-md font-semibold text-sm hover:bg-muted transition-colors"
@@ -230,12 +236,14 @@ export default function CourseDetailPage() {
                     </ul>
                   </>
                 )}
-                <button
-                  onClick={handleEnroll}
-                  className="w-full bg-primary text-primary-foreground py-3 rounded-md font-semibold text-sm hover:bg-primary/90 transition-colors shadow-sm"
-                >
-                  Reserve Your Spot
-                </button>
+                {!isStaff && (
+                  <button
+                    onClick={handleEnroll}
+                    className="w-full bg-primary text-primary-foreground py-3 rounded-md font-semibold text-sm hover:bg-primary/90 transition-colors shadow-sm"
+                  >
+                    Reserve Your Spot
+                  </button>
+                )}
               </div>
             </div>
           </section>
