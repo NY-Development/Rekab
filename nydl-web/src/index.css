@@ -133,6 +133,12 @@
     @apply font-sans;
   }
 
+  @keyframes dash {
+    to {
+      stroke-dashoffset: -14;
+    }
+  }
+
   /* Material Symbols Font Rule Definition */
   .material-symbols-outlined {
     font-family: "Material Symbols Outlined";

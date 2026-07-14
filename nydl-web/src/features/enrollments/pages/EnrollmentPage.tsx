@@ -339,17 +339,17 @@ export default function EnrollmentPage() {
   return (
     <div className="w-full max-w-3xl mx-auto px-4 md:px-0 py-10">
       <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-900 mb-1">Course Registration</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-1">Course Registration</h1>
+        <p className="text-sm text-muted-foreground">
           Step {step + 1} of {STEPS.length}: <span className="font-semibold">{STEPS[step]}</span>
         </p>
         <Progress value={progressPercent} className="mt-4" />
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Card className="border border-slate-200">
-          <CardHeader className="border-b border-slate-100">
-            <CardTitle className="text-lg font-bold text-slate-900">{STEPS[step]}</CardTitle>
+        <Card className="border border-border">
+          <CardHeader className="border-b border-border">
+            <CardTitle className="text-lg font-bold text-foreground">{STEPS[step]}</CardTitle>
             {step === 0 && <CardDescription className="text-xs">Tell us a bit about yourself.</CardDescription>}
             {step === 1 && <CardDescription className="text-xs">Where are you currently studying?</CardDescription>}
             {step === 2 && <CardDescription className="text-xs">Where are you located?</CardDescription>}
@@ -363,12 +363,12 @@ export default function EnrollmentPage() {
             {step === 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">Full Name *</label>
-                  <input className="w-full px-3 py-2 bg-white border border-slate-200 rounded focus:ring-1 focus:ring-blue-600 text-sm text-slate-900" {...register('fullName')} />
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">Full Name *</label>
+                  <input className="w-full px-3 py-2 bg-background border border-border rounded focus:ring-1 focus:ring-primary text-sm text-foreground" {...register('fullName')} />
                   {errorMap.fullName && <p className="text-xs text-red-500 mt-1">{errorMap.fullName.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">Gender *</label>
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">Gender *</label>
                   <Select onValueChange={(v) => setValue('gender', v as FormValues['gender'], { shouldValidate: true })}>
                     <SelectTrigger className="w-full"><SelectValue placeholder="Select gender" /></SelectTrigger>
                     <SelectContent>
@@ -380,18 +380,18 @@ export default function EnrollmentPage() {
                   {errorMap.gender && <p className="text-xs text-red-500 mt-1">{errorMap.gender.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">Date of Birth *</label>
-                  <input type="date" className="w-full px-3 py-2 bg-white border border-slate-200 rounded focus:ring-1 focus:ring-blue-600 text-sm text-slate-900" {...register('dateOfBirth')} />
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">Date of Birth *</label>
+                  <input type="date" className="w-full px-3 py-2 bg-background border border-border rounded focus:ring-1 focus:ring-primary text-sm text-foreground" {...register('dateOfBirth')} />
                   {errorMap.dateOfBirth && <p className="text-xs text-red-500 mt-1">{errorMap.dateOfBirth.message}</p>}
-                  {age !== undefined && <p className="text-xs text-slate-400 mt-1">Age: {age}</p>}
+                  {age !== undefined && <p className="text-xs text-muted-foreground mt-1">Age: {age}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">Email Address</label>
-                  <input disabled value={user?.email || ''} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded text-sm text-slate-500 cursor-not-allowed" />
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">Email Address</label>
+                  <input disabled value={user?.email || ''} className="w-full px-3 py-2 bg-muted/40 border border-border rounded text-sm text-muted-foreground cursor-not-allowed" />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">Phone Number *</label>
-                  <input className="w-full px-3 py-2 bg-white border border-slate-200 rounded focus:ring-1 focus:ring-blue-600 text-sm text-slate-900" placeholder="+251..." {...register('phone')} />
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">Phone Number *</label>
+                  <input className="w-full px-3 py-2 bg-background border border-border rounded focus:ring-1 focus:ring-primary text-sm text-foreground" placeholder="+251..." {...register('phone')} />
                   {errorMap.phone && <p className="text-xs text-red-500 mt-1">{errorMap.phone.message}</p>}
                 </div>
               </div>
@@ -401,12 +401,12 @@ export default function EnrollmentPage() {
             {step === 1 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">School Name *</label>
-                  <input className="w-full px-3 py-2 bg-white border border-slate-200 rounded focus:ring-1 focus:ring-blue-600 text-sm text-slate-900" {...register('schoolName')} />
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">School Name *</label>
+                  <input className="w-full px-3 py-2 bg-background border border-border rounded focus:ring-1 focus:ring-primary text-sm text-foreground" {...register('schoolName')} />
                   {errorMap.schoolName && <p className="text-xs text-red-500 mt-1">{errorMap.schoolName.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">Grade *</label>
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">Grade *</label>
                   <Select onValueChange={(v) => setValue('grade', v as string, { shouldValidate: true })}>
                     <SelectTrigger className="w-full"><SelectValue placeholder="Select grade" /></SelectTrigger>
                     <SelectContent>
@@ -422,34 +422,34 @@ export default function EnrollmentPage() {
             {step === 2 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">City *</label>
-                  <input className="w-full px-3 py-2 bg-white border border-slate-200 rounded focus:ring-1 focus:ring-blue-600 text-sm text-slate-900" {...register('city')} />
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">City *</label>
+                  <input className="w-full px-3 py-2 bg-background border border-border rounded focus:ring-1 focus:ring-primary text-sm text-foreground" {...register('city')} />
                   {errorMap.city && <p className="text-xs text-red-500 mt-1">{errorMap.city.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">Region</label>
-                  <input className="w-full px-3 py-2 bg-white border border-slate-200 rounded focus:ring-1 focus:ring-blue-600 text-sm text-slate-900" {...register('region')} />
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">Region</label>
+                  <input className="w-full px-3 py-2 bg-background border border-border rounded focus:ring-1 focus:ring-primary text-sm text-foreground" {...register('region')} />
                 </div>
               </div>
             )}
 
             {/* ─── Step 4: Course Selection ─── */}
             {step === 3 && (
-              <div className="bg-slate-50 border border-slate-200 rounded-md p-5 flex justify-between items-center">
+              <div className="bg-muted/40 border border-border rounded-md p-5 flex justify-between items-center">
                 <div>
-                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Selected Course</span>
-                  <span className="text-base font-semibold text-slate-900">{course.title}</span>
-                  <p className="text-xs text-slate-500 mt-1">{course.level} &middot; {course.durationWeeks} weeks</p>
+                  <span className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Selected Course</span>
+                  <span className="text-base font-semibold text-foreground">{course.title}</span>
+                  <p className="text-xs text-muted-foreground mt-1">{course.level} &middot; {course.durationWeeks} weeks</p>
                 </div>
                 <div className="text-right">
-                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tuition Fee</span>
-                  <span className="text-base font-bold text-blue-650">{course.price > 0 ? `${course.currency} ${course.price}` : 'Free'}</span>
+                  <span className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Tuition Fee</span>
+                  <span className="text-base font-bold text-primary">{course.price > 0 ? `${course.currency} ${course.price}` : 'Free'}</span>
                 </div>
               </div>
             )}
             {step === 3 && (
-              <p className="text-xs text-slate-400">
-                Registering for the wrong course? <Link to="/courses" className="text-blue-600 hover:underline">Browse the catalog</Link> to pick a different one.
+              <p className="text-xs text-muted-foreground">
+                Registering for the wrong course? <Link to="/courses" className="text-primary hover:underline">Browse the catalog</Link> to pick a different one.
               </p>
             )}
 
@@ -457,7 +457,7 @@ export default function EnrollmentPage() {
             {step === 4 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">Operating System *</label>
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">Operating System *</label>
                   <Select onValueChange={(v) => setValue('operatingSystem', v as FormValues['operatingSystem'], { shouldValidate: true })}>
                     <SelectTrigger className="w-full"><SelectValue placeholder="Select OS" /></SelectTrigger>
                     <SelectContent>
@@ -469,7 +469,7 @@ export default function EnrollmentPage() {
                   {errorMap.operatingSystem && <p className="text-xs text-red-500 mt-1">{errorMap.operatingSystem.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">Programming Experience *</label>
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">Programming Experience *</label>
                   <Select onValueChange={(v) => setValue('programmingExperience', v as FormValues['programmingExperience'], { shouldValidate: true })}>
                     <SelectTrigger className="w-full"><SelectValue placeholder="Select level" /></SelectTrigger>
                     <SelectContent>
@@ -481,7 +481,7 @@ export default function EnrollmentPage() {
                   {errorMap.programmingExperience && <p className="text-xs text-red-500 mt-1">{errorMap.programmingExperience.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">Do you have a personal computer? *</label>
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">Do you have a personal computer? *</label>
                   <Select onValueChange={(v) => setValue('hasPersonalComputer', v as 'yes' | 'no', { shouldValidate: true })}>
                     <SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent>
@@ -492,7 +492,7 @@ export default function EnrollmentPage() {
                   {errorMap.hasPersonalComputer && <p className="text-xs text-red-500 mt-1">{errorMap.hasPersonalComputer.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">Have you installed Discord before? *</label>
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">Have you installed Discord before? *</label>
                   <Select onValueChange={(v) => setValue('hasDiscord', v as 'yes' | 'no', { shouldValidate: true })}>
                     <SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent>
@@ -503,8 +503,8 @@ export default function EnrollmentPage() {
                   {errorMap.hasDiscord && <p className="text-xs text-red-500 mt-1">{errorMap.hasDiscord.message}</p>}
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">Reason for Joining *</label>
-                  <textarea rows={3} placeholder="I want to become a software engineer..." className="w-full px-3 py-2 bg-white border border-slate-200 rounded focus:ring-1 focus:ring-blue-600 text-sm text-slate-900 resize-y" {...register('reasonForJoining')} />
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">Reason for Joining *</label>
+                  <textarea rows={3} placeholder="I want to become a software engineer..." className="w-full px-3 py-2 bg-background border border-border rounded focus:ring-1 focus:ring-primary text-sm text-foreground resize-y" {...register('reasonForJoining')} />
                   {errorMap.reasonForJoining && <p className="text-xs text-red-500 mt-1">{errorMap.reasonForJoining.message}</p>}
                 </div>
               </div>
@@ -514,7 +514,7 @@ export default function EnrollmentPage() {
             {step === 5 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {INTEREST_OPTIONS.map((interest) => (
-                  <label key={interest} className="flex items-center gap-2.5 p-2.5 rounded-md border border-slate-200 hover:bg-slate-50 cursor-pointer text-sm text-slate-700">
+                  <label key={interest} className="flex items-center gap-2.5 p-2.5 rounded-md border border-border hover:bg-muted/40 cursor-pointer text-sm text-foreground">
                     <Checkbox
                       checked={selectedInterests.includes(interest)}
                       onCheckedChange={() => toggleInterest(interest)}
@@ -528,24 +528,24 @@ export default function EnrollmentPage() {
             {/* ─── Step 7: Payment & Agreements ─── */}
             {step === 6 && (
               <div className="space-y-6">
-                <div className="space-y-3 p-4 bg-slate-50 border border-slate-200 rounded-md">
-                  <h4 className="text-xs font-bold text-slate-850">Billing Details</h4>
-                  <div className="flex justify-between text-xs text-slate-550">
+                <div className="space-y-3 p-4 bg-muted/40 border border-border rounded-md">
+                  <h4 className="text-xs font-bold text-foreground">Billing Details</h4>
+                  <div className="flex justify-between text-xs text-muted-foreground">
                     <span>Course Fee</span>
-                    <span className="font-semibold text-slate-800">{course.price > 0 ? `${course.currency} ${course.price}` : 'Free'}</span>
+                    <span className="font-semibold text-foreground">{course.price > 0 ? `${course.currency} ${course.price}` : 'Free'}</span>
                   </div>
-                  <div className="flex justify-between text-xs text-slate-550 border-t border-slate-200/60 pt-2">
+                  <div className="flex justify-between text-xs text-muted-foreground border-t border-border/60 pt-2">
                     <span>Merchant account</span>
                     <span className="font-mono text-[10px]">CBE 1000293029191 (NYDEV learning operations)</span>
                   </div>
-                  <p className="text-[10px] text-slate-400">
+                  <p className="text-[10px] text-muted-foreground">
                     Transfer the course fee to the account above using your preferred payment method, then enter your transaction reference below.
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">Payment Method *</label>
+                    <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">Payment Method *</label>
                     <Select onValueChange={(v) => setValue('paymentMethod', v as FormValues['paymentMethod'], { shouldValidate: true })}>
                       <SelectTrigger className="w-full"><SelectValue placeholder="Select method" /></SelectTrigger>
                       <SelectContent>
@@ -558,16 +558,16 @@ export default function EnrollmentPage() {
                     {errorMap.paymentMethod && <p className="text-xs text-red-500 mt-1">{errorMap.paymentMethod.message}</p>}
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">Transaction Reference ID *</label>
-                    <input placeholder="e.g. FT26071..." className="w-full px-3 py-2 bg-white border border-slate-200 rounded focus:ring-1 focus:ring-blue-600 text-sm text-slate-900" {...register('transactionReference')} />
+                    <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">Transaction Reference ID *</label>
+                    <input placeholder="e.g. FT26071..." className="w-full px-3 py-2 bg-background border border-border rounded focus:ring-1 focus:ring-primary text-sm text-foreground" {...register('transactionReference')} />
                     {errorMap.transactionReference && <p className="text-xs text-red-500 mt-1">{errorMap.transactionReference.message}</p>}
                   </div>
                 </div>
 
-                <div className="space-y-2 border-t border-slate-100 pt-4">
-                  <h4 className="text-xs font-bold text-slate-850 uppercase tracking-widest mb-2">Terms &amp; Agreements</h4>
+                <div className="space-y-2 border-t border-border pt-4">
+                  <h4 className="text-xs font-bold text-foreground uppercase tracking-widest mb-2">Terms &amp; Agreements</h4>
                   {AGREEMENT_ITEMS.map((item) => (
-                    <label key={item.key} className="flex items-start gap-2.5 text-xs text-slate-600 leading-relaxed cursor-pointer">
+                    <label key={item.key} className="flex items-start gap-2.5 text-xs text-muted-foreground leading-relaxed cursor-pointer">
                       <Checkbox
                         className="mt-0.5"
                         checked={!!watch(item.key)}
@@ -581,7 +581,7 @@ export default function EnrollmentPage() {
             )}
           </CardContent>
 
-          <div className="flex items-center justify-between p-6 border-t border-slate-100">
+          <div className="flex items-center justify-between p-6 border-t border-border">
             <Button type="button" variant="outline" onClick={goBack} disabled={step === 0}>
               <ArrowLeft className="mr-1.5 h-4 w-4" /> Back
             </Button>

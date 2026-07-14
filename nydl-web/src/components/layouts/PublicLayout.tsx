@@ -1,10 +1,20 @@
-import { Link, Outlet } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Link, Outlet, useNavigate } from 'react-router-dom';
+import { Menu, X, LogOut, LayoutDashboard } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { useAuthStore } from '@/store/auth.store';
 
 export default function PublicLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const logout = useAuthStore((state) => state.logout);
+
+  const handleLogout = () => {
+    logout();
+    setMobileOpen(false);
+    navigate('/login');
+  };
 
   return (
     <div className="min-h-screen bg-background font-sans antialiased">
@@ -34,12 +44,25 @@ export default function PublicLayout() {
 
           {/* Auth Buttons */}
           <div className="hidden items-center gap-3 md:flex">
-            <Button variant="ghost" >
-              <Link to="/login">Sign In</Link>
-            </Button>
-            <Button >
-              <Link to="/register">Get Started</Link>
-            </Button>
+            {isAuthenticated ? (
+              <>
+                <Button variant="ghost" onClick={() => navigate('/dashboard')}>
+                  <LayoutDashboard className="mr-1.5 h-4 w-4" /> Dashboard
+                </Button>
+                <Button variant="outline" onClick={handleLogout}>
+                  <LogOut className="mr-1.5 h-4 w-4" /> Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost">
+                  <Link to="/login">Sign In</Link>
+                </Button>
+                <Button>
+                  <Link to="/register">Get Started</Link>
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -60,12 +83,32 @@ export default function PublicLayout() {
               <Link to="/contact" className="text-sm font-medium" onClick={() => setMobileOpen(false)}>Contact</Link>
               <Link to="/help" className="text-sm font-medium" onClick={() => setMobileOpen(false)}>Help</Link>
               <div className="mt-2 flex gap-2">
-                <Button variant="outline" className="flex-1" >
-                  <Link to="/login">Sign In</Link>
-                </Button>
-                <Button className="flex-1" >
-                  <Link to="/register">Get Started</Link>
-                </Button>
+                {isAuthenticated ? (
+                  <>
+                    <Button
+                      variant="ghost"
+                      className="flex-1"
+                      onClick={() => {
+                        setMobileOpen(false);
+                        navigate('/dashboard');
+                      }}
+                    >
+                      <LayoutDashboard className="mr-1.5 h-4 w-4" /> Dashboard
+                    </Button>
+                    <Button variant="outline" className="flex-1" onClick={handleLogout}>
+                      <LogOut className="mr-1.5 h-4 w-4" /> Logout
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="outline" className="flex-1" onClick={() => setMobileOpen(false)}>
+                      <Link to="/login">Sign In</Link>
+                    </Button>
+                    <Button className="flex-1" onClick={() => setMobileOpen(false)}>
+                      <Link to="/register">Get Started</Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </nav>
           </div>

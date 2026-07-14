@@ -9,6 +9,7 @@ import { authApi } from '@/api/auth.api';
 import { useAuthStore } from '@/store/auth.store';
 import { Button } from '@/components/ui/button';
 import type { UserRole } from '@/types';
+import {Eye, EyeOff} from 'lucide-react'
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -20,6 +21,7 @@ type LoginFields = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const [activeRole, setActiveRole] = useState<UserRole>('STUDENT');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const setAuth = useAuthStore((state) => state.setAuth);
   const navigate = useNavigate();
 
@@ -71,7 +73,7 @@ const onSubmit = async (data: LoginFields) => {
 
 
   const handleGithubLogin = () => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://rekab-api-v1.vercel.app/api/v1';
     const origin = window.location.origin;
     window.location.href = `${apiUrl}/auth/github?from=${encodeURIComponent(origin)}`;
   };
@@ -136,14 +138,22 @@ const onSubmit = async (data: LoginFields) => {
                   Password
                 </label>
               </div>
-              <div className="mt-2">
+              <div className="mt-2 relative">
                 <input
                   id="password"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
                   {...register('password')}
-                  className="block w-full rounded-md border-0 py-2 px-3 text-foreground shadow-sm ring-1 ring-inset ring-border placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-inset focus:ring-primary text-sm sm:leading-6 bg-muted/20"
+                  className="block w-full rounded-md border-0 py-2 pl-3 pr-10 text-foreground shadow-sm ring-1 ring-inset ring-border placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-inset focus:ring-primary text-sm sm:leading-6 bg-muted/20"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
                 {errors.password && (
                   <p className="mt-1 text-xs text-destructive">{errors.password.message}</p>
                 )}

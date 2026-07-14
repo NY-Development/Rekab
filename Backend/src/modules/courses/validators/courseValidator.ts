@@ -6,6 +6,7 @@ export const CourseSchema = z.object({
   category: z.enum(['Frontend', 'Backend', 'DevOps', 'Full-Stack', 'Cybersecurity', 'Networking', 'Mobile']),
   difficulty: z.enum(['Beginner', 'Intermediate', 'Advanced']),
   durationWeeks: z.number().int().positive('Duration must be a positive number'),
+  price: z.coerce.number().min(0, 'Price must be zero or greater').default(0),
   image: z.string().url('Please provide a valid image URL'),
   syllabusSummary: z.string().min(10, 'Syllabus summary must be at least 10 characters')
 });
@@ -13,9 +14,10 @@ export const CourseSchema = z.object({
 export const UpdateCourseSchema = z.object({
   title: z.string().min(3).optional(),
   description: z.string().min(10).optional(),
-  category: z.enum(['Frontend', 'Backend', 'DevOps', 'Full-Stack']).optional(),
+  category: z.enum(['Frontend', 'Backend', 'DevOps', 'Full-Stack', 'Cybersecurity', 'Networking', 'Mobile']).optional(),
   difficulty: z.enum(['Beginner', 'Intermediate', 'Advanced']).optional(),
   durationWeeks: z.number().int().positive().optional(),
+  price: z.coerce.number().min(0, 'Price must be zero or greater').optional(),
   image: z.string().url().optional(),
   syllabusSummary: z.string().min(10).optional(),
   status: z.enum(['draft', 'published', 'archived']).optional(),

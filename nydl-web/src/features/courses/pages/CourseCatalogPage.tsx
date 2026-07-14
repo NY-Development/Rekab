@@ -38,14 +38,14 @@ export default function CourseCatalogPage() {
       {/* Header & Search */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Browse Programs</h1>
-          <p className="text-base text-slate-500">Discover world-class curricula designed to accelerate your career.</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Browse Programs</h1>
+          <p className="text-base text-muted-foreground">Discover world-class curricula designed to accelerate your career.</p>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
           <div className="relative w-full sm:w-80">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">search</span>
             <input
-              className="w-full bg-white border border-slate-200 text-slate-900 text-sm rounded-md pl-10 pr-4 py-2 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all"
+              className="w-full bg-background border border-border text-foreground text-sm rounded-md pl-10 pr-4 py-2 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
               placeholder="Search courses..."
               type="text"
               value={search}
@@ -63,8 +63,8 @@ export default function CourseCatalogPage() {
             onClick={() => setCategory(cat)}
             className={`px-4 py-1.5 rounded-full font-semibold text-xs tracking-wider transition-all border ${
               category === cat
-                ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                : 'bg-background text-muted-foreground border-border hover:bg-muted'
             }`}
           >
             {cat}
@@ -75,14 +75,14 @@ export default function CourseCatalogPage() {
       {/* Loading & Error States */}
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       ) : error ? (
-        <div className="bg-red-50 text-red-800 p-4 rounded-md text-sm">
+        <div className="bg-red-50 text-red-800 dark:bg-red-950/30 dark:text-red-300 p-4 rounded-md text-sm">
           Failed to load courses. Please try again.
         </div>
       ) : filteredCourses.length === 0 ? (
-        <div className="text-slate-500 py-20 text-center">
+        <div className="text-muted-foreground py-20 text-center">
           No courses match your search criteria.
         </div>
       ) : (
@@ -91,15 +91,15 @@ export default function CourseCatalogPage() {
           {filteredCourses.map((course) => (
             <article
               key={course.id}
-              className="bg-white border border-slate-200 rounded-lg overflow-hidden group hover:shadow-md hover:border-slate-350 transition-all duration-200 flex flex-col cursor-pointer"
+              className="bg-card border border-border rounded-lg overflow-hidden group hover:shadow-md hover:border-primary/40 transition-all duration-200 flex flex-col cursor-pointer"
               onClick={() => handleEnroll(course)}
             >
               <div
-                className="h-48 bg-slate-100 w-full bg-cover bg-center flex items-center justify-center border-b border-slate-200"
+                className="h-48 bg-muted w-full bg-cover bg-center flex items-center justify-center border-b border-border"
                 style={course.thumbnail || course.image ? { backgroundImage: `url(${course.thumbnail || course.image})` } : undefined}
               >
                 {!course.thumbnail && !course.image && (
-                  <span className="material-symbols-outlined text-[64px] text-blue-600 bg-blue-50 p-6 rounded-full">
+                  <span className="material-symbols-outlined text-[64px] text-primary bg-primary/10 p-6 rounded-full">
                     {categoryIcon(course.category)}
                   </span>
                 )}
@@ -109,23 +109,23 @@ export default function CourseCatalogPage() {
                   <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider ${levelBadgeClass(course.level)}`}>
                     {course.level || 'Beginner'}
                   </span>
-                  <span className="text-slate-500 text-xs flex items-center gap-1">
+                  <span className="text-muted-foreground text-xs flex items-center gap-1">
                     <span className="material-symbols-outlined text-[16px]">schedule</span> {course.durationWeeks} Weeks
                   </span>
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">
+                <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
                   {course.title}
                 </h3>
-                <p className="text-sm text-slate-500 mb-6 flex-grow leading-relaxed line-clamp-3">
+                <p className="text-sm text-muted-foreground mb-6 flex-grow leading-relaxed line-clamp-3">
                   {course.shortDescription || course.description}
                 </p>
-                <div className="flex justify-between items-center mt-auto border-t border-slate-100 pt-4" onClick={(e) => e.stopPropagation()}>
-                  <span className="text-lg font-semibold text-slate-900">
+                <div className="flex justify-between items-center mt-auto border-t border-border pt-4" onClick={(e) => e.stopPropagation()}>
+                  <span className="text-lg font-semibold text-foreground">
                     {course.price > 0 ? `${course.currency} ${course.price}` : 'Free'}
                   </span>
                   <button
                     onClick={() => handleEnroll(course)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded-md transition-colors shadow-sm"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold px-4 py-2 rounded-md transition-colors shadow-sm"
                   >
                     Enroll Now
                   </button>

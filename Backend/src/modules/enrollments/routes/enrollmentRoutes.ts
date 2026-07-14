@@ -5,7 +5,7 @@ import { EnrollmentRepository } from '../repositories/enrollmentRepository';
 import { CohortRepository } from '../../cohorts/repositories/cohortRepository';
 import { requireAuthenticated, authorize } from '../../../middlewares/auth';
 import { validateBody } from '../../../middlewares/validation';
-import { CreateEnrollmentSchema, UpdateEnrollmentSchema } from '../validators/enrollmentValidator';
+import { UpdateEnrollmentSchema } from '../validators/enrollmentValidator';
 
 const router = Router();
 const enrollmentRepository = new EnrollmentRepository();
@@ -17,7 +17,9 @@ const enrollmentController = new EnrollmentController(enrollmentService);
 router.get('/me', requireAuthenticated, (req, res, next) => enrollmentController.getMyEnrollments(req, res, next));
 router.get('/', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN', 'INSTRUCTOR'), (req, res, next) => enrollmentController.listEnrollments(req, res, next));
 router.get('/:id', requireAuthenticated, (req, res, next) => enrollmentController.getEnrollmentById(req, res, next));
-router.post('/apply', requireAuthenticated, validateBody(CreateEnrollmentSchema), (req, res, next) => enrollmentController.apply(req, res, next));
+// Note: no validateBody() here — CreateEnrollmentSchema requires studentId, which the
+// controller injects from the authenticated user before validating (see apply() below).
+router.post('/apply', requireAuthenticated, (req, res, next) => enrollmentController.apply(req, res, next));
 router.put('/:id', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN', 'INSTRUCTOR'), validateBody(UpdateEnrollmentSchema), (req, res, next) => enrollmentController.updateEnrollment(req, res, next));
 router.patch('/:id/approve', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN'), (req, res, next) => enrollmentController.approveRegistration(req, res, next));
 router.patch('/:id/reject', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN'), (req, res, next) => enrollmentController.rejectRegistration(req, res, next));

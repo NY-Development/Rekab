@@ -16,6 +16,7 @@ const createCourseSchema = z.object({
   category: z.enum(['Frontend', 'Backend', 'DevOps', 'Full-Stack', 'Cybersecurity', 'Networking', 'Mobile']),
   difficulty: z.enum(['Beginner', 'Intermediate', 'Advanced']),
   durationWeeks: z.coerce.number().int().positive('Duration must be a positive number'),
+  price: z.coerce.number().min(0, 'Price must be zero or greater').default(0),
   image: z.string().url('Please provide a valid image URL'),
   syllabusSummary: z.string().min(10, 'Syllabus summary must be at least 10 characters'),
 });
@@ -118,6 +119,7 @@ export function CoursesPage() {
               ],
             },
             { name: 'durationWeeks', label: 'Duration (weeks)', type: 'number', placeholder: '12' },
+            { name: 'price', label: 'Price (ETB)', type: 'number', placeholder: '2000' },
             { name: 'image', label: 'Cover Image URL', type: 'url', placeholder: 'https://...' },
             { name: 'syllabusSummary', label: 'Syllabus Summary', type: 'textarea', placeholder: 'What students will learn...' },
           ]}

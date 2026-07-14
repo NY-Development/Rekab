@@ -36,7 +36,7 @@ const SEED_COURSES: SeedCourse[] = [
     level: 'Intermediate',
     durationWeeks: 10,
     skills: ['React.js', 'Hooks', 'State Management', 'Routing', 'API Integration'],
-    price: 2500,
+    price: 3000,
   },
   {
     title: 'Backend Beginner',
@@ -60,7 +60,7 @@ const SEED_COURSES: SeedCourse[] = [
     level: 'Intermediate',
     durationWeeks: 10,
     skills: ['NestJS', 'Architecture', 'Modules', 'Guards', 'Interceptors', 'Testing'],
-    price: 2500,
+    price: 3000,
   },
   {
     title: 'Cybersecurity Beginner',
@@ -96,36 +96,45 @@ const SEED_COURSES: SeedCourse[] = [
     level: 'Intermediate',
     durationWeeks: 10,
     skills: ['React Native', 'Expo', 'Navigation', 'Native APIs', 'Publishing'],
-    price: 2500,
+    price: 3500,
   },
 ];
 
 export async function seedCourses(): Promise<void> {
   for (const course of SEED_COURSES) {
-    const exists = await CourseModel.findOne({ slug: course.slug });
-    if (exists) continue;
+    const existing = await CourseModel.findOne({ slug: course.slug });
 
-    await CourseModel.create({
-      title: course.title,
-      slug: course.slug,
-      code: course.code,
-      shortDescription: course.shortDescription,
-      description: course.description,
-      category: course.category,
-      level: course.level,
-      language: 'English',
-      durationWeeks: course.durationWeeks,
-      skills: course.skills,
-      price: 0,
-      currency: 'ETB',
-      status: 'published',
-      enrollmentEnabled: true,
-      image: '/preview.png',
-      thumbnail: '/preview.png',
-      syllabusSummary: course.shortDescription,
-    });
+    if (!existing) {
+      await CourseModel.create({
+        title: course.title,
+        slug: course.slug,
+        code: course.code,
+        shortDescription: course.shortDescription,
+        description: course.description,
+        category: course.category,
+        level: course.level,
+        language: 'English',
+        durationWeeks: course.durationWeeks,
+        skills: course.skills,
+        price: course.price,
+        currency: 'ETB',
+        status: 'published',
+        enrollmentEnabled: true,
+        image: '/preview.png',
+        thumbnail: '/preview.png',
+        syllabusSummary: course.shortDescription,
+      });
 
-    console.log(`Seeded course: ${course.title}`);
+      console.log(`Seeded course: ${course.title}`);
+      continue;
+    }
+
+    // Self-heal previously-seeded courses whose price drifted from the source of truth.
+    if (existing.price !== course.price) {
+      existing.price = course.price;
+      await existing.save();
+      console.log(`Updated price for ${course.title}: ${course.price} ETB`);
+    }
   }
 }
 

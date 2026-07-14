@@ -39,7 +39,7 @@ export class CourseController {
   }
 
   async createCourse(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
-    const { title, description, category, difficulty, durationWeeks, image, syllabusSummary } = req.body;
+    const { title, description, category, difficulty, durationWeeks, price, image, syllabusSummary } = req.body;
     try {
       const course = await this.courseService.createCourse(
         req.user!.id,
@@ -50,6 +50,7 @@ export class CourseController {
           category,
           difficulty,
           durationWeeks,
+          price,
           image,
           syllabusSummary
         }

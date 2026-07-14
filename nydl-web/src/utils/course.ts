@@ -1,11 +1,11 @@
 export function levelBadgeClass(level: string): string {
   switch (level) {
     case 'Beginner':
-      return 'bg-blue-100 text-blue-800';
+      return 'bg-blue-100 text-blue-800 dark:bg-blue-500/15 dark:text-blue-300';
     case 'Advanced':
-      return 'bg-red-100 text-red-800';
+      return 'bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300';
     default:
-      return 'bg-slate-100 text-slate-600 border border-slate-200';
+      return 'bg-muted text-muted-foreground border border-border';
   }
 }
 
