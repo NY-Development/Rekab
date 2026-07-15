@@ -127,6 +127,13 @@ export interface RegistrationAgreements {
   understandsEmploymentNotGuaranteed: boolean;
 }
 
+/** Proof of prior registration on the external NYDev Form (fast-track intake). */
+export interface ExternalFormRegistration {
+  registrationId?: string;
+  /** Data-URI of the QR code image issued by the NYDev Form. */
+  qrCodeImage?: string;
+}
+
 // ─── Enrollment ───
 export type EnrollmentStatus =
   | 'PENDING'
@@ -158,6 +165,7 @@ export interface Enrollment {
   technicalReadiness?: RegistrationTechnicalReadiness;
   interests?: string[];
   agreements?: RegistrationAgreements;
+  externalForm?: ExternalFormRegistration;
 
   reviewerId?: string;
   reviewNotes?: string;

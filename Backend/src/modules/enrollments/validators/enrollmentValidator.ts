@@ -42,17 +42,48 @@ export const AgreementsSchema = z.object({
   understandsEmploymentNotGuaranteed: z.literal(true),
 });
 
-export const CreateEnrollmentSchema = z.object({
-  studentId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid student ID'),
-  courseId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid course ID'),
-  cohortId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid cohort ID').optional(),
-  personalInfo: PersonalInfoSchema,
-  education: EducationSchema,
-  location: LocationSchema,
-  technicalReadiness: TechnicalReadinessSchema,
-  interests: z.array(z.string()).default([]),
-  agreements: AgreementsSchema,
+export const ExternalFormSchema = z.object({
+  registrationId: z.string().trim().min(3, 'Registration ID looks too short').optional(),
+  qrCodeImage: z
+    .string()
+    .regex(/^data:image\/(png|jpe?g|webp);base64,/, 'QR code must be an uploaded image')
+    .max(4 * 1024 * 1024, 'QR code image is too large (max ~3MB)')
+    .optional(),
+}).refine((v) => !!v.registrationId || !!v.qrCodeImage, {
+  message: 'Provide your NYDev Form registration ID or upload the QR code you received.',
 });
+
+export const CreateEnrollmentSchema = z
+  .object({
+    studentId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid student ID'),
+    courseId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid course ID'),
+    cohortId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid cohort ID').optional(),
+    // Fast-track: students already registered on the NYDev Form provide proof
+    // instead of re-entering the intake sections (the form collected them).
+    externalForm: ExternalFormSchema.optional(),
+    personalInfo: PersonalInfoSchema.optional(),
+    education: EducationSchema.optional(),
+    location: LocationSchema.optional(),
+    technicalReadiness: TechnicalReadinessSchema.optional(),
+    interests: z.array(z.string()).default([]),
+    agreements: AgreementsSchema,
+  })
+  .superRefine((data, ctx) => {
+    if (data.externalForm) return;
+    // Full intake path: every section is mandatory.
+    const missing: string[] = [];
+    if (!data.personalInfo) missing.push('personalInfo');
+    if (!data.education) missing.push('education');
+    if (!data.location) missing.push('location');
+    if (!data.technicalReadiness) missing.push('technicalReadiness');
+    for (const field of missing) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: [field],
+        message: 'This section is required unless you provide your NYDev Form registration proof.',
+      });
+    }
+  });
 
 export const UpdateEnrollmentSchema = z.object({
   teamId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid team ID').optional().nullable(),

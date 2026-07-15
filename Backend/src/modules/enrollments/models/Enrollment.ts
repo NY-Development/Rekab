@@ -44,6 +44,11 @@ const EnrollmentSchema = new Schema<IEnrollmentDocument>({
     reasonForJoining: { type: String },
   },
   interests: [{ type: String }],
+  // Proof of registration on the external NYDev Form (fast-track intake).
+  externalForm: {
+    registrationId: { type: String },
+    qrCodeImage: { type: String },
+  },
   agreements: {
     agreedToPayFee: { type: Boolean, default: false },
     agreedToPrivacyPolicy: { type: Boolean, default: false },

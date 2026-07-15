@@ -116,7 +116,7 @@ export default function PublicLayout() {
       </header>
 
       {/* ─── Page Content ─── */}
-      <main>
+      <main className='min-h-screen'>
         <Outlet />
       </main>
 

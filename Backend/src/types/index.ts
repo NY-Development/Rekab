@@ -236,6 +236,18 @@ export interface RegistrationAgreements {
   understandsEmploymentNotGuaranteed: boolean;
 }
 
+/**
+ * Proof of a completed registration on the external NYDev Form. Students who
+ * already filled that form skip the intake steps (it collected the same
+ * data) and only provide their form registration ID and/or the QR code image
+ * the form issued, plus payment.
+ */
+export interface ExternalFormRegistration {
+  registrationId?: string;
+  /** Data-URI of the QR code image issued by the NYDev Form. */
+  qrCodeImage?: string;
+}
+
 export interface Enrollment {
   id: string;
   studentId: string; // Ref to User
@@ -261,6 +273,7 @@ export interface Enrollment {
   technicalReadiness?: RegistrationTechnicalReadiness;
   interests?: string[];
   agreements?: RegistrationAgreements;
+  externalForm?: ExternalFormRegistration;
 
   // Review tracking
   reviewerId?: string; // Ref to User (Admin)

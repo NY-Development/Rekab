@@ -1,15 +1,19 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Loader2, ArrowRight, ArrowLeft, CheckCircle, AlertCircle, Clock } from 'lucide-react';
+import {
+  Loader2, ArrowRight, ArrowLeft, CheckCircle, AlertCircle, Clock,
+  QrCode, ClipboardList, ExternalLink, X,
+} from 'lucide-react';
 import { useCourse } from '@/hooks/useCourses';
 import { useEnrollments, useApplyEnrollment } from '@/hooks/useEnrollments';
 import { useSubmitPayment } from '@/hooks/usePayments';
 import { useAuthStore } from '@/store/auth.store';
 import { getRegistrationStatusMeta } from '@/utils/registration';
+import type { ApplyRegistrationPayload } from '@/api/enrollments.api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -21,6 +25,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+
+const NYDEV_FORM_URL = 'https://nydev-form-generation.vercel.app/f/nydev-learning-nydl-summer-cohort-registration-2026';
+const QR_MAX_BYTES = 3 * 1024 * 1024;
 
 const GRADE_OPTIONS = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12', 'Freshman', 'Sophomore', 'Junior', 'Senior', 'Other'];
 
@@ -77,6 +84,8 @@ const registrationSchema = z.object({
 
   interests: z.array(z.string()),
 
+  formRegistrationId: z.string().optional(),
+
   paymentMethod: z.enum(['CHAPA', 'TELEBIRR', 'BANK_TRANSFER', 'CASH']),
   transactionReference: z.string().min(4, 'Transaction reference is required'),
 
@@ -92,17 +101,41 @@ const registrationSchema = z.object({
 
 type FormValues = z.infer<typeof registrationSchema>;
 
-const STEPS = ['Personal Information', 'Education', 'Location', 'Course Selection', 'Technical Readiness', 'Interests', 'Payment & Agreements'] as const;
+type IntakeMode = 'unset' | 'fast' | 'full';
 
-const STEP_FIELDS: (keyof FormValues)[][] = [
-  ['fullName', 'gender', 'dateOfBirth', 'phone'],
-  ['schoolName', 'grade'],
-  ['city'],
-  [],
-  ['operatingSystem', 'hasPersonalComputer', 'hasDiscord', 'programmingExperience', 'reasonForJoining'],
-  [],
-  ['paymentMethod', 'transactionReference', 'agreedToPayFee', 'agreedToPrivacyPolicy', 'agreedToTerms', 'understandsAttendance', 'understandsAssignments', 'agreesToRespect', 'understandsInternshipPerformanceBased', 'understandsEmploymentNotGuaranteed'],
-];
+type StepLabel =
+  | 'Personal Information'
+  | 'Education'
+  | 'Location'
+  | 'Course Selection'
+  | 'Technical Readiness'
+  | 'Interests'
+  | 'NYDev Form Verification'
+  | 'Payment & Agreements';
+
+const FULL_STEPS: StepLabel[] = ['Personal Information', 'Education', 'Location', 'Course Selection', 'Technical Readiness', 'Interests', 'Payment & Agreements'];
+// Fast-track: the NYDev Form already collected steps 1–6, so we only need
+// proof of that registration plus the payment step.
+const FAST_STEPS: StepLabel[] = ['NYDev Form Verification', 'Payment & Agreements'];
+
+const STEP_FIELDS: Partial<Record<StepLabel, (keyof FormValues)[]>> = {
+  'Personal Information': ['fullName', 'gender', 'dateOfBirth', 'phone'],
+  Education: ['schoolName', 'grade'],
+  Location: ['city'],
+  'Technical Readiness': ['operatingSystem', 'hasPersonalComputer', 'hasDiscord', 'programmingExperience', 'reasonForJoining'],
+  'Payment & Agreements': ['paymentMethod', 'transactionReference', 'agreedToPayFee', 'agreedToPrivacyPolicy', 'agreedToTerms', 'understandsAttendance', 'understandsAssignments', 'agreesToRespect', 'understandsInternshipPerformanceBased', 'understandsEmploymentNotGuaranteed'],
+};
+
+const STEP_DESCRIPTIONS: Record<StepLabel, string> = {
+  'Personal Information': 'Tell us a bit about yourself.',
+  Education: 'Where are you currently studying?',
+  Location: 'Where are you located?',
+  'Course Selection': "Confirm the program you're registering for.",
+  'Technical Readiness': 'Help us understand your setup for online learning.',
+  Interests: 'What are you hoping to get out of this program? (optional)',
+  'NYDev Form Verification': 'Provide the registration ID or QR code you received from the NYDev Form.',
+  'Payment & Agreements': 'Complete your course fee payment and accept our agreements.',
+};
 
 function calculateAge(dateOfBirth: string): number | undefined {
   if (!dateOfBirth) return undefined;
@@ -131,14 +164,21 @@ export default function EnrollmentPage() {
     [enrollmentsRes, courseId]
   );
 
+  const [intakeMode, setIntakeMode] = useState<IntakeMode>('unset');
   const [step, setStep] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [enrollmentId, setEnrollmentId] = useState<string | null>(null);
+  const [qrDataUri, setQrDataUri] = useState<string | null>(null);
+  const qrInputRef = useRef<HTMLInputElement>(null);
+
+  const steps = intakeMode === 'fast' ? FAST_STEPS : FULL_STEPS;
+  const currentStep = steps[step];
 
   const {
     register,
     handleSubmit,
     trigger,
+    getValues,
     setValue,
     watch,
     formState: { errors, isSubmitting },
@@ -161,8 +201,10 @@ export default function EnrollmentPage() {
   const dateOfBirth = watch('dateOfBirth');
   const age = calculateAge(dateOfBirth);
   const selectedInterests = watch('interests') || [];
+  const formRegistrationId = watch('formRegistrationId');
   const agreementValues = AGREEMENT_ITEMS.map((item) => watch(item.key));
   const allAgreed = agreementValues.every(Boolean);
+  const isPending = isSubmitting || applyMutation.isPending || submitPaymentMutation.isPending;
 
   const toggleInterest = (interest: string) => {
     const next = selectedInterests.includes(interest)
@@ -171,65 +213,72 @@ export default function EnrollmentPage() {
     setValue('interests', next, { shouldValidate: true });
   };
 
+  const handleQrFile = (file: File | undefined) => {
+    if (!file) return;
+    if (!/^image\/(png|jpe?g|webp)$/.test(file.type)) {
+      toast.error('Please upload the QR code as a PNG, JPG, or WebP image.');
+      return;
+    }
+    if (file.size > QR_MAX_BYTES) {
+      toast.error('QR code image is too large (max 3MB).');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setQrDataUri(reader.result as string);
+    reader.onerror = () => toast.error('Failed to read the QR code image. Please try again.');
+    reader.readAsDataURL(file);
+  };
+
+  const hasFormProof = !!(formRegistrationId?.trim() || qrDataUri);
+
   const goNext = async () => {
-    const fields = STEP_FIELDS[step];
+    if (currentStep === 'NYDev Form Verification') {
+      if (!hasFormProof) {
+        toast.error('Enter your NYDev Form registration ID or upload the QR code you received.');
+        return;
+      }
+      setStep((s) => Math.min(s + 1, steps.length - 1));
+      return;
+    }
+    const fields = STEP_FIELDS[currentStep] || [];
     const valid = fields.length === 0 || (await trigger(fields));
     if (!valid) {
       toast.error('Please complete all required fields.');
       return;
     }
-    setStep((s) => Math.min(s + 1, STEPS.length - 1));
+    setStep((s) => Math.min(s + 1, steps.length - 1));
   };
 
-  const goBack = () => setStep((s) => Math.max(s - 1, 0));
-
-  const onSubmit = async (values: FormValues) => {
-    if (!allAgreed) {
-      toast.error('Please accept all agreements to continue.');
+  const goBack = () => {
+    if (step === 0) {
+      // Back out of the wizard to the intake-mode chooser.
+      setIntakeMode('unset');
       return;
     }
-    if (!course) return;
+    setStep((s) => Math.max(s - 1, 0));
+  };
 
+  const buildAgreements = (values: FormValues) => ({
+    agreedToPayFee: values.agreedToPayFee,
+    agreedToPrivacyPolicy: values.agreedToPrivacyPolicy,
+    agreedToTerms: values.agreedToTerms,
+    understandsAttendance: values.understandsAttendance,
+    understandsAssignments: values.understandsAssignments,
+    agreesToRespect: values.agreesToRespect,
+    understandsInternshipPerformanceBased: values.understandsInternshipPerformanceBased,
+    understandsEmploymentNotGuaranteed: values.understandsEmploymentNotGuaranteed,
+  });
+
+  const submitRegistrationAndPayment = async (
+    payload: ApplyRegistrationPayload,
+    paymentMethod: FormValues['paymentMethod'],
+    transactionReference: string
+  ) => {
     try {
       let currentEnrollmentId = enrollmentId;
 
       if (!currentEnrollmentId) {
-        const enrollmentRes = await applyMutation.mutateAsync({
-          courseId: course.id,
-          personalInfo: {
-            fullName: values.fullName,
-            gender: values.gender,
-            dateOfBirth: values.dateOfBirth,
-            phone: values.phone,
-            age,
-          },
-          education: {
-            schoolName: values.schoolName,
-            grade: values.grade,
-          },
-          location: {
-            city: values.city,
-            region: values.region,
-          },
-          technicalReadiness: {
-            operatingSystem: values.operatingSystem,
-            hasPersonalComputer: values.hasPersonalComputer === 'yes',
-            hasDiscord: values.hasDiscord === 'yes',
-            programmingExperience: values.programmingExperience,
-            reasonForJoining: values.reasonForJoining,
-          },
-          interests: values.interests,
-          agreements: {
-            agreedToPayFee: values.agreedToPayFee,
-            agreedToPrivacyPolicy: values.agreedToPrivacyPolicy,
-            agreedToTerms: values.agreedToTerms,
-            understandsAttendance: values.understandsAttendance,
-            understandsAssignments: values.understandsAssignments,
-            agreesToRespect: values.agreesToRespect,
-            understandsInternshipPerformanceBased: values.understandsInternshipPerformanceBased,
-            understandsEmploymentNotGuaranteed: values.understandsEmploymentNotGuaranteed,
-          },
-        });
+        const enrollmentRes = await applyMutation.mutateAsync(payload);
         currentEnrollmentId = enrollmentRes.data.id;
         setEnrollmentId(currentEnrollmentId);
         toast.success('Registration submitted successfully.');
@@ -237,8 +286,8 @@ export default function EnrollmentPage() {
 
       await submitPaymentMutation.mutateAsync({
         enrollmentId: currentEnrollmentId,
-        paymentMethod: values.paymentMethod,
-        transactionReference: values.transactionReference,
+        paymentMethod,
+        transactionReference,
       });
 
       toast.success('Payment verification successful.');
@@ -254,6 +303,82 @@ export default function EnrollmentPage() {
         toast.error(message);
       }
     }
+  };
+
+  // Full flow: RHF validates the entire schema.
+  const onSubmitFull = async (values: FormValues) => {
+    if (!allAgreed) {
+      toast.error('Please accept all agreements to continue.');
+      return;
+    }
+    if (!course) return;
+
+    await submitRegistrationAndPayment(
+      {
+        courseId: course.id,
+        personalInfo: {
+          fullName: values.fullName,
+          gender: values.gender,
+          dateOfBirth: values.dateOfBirth,
+          phone: values.phone,
+          age,
+        },
+        education: {
+          schoolName: values.schoolName,
+          grade: values.grade,
+        },
+        location: {
+          city: values.city,
+          region: values.region,
+        },
+        technicalReadiness: {
+          operatingSystem: values.operatingSystem,
+          hasPersonalComputer: values.hasPersonalComputer === 'yes',
+          hasDiscord: values.hasDiscord === 'yes',
+          programmingExperience: values.programmingExperience,
+          reasonForJoining: values.reasonForJoining,
+        },
+        interests: values.interests,
+        agreements: buildAgreements(values),
+      },
+      values.paymentMethod,
+      values.transactionReference
+    );
+  };
+
+  // Fast-track flow: only the payment fields + agreements + form proof are
+  // validated — the NYDev Form already collected the intake sections.
+  const onSubmitFast = async () => {
+    if (!course) return;
+    const paymentValid = await trigger(['paymentMethod', 'transactionReference']);
+    if (!paymentValid) {
+      toast.error('Please complete the payment details.');
+      return;
+    }
+    if (!allAgreed) {
+      toast.error('Please accept all agreements to continue.');
+      return;
+    }
+    if (!hasFormProof) {
+      toast.error('Your NYDev Form registration proof is missing.');
+      setStep(0);
+      return;
+    }
+
+    const values = getValues();
+    await submitRegistrationAndPayment(
+      {
+        courseId: course.id,
+        externalForm: {
+          registrationId: values.formRegistrationId?.trim() || undefined,
+          qrCodeImage: qrDataUri || undefined,
+        },
+        interests: [],
+        agreements: buildAgreements(values),
+      },
+      values.paymentMethod,
+      values.transactionReference
+    );
   };
 
   if (isCourseLoading || isEnrollmentsLoading) {
@@ -332,8 +457,65 @@ export default function EnrollmentPage() {
     );
   }
 
-  const progressPercent = ((step + 1) / STEPS.length) * 100;
-  const isLastStep = step === STEPS.length - 1;
+  // ─── Intake mode chooser ───
+  if (intakeMode === 'unset') {
+    return (
+      <div className="w-full max-w-2xl mx-auto px-4 md:px-0 py-16">
+        <div className="mb-8 text-center">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Register for {course.title}</h1>
+          <p className="text-sm text-muted-foreground max-w-lg mx-auto">
+            Have you already registered on the <span className="font-semibold">NYDev Form</span>? If so, we only need
+            your registration proof and payment — no need to fill everything in again.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <button
+            type="button"
+            onClick={() => { setIntakeMode('fast'); setStep(0); }}
+            className="text-left rounded-xl border border-border bg-card p-6 hover:border-primary/50 hover:shadow-md transition-all group"
+          >
+            <div className="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary mb-4">
+              <QrCode className="size-5" />
+            </div>
+            <h3 className="font-semibold text-foreground mb-1 group-hover:text-primary transition-colors">
+              Yes, I've registered on the NYDev Form
+            </h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Fast track: just provide the registration ID or QR code the form gave you, then complete payment.
+            </p>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => { setIntakeMode('full'); setStep(0); }}
+            className="text-left rounded-xl border border-border bg-card p-6 hover:border-primary/50 hover:shadow-md transition-all group"
+          >
+            <div className="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary mb-4">
+              <ClipboardList className="size-5" />
+            </div>
+            <h3 className="font-semibold text-foreground mb-1 group-hover:text-primary transition-colors">
+              No, register here now
+            </h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Complete the full registration: personal details, education, technical readiness, and payment.
+            </p>
+          </button>
+        </div>
+
+        <p className="mt-6 text-center text-xs text-muted-foreground">
+          Haven't filled the NYDev Form and prefer it?{' '}
+          <a href={NYDEV_FORM_URL} target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">
+            Open the NYDev Form <ExternalLink className="size-3" />
+          </a>{' '}
+          then come back with your registration ID.
+        </p>
+      </div>
+    );
+  }
+
+  const progressPercent = ((step + 1) / steps.length) * 100;
+  const isLastStep = step === steps.length - 1;
   const errorMap = errors as Record<string, { message?: string } | undefined>;
 
   return (
@@ -341,26 +523,100 @@ export default function EnrollmentPage() {
       <div className="mb-8">
         <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-1">Course Registration</h1>
         <p className="text-sm text-muted-foreground">
-          Step {step + 1} of {STEPS.length}: <span className="font-semibold">{STEPS[step]}</span>
+          Step {step + 1} of {steps.length}: <span className="font-semibold">{currentStep}</span>
         </p>
         <Progress value={progressPercent} className="mt-4" />
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={intakeMode === 'full' ? handleSubmit(onSubmitFull) : (e) => e.preventDefault()}>
         <Card className="border border-border">
           <CardHeader className="border-b border-border">
-            <CardTitle className="text-lg font-bold text-foreground">{STEPS[step]}</CardTitle>
-            {step === 0 && <CardDescription className="text-xs">Tell us a bit about yourself.</CardDescription>}
-            {step === 1 && <CardDescription className="text-xs">Where are you currently studying?</CardDescription>}
-            {step === 2 && <CardDescription className="text-xs">Where are you located?</CardDescription>}
-            {step === 3 && <CardDescription className="text-xs">Confirm the program you're registering for.</CardDescription>}
-            {step === 4 && <CardDescription className="text-xs">Help us understand your setup for online learning.</CardDescription>}
-            {step === 5 && <CardDescription className="text-xs">What are you hoping to get out of this program? (optional)</CardDescription>}
-            {step === 6 && <CardDescription className="text-xs">Complete your course fee payment and accept our agreements.</CardDescription>}
+            <CardTitle className="text-lg font-bold text-foreground">{currentStep}</CardTitle>
+            <CardDescription className="text-xs">{STEP_DESCRIPTIONS[currentStep]}</CardDescription>
           </CardHeader>
           <CardContent className="pt-6 space-y-5">
-            {/* ─── Step 1: Personal Information ─── */}
-            {step === 0 && (
+            {/* ─── NYDev Form Verification (fast track) ─── */}
+            {currentStep === 'NYDev Form Verification' && (
+              <div className="space-y-6">
+                <div className="bg-muted/40 border border-border rounded-md p-4 text-xs text-muted-foreground leading-relaxed">
+                  You told us you already registered on the{' '}
+                  <a href={NYDEV_FORM_URL} target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">
+                    NYDev Form <ExternalLink className="size-3" />
+                  </a>
+                  . Since that form collected your personal, education, and technical details, we only need the
+                  registration ID or QR code it gave you when you finished.
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">
+                    Registration ID
+                  </label>
+                  <input
+                    placeholder="The ID shown after you submitted the NYDev Form"
+                    className="w-full px-3 py-2 bg-background border border-border rounded focus:ring-1 focus:ring-primary text-sm text-foreground"
+                    {...register('formRegistrationId')}
+                  />
+                </div>
+
+                <div className="relative">
+                  <div aria-hidden="true" className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-border" />
+                  </div>
+                  <div className="relative flex justify-center text-xs font-medium">
+                    <span className="bg-card px-3 text-muted-foreground">or upload your QR code</span>
+                  </div>
+                </div>
+
+                <div>
+                  <input
+                    ref={qrInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="hidden"
+                    onChange={(e) => handleQrFile(e.target.files?.[0])}
+                  />
+                  {qrDataUri ? (
+                    <div className="flex items-center gap-4 rounded-md border border-border bg-muted/40 p-4">
+                      <img src={qrDataUri} alt="NYDev Form QR code" className="size-24 rounded-md border border-border object-contain bg-white" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-foreground">QR code attached</p>
+                        <p className="text-xs text-muted-foreground">We'll verify it against your NYDev Form registration.</p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Remove QR code"
+                        onClick={() => {
+                          setQrDataUri(null);
+                          if (qrInputRef.current) qrInputRef.current.value = '';
+                        }}
+                        className="text-muted-foreground hover:text-red-500 shrink-0"
+                      >
+                        <X className="size-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => qrInputRef.current?.click()}
+                      className="w-full rounded-md border border-dashed border-border bg-muted/20 p-6 text-center hover:border-primary/50 hover:bg-muted/40 transition-colors"
+                    >
+                      <QrCode className="mx-auto mb-2 size-8 text-muted-foreground" />
+                      <p className="text-sm font-semibold text-foreground">Upload QR code image</p>
+                      <p className="text-xs text-muted-foreground mt-1">PNG, JPG, or WebP — max 3MB</p>
+                    </button>
+                  )}
+                </div>
+
+                <p className="text-[11px] text-muted-foreground">
+                  Provide at least one: the registration ID <span className="font-semibold">or</span> the QR code image.
+                </p>
+              </div>
+            )}
+
+            {/* ─── Step: Personal Information ─── */}
+            {currentStep === 'Personal Information' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">Full Name *</label>
@@ -397,8 +653,8 @@ export default function EnrollmentPage() {
               </div>
             )}
 
-            {/* ─── Step 2: Education ─── */}
-            {step === 1 && (
+            {/* ─── Step: Education ─── */}
+            {currentStep === 'Education' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">School Name *</label>
@@ -418,8 +674,8 @@ export default function EnrollmentPage() {
               </div>
             )}
 
-            {/* ─── Step 3: Location ─── */}
-            {step === 2 && (
+            {/* ─── Step: Location ─── */}
+            {currentStep === 'Location' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">City *</label>
@@ -433,28 +689,28 @@ export default function EnrollmentPage() {
               </div>
             )}
 
-            {/* ─── Step 4: Course Selection ─── */}
-            {step === 3 && (
-              <div className="bg-muted/40 border border-border rounded-md p-5 flex justify-between items-center">
-                <div>
-                  <span className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Selected Course</span>
-                  <span className="text-base font-semibold text-foreground">{course.title}</span>
-                  <p className="text-xs text-muted-foreground mt-1">{course.level} &middot; {course.durationWeeks} weeks</p>
+            {/* ─── Step: Course Selection ─── */}
+            {currentStep === 'Course Selection' && (
+              <>
+                <div className="bg-muted/40 border border-border rounded-md p-5 flex justify-between items-center">
+                  <div>
+                    <span className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Selected Course</span>
+                    <span className="text-base font-semibold text-foreground">{course.title}</span>
+                    <p className="text-xs text-muted-foreground mt-1">{course.level} &middot; {course.durationWeeks} weeks</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Tuition Fee</span>
+                    <span className="text-base font-bold text-primary">{course.price > 0 ? `${course.currency} ${course.price}` : 'Free'}</span>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <span className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Tuition Fee</span>
-                  <span className="text-base font-bold text-primary">{course.price > 0 ? `${course.currency} ${course.price}` : 'Free'}</span>
-                </div>
-              </div>
-            )}
-            {step === 3 && (
-              <p className="text-xs text-muted-foreground">
-                Registering for the wrong course? <Link to="/courses" className="text-primary hover:underline">Browse the catalog</Link> to pick a different one.
-              </p>
+                <p className="text-xs text-muted-foreground">
+                  Registering for the wrong course? <Link to="/courses" className="text-primary hover:underline">Browse the catalog</Link> to pick a different one.
+                </p>
+              </>
             )}
 
-            {/* ─── Step 5: Technical Readiness ─── */}
-            {step === 4 && (
+            {/* ─── Step: Technical Readiness ─── */}
+            {currentStep === 'Technical Readiness' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">Operating System *</label>
@@ -510,8 +766,8 @@ export default function EnrollmentPage() {
               </div>
             )}
 
-            {/* ─── Step 6: Interests ─── */}
-            {step === 5 && (
+            {/* ─── Step: Interests ─── */}
+            {currentStep === 'Interests' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {INTEREST_OPTIONS.map((interest) => (
                   <label key={interest} className="flex items-center gap-2.5 p-2.5 rounded-md border border-border hover:bg-muted/40 cursor-pointer text-sm text-foreground">
@@ -525,8 +781,8 @@ export default function EnrollmentPage() {
               </div>
             )}
 
-            {/* ─── Step 7: Payment & Agreements ─── */}
-            {step === 6 && (
+            {/* ─── Step: Payment & Agreements ─── */}
+            {currentStep === 'Payment & Agreements' && (
               <div className="space-y-6">
                 <div className="space-y-3 p-4 bg-muted/40 border border-border rounded-md">
                   <h4 className="text-xs font-bold text-foreground">Billing Details</h4>
@@ -582,7 +838,7 @@ export default function EnrollmentPage() {
           </CardContent>
 
           <div className="flex items-center justify-between p-6 border-t border-border">
-            <Button type="button" variant="outline" onClick={goBack} disabled={step === 0}>
+            <Button type="button" variant="outline" onClick={goBack}>
               <ArrowLeft className="mr-1.5 h-4 w-4" /> Back
             </Button>
 
@@ -590,9 +846,17 @@ export default function EnrollmentPage() {
               <Button type="button" onClick={goNext}>
                 Next <ArrowRight className="ml-1.5 h-4 w-4" />
               </Button>
+            ) : intakeMode === 'full' ? (
+              <Button type="submit" disabled={!allAgreed || isPending}>
+                {isPending ? (
+                  <><Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Submitting Registration...</>
+                ) : (
+                  'Register'
+                )}
+              </Button>
             ) : (
-              <Button type="submit" disabled={!allAgreed || isSubmitting || applyMutation.isPending || submitPaymentMutation.isPending}>
-                {isSubmitting || applyMutation.isPending || submitPaymentMutation.isPending ? (
+              <Button type="button" onClick={onSubmitFast} disabled={!allAgreed || isPending}>
+                {isPending ? (
                   <><Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Submitting Registration...</>
                 ) : (
                   'Register'

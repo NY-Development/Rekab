@@ -167,6 +167,13 @@ export interface RegistrationAgreements {
   understandsEmploymentNotGuaranteed: boolean;
 }
 
+/** Proof of prior registration on the external NYDev Form (fast-track intake). */
+export interface ExternalFormRegistration {
+  registrationId?: string;
+  /** Data-URI of the QR code image issued by the NYDev Form. */
+  qrCodeImage?: string;
+}
+
 // A field that is either a raw ObjectId string, or the populated document (same key, Mongoose populate semantics)
 export type Populated<T> = string | (Partial<T> & { id: string });
 
@@ -203,6 +210,7 @@ export interface Enrollment {
   technicalReadiness?: RegistrationTechnicalReadiness;
   interests?: string[];
   agreements?: RegistrationAgreements;
+  externalForm?: ExternalFormRegistration;
 
   reviewNotes?: string;
   approvedAt?: string;

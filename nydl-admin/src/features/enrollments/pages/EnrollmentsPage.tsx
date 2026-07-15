@@ -319,6 +319,30 @@ export function EnrollmentsPage() {
                     <p className="text-slate-200">{course?.title || 'N/A'}</p>
                   </section>
 
+                  {selected.externalForm && (selected.externalForm.registrationId || selected.externalForm.qrCodeImage) && (
+                    <section>
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">NYDev Form Registration (Fast Track)</h4>
+                      <div className="space-y-3 text-slate-300">
+                        <p className="text-xs text-slate-500">
+                          This student registered via the external NYDev Form, so the intake sections were collected there.
+                        </p>
+                        {selected.externalForm.registrationId && (
+                          <p>Registration ID: <span className="font-mono text-slate-200">{selected.externalForm.registrationId}</span></p>
+                        )}
+                        {selected.externalForm.qrCodeImage && (
+                          <div>
+                            <p className="mb-2">QR Code:</p>
+                            <img
+                              src={selected.externalForm.qrCodeImage}
+                              alt="NYDev Form registration QR code"
+                              className="h-40 w-40 rounded-md border border-slate-700 bg-white object-contain"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </section>
+                  )}
+
                   {selected.personalInfo && (
                     <section>
                       <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Personal Information</h4>

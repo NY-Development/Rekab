@@ -29,26 +29,55 @@ app.use(
   })
 );
 
-const allowedOrigins = process.env.CLIENT_URL?.split(',') || ['http://localhost:5173', 'http://localhost:5174', 'https://nydev-learning-v1.vercel.app'];
+// CLIENT_URL is a comma-separated origin whitelist; entries are trimmed so
+// "a, b" works. A single "*" entry allows every origin (the request origin is
+// reflected back, which keeps credentials working — a literal "*" header
+// would not).
+const DEFAULT_ORIGINS = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'https://nydev-learning-v1.vercel.app',
+  'https://nydl-admin-v1.vercel.app',
+];
+const allowedOrigins = (process.env.CLIENT_URL?.split(',').map((o) => o.trim()).filter(Boolean)) || DEFAULT_ORIGINS;
+const allowAllOrigins = allowedOrigins.includes('*');
 
-app.use(cors({ 
+app.use(cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin || allowAllOrigins || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
         callback(new Error('Not allowed by CORS'));
       }
     },
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true 
+    // PATCH is required by the registration review endpoints (approve/reject/…).
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
 }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// 5mb accommodates base64 QR-code images submitted with fast-track registrations.
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ extended: true, limit: '5mb' }));
+
+// Ensure the DB connection is established before any API request is handled.
+// Without this, serverless cold starts race the connection: repositories see
+// isMongoConnected === false, silently fall back to the in-memory store, and
+// logins fail with 401 "Invalid email or password" for real accounts.
+app.use('/api/v1', async (_req, _res, next) => {
+  try {
+    await connectDB();
+  } catch {
+    // Proceed anyway — route handlers surface their own DB errors, and the
+    // in-memory fallback keeps read-only demo behavior working locally.
+  }
+  next();
+});
+
 app.use('/api/v1', apiRouter);
 
-// Initialize DB Connection
-connectDB();
+// Kick off the connection eagerly on boot as well (no-op if already connected).
+connectDB().catch(() => { /* logged inside connectDB */ });
 
 // '/' ROUTE with good html + tailwind style.
 app.get('/', (req: Request, res: Response) => {

@@ -8,14 +8,21 @@ import type {
   RegistrationLocation,
   RegistrationTechnicalReadiness,
   RegistrationAgreements,
+  ExternalFormRegistration,
 } from '@/types';
 
+/**
+ * Two intake shapes: the full intake sections, or (fast-track) proof of a
+ * completed NYDev Form registration via `externalForm` — the backend accepts
+ * either, agreements are always required.
+ */
 export interface ApplyRegistrationPayload {
   courseId: string;
-  personalInfo: RegistrationPersonalInfo;
-  education: RegistrationEducation;
-  location: RegistrationLocation;
-  technicalReadiness: RegistrationTechnicalReadiness;
+  externalForm?: ExternalFormRegistration;
+  personalInfo?: RegistrationPersonalInfo;
+  education?: RegistrationEducation;
+  location?: RegistrationLocation;
+  technicalReadiness?: RegistrationTechnicalReadiness;
   interests: string[];
   agreements: RegistrationAgreements;
 }
