@@ -8,7 +8,7 @@ export interface PaymentDto extends Payment {
 
 export type SubmitPaymentDto = {
   enrollmentId: string;
-  paymentMethod: 'CHAPA' | 'TELEBIRR' | 'BANK_TRANSFER' | 'CASH';
+  paymentMethod: 'CBE' | 'TELEBIRR' | 'BOA' | 'CBEBIRR' | 'MPESA' | 'DASHEN' | 'AWASH' | 'SIINQEE' | 'KAAFI_EBIRR' | 'CHAPA' | 'BANK_TRANSFER' | 'CASH';
   transactionReference: string;
   notes?: string;
 };

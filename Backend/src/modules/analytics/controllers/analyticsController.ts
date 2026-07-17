@@ -14,7 +14,7 @@ export class AnalyticsController {
       }
       const validated = await LogStudentActivitySchema.parseAsync(req.body);
       const activity = await this.analyticsService.logStudentActivity(req.user.id, validated);
-      res.status(251).json({ status: 'success', data: activity });
+      res.status(201).json({ status: 'success', data: activity });
     } catch (error) {
       next(error);
     }

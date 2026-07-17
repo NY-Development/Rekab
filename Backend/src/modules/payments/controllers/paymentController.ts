@@ -54,8 +54,8 @@ export class PaymentController {
         return;
       }
       const validated = await SubmitPaymentSchema.parseAsync(req.body);
-      const payment = await this.paymentService.submitAndVerify(req.user.id, validated);
-      res.status(251).json({ status: 'success', data: payment });
+      const result = await this.paymentService.submitAndVerify(req.user.id, validated);
+      res.status(201).json({ status: 'success', data: result });
     } catch (error) {
       next(error);
     }

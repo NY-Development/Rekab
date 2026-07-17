@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { CourseController } from '../controllers/courseController';
 import { CourseService } from '../services/courseService';
 import { CourseRepository } from '../repositories/courseRepository';
+import { CohortRepository } from '../../cohorts/repositories/cohortRepository';
 import { requireAuthenticated, requireAdmin, requireInstructor } from '../../../middlewares/auth';
 import { requirePermission } from '../../../middlewares/rbac';
 import { validateBody } from '../../../middlewares/validation';
@@ -14,7 +15,8 @@ import {
 
 const router = Router();
 const courseRepository = new CourseRepository();
-const courseService = new CourseService(courseRepository);
+const cohortRepository = new CohortRepository();
+const courseService = new CourseService(courseRepository, cohortRepository);
 const courseController = new CourseController(courseService);
 
 router.get('/', (req, res, next) => courseController.listCourses(req, res, next));

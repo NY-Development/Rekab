@@ -4,6 +4,7 @@ import { PaymentService } from '../services/paymentService';
 import { PaymentRepository } from '../repositories/paymentRepository';
 import { EnrollmentRepository } from '../../enrollments/repositories/enrollmentRepository';
 import { CourseRepository } from '../../courses/repositories/courseRepository';
+import { CohortRepository } from '../../cohorts/repositories/cohortRepository';
 import { requireAuthenticated, authorize } from '../../../middlewares/auth';
 import { validateBody } from '../../../middlewares/validation';
 import { SubmitPaymentSchema, AdminVerifyPaymentSchema } from '../validators/paymentValidator';
@@ -12,7 +13,8 @@ const router = Router();
 const paymentRepository = new PaymentRepository();
 const enrollmentRepository = new EnrollmentRepository();
 const courseRepository = new CourseRepository();
-const paymentService = new PaymentService(paymentRepository, enrollmentRepository, courseRepository);
+const cohortRepository = new CohortRepository();
+const paymentService = new PaymentService(paymentRepository, enrollmentRepository, courseRepository, cohortRepository);
 const paymentController = new PaymentController(paymentService);
 
 // Payment routes

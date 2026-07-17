@@ -1,4 +1,6 @@
-@import url("https://googleapis.com");
+/* Material Symbols is loaded via a <link> tag in index.html (fonts.googleapis.com)
+   — do not @import it here; CSS @imports of the font caused ordering warnings
+   and a broken URL previously left icons rendering as raw ligature text. */
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -152,6 +154,7 @@
     white-space: nowrap;
     word-wrap: normal;
     direction: ltr;
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;

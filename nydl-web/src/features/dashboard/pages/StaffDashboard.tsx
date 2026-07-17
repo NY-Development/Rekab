@@ -109,7 +109,7 @@ export default function StaffDashboard({ role }: StaffDashboardProps) {
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-foreground">{session.title}</p>
                       <p className="text-xs text-muted-foreground">
-                        {session.scheduledAt ? new Date(session.scheduledAt).toLocaleString() : 'TBD'}
+                        {session.sessionDate ? new Date(session.sessionDate).toLocaleString() : 'TBD'}
                       </p>
                     </div>
                     <Link to="/sessions" className="text-xs font-semibold text-primary hover:underline shrink-0 flex items-center gap-1">

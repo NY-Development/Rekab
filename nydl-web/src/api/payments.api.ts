@@ -1,13 +1,13 @@
 import api from './axios';
-import type { Payment, ApiResponse } from '@/types';
+import type { Payment, Cohort, ApiResponse } from '@/types';
 
 export const paymentsApi = {
   submit: (data: {
     enrollmentId: string;
-    paymentMethod: 'CHAPA' | 'TELEBIRR' | 'BANK_TRANSFER' | 'CASH';
+    paymentMethod: 'CBE' | 'TELEBIRR' | 'BOA' | 'CBEBIRR' | 'MPESA' | 'DASHEN' | 'AWASH' | 'SIINQEE' | 'KAAFI_EBIRR' | 'CHAPA' | 'BANK_TRANSFER' | 'CASH';
     transactionReference: string;
     notes?: string;
-  }) => api.post<ApiResponse<Payment>>('/payments/submit', data),
+  }) => api.post<ApiResponse<{ payment: Payment; cohort: Cohort | null }>>('/payments/submit', data),
 
   getMyPayments: () =>
     api.get<ApiResponse<Payment[]>>('/payments/me'),

@@ -7,4 +7,13 @@ export const announcementsApi = {
 
   getById: (id: string) =>
     api.get(`/announcements/${id}`),
+
+  create: (data: Partial<Announcement>) =>
+    api.post<any>('/announcements', data),
+
+  update: (id: string, data: Partial<Announcement>) =>
+    api.put<any>(`/announcements/${id}`, data),
+
+  delete: (id: string) =>
+    api.delete(`/announcements/${id}`),
 };

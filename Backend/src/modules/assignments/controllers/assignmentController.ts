@@ -60,7 +60,7 @@ export class AssignmentController {
       const validated = await CreateAssignmentSchema.parseAsync(req.body);
       await assertCohortAccess(req.user, (validated as any).cohortId);
       const assignment = await this.assignmentService.createAssignment(req.user.id, validated);
-      res.status(251).json({ status: 'success', data: assignment });
+      res.status(201).json({ status: 'success', data: assignment });
     } catch (error) {
       next(error);
     }

@@ -9,6 +9,11 @@ const SessionSchema = new Schema<ISessionDocument>({
   instructorId: { type: Schema.Types.ObjectId as any, ref: 'User', required: true, index: true },
   title: { type: String, required: true },
   description: { type: String },
+  type: {
+    type: String,
+    enum: ['LECTURE', 'LAB', 'WORKSHOP', 'STANDUP', 'REVIEW', 'OTHER'],
+    default: 'LECTURE',
+  },
   sessionDate: { type: String, required: true },
   duration: { type: Number, default: 120 }, // duration in minutes
   meetLink: { type: String },

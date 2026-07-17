@@ -1,10 +1,15 @@
 import { CourseRepository } from '../repositories/courseRepository';
+import { CohortRepository } from '../../cohorts/repositories/cohortRepository';
 import { Course, Module, Lesson, Assignment } from '../../../types';
 import { AppError } from '../../../middlewares/errorHandler';
 import { DBStore } from '../../../services/dbStore';
+import { ensureCourseCohorts } from '../../../services/cohortProvisioning.service';
 
 export class CourseService {
-  constructor(private courseRepository: CourseRepository) {}
+  constructor(
+    private courseRepository: CourseRepository,
+    private cohortRepository: CohortRepository
+  ) {}
 
   async listCourses(filters: {
     page: number;
@@ -27,6 +32,7 @@ export class CourseService {
 
   async createCourse(userId: string, userName: string, courseData: Omit<Course, 'id' | 'modules'>): Promise<Course> {
     const course = await this.courseRepository.create(courseData);
+    await ensureCourseCohorts(this.cohortRepository, course);
     await DBStore.logActivity(userId, userName, 'COURSE_CREATE', `Created new course: "${courseData.title}"`);
     return course;
   }

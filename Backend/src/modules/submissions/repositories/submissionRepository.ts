@@ -14,6 +14,28 @@ export class SubmissionRepository {
     return DBStore.getSubmissions();
   }
 
+  /**
+   * Filters at the query level (letting Mongoose cast string ids to
+   * ObjectId) instead of fetching everything and comparing in JS — a plain
+   * `===` against an ObjectId field never matches a string filter value.
+   */
+  async findFiltered(filters: { cohortId?: string; studentId?: string; assignmentId?: string }): Promise<Submission[]> {
+    if (isMongoConnected) {
+      const query: Record<string, any> = {};
+      if (filters.cohortId) query.cohortId = filters.cohortId;
+      if (filters.studentId) query.studentId = filters.studentId;
+      if (filters.assignmentId) query.assignmentId = filters.assignmentId;
+      const docs = await SubmissionM.find(query);
+      return docs.map((d: any) => d.toJSON() as Submission);
+    }
+    const all = await DBStore.getSubmissions();
+    return all.filter((s) =>
+      (!filters.cohortId || s.cohortId === filters.cohortId) &&
+      (!filters.studentId || s.studentId === filters.studentId) &&
+      (!filters.assignmentId || s.assignmentId === filters.assignmentId)
+    );
+  }
+
   async findById(id: string): Promise<Submission | null> {
     if (isMongoConnected) {
       const doc = await SubmissionM.findById(id);

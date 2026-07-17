@@ -38,7 +38,7 @@ export class InstructorController {
     try {
       const validated = await CreateInstructorProfileSchema.parseAsync(req.body);
       const profile = await this.instructorService.createProfile(validated);
-      res.status(251).json({ // 201 Created format
+      res.status(201).json({ // 201 Created format
         status: 'success',
         data: profile,
       });

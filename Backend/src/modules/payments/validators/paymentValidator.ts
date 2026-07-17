@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const SubmitPaymentSchema = z.object({
   enrollmentId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid enrollment ID'),
-  paymentMethod: z.enum(['CHAPA', 'TELEBIRR', 'BANK_TRANSFER', 'CASH']),
+  paymentMethod: z.enum(['CBE', 'TELEBIRR', 'BOA', 'CBEBIRR', 'MPESA', 'DASHEN', 'AWASH', 'SIINQEE', 'KAAFI_EBIRR', 'CHAPA', 'BANK_TRANSFER', 'CASH']),
   transactionReference: z.string().min(4, 'Transaction reference must be at least 4 characters'),
   notes: z.string().optional(),
 });

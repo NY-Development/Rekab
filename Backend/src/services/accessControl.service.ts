@@ -37,9 +37,17 @@ function toIds(values: unknown[]): string[] {
 export async function getInstructorScope(userId: string): Promise<ContentScope> {
   if (!isMongoConnected) return EMPTY_SCOPE;
   const profile = await InstructorM.findOne({ userId }).select('assignedCourses assignedCohorts').lean();
-  if (!profile) return EMPTY_SCOPE;
-  const cohortIds = toIds(profile.assignedCohorts || []);
-  const courseIds = toIds(profile.assignedCourses || []);
+  const cohortIds = toIds(profile?.assignedCohorts || []);
+  const courseIds = toIds(profile?.assignedCourses || []);
+
+  // Cohorts where this user is listed as an assigned instructor (set from
+  // cohort management) also count — this is how admins actually assign
+  // instructors to cohorts in practice, independent of the InstructorProfile.
+  const assignedCohorts = await CohortM.find({
+    $or: [{ instructors: userId }, { instructorIds: userId }],
+  }).select('courseId').lean();
+  cohortIds.push(...toIds(assignedCohorts.map((c: any) => c._id)));
+  courseIds.push(...toIds(assignedCohorts.map((c: any) => c.courseId)));
 
   // Cohorts imply their parent course for content that is course-scoped.
   if (cohortIds.length > 0) {
@@ -47,7 +55,7 @@ export async function getInstructorScope(userId: string): Promise<ContentScope> 
     courseIds.push(...toIds(cohorts.map((c: any) => c.courseId)));
   }
 
-  return { courseIds: [...new Set(courseIds)], cohortIds, teamIds: [] };
+  return { courseIds: [...new Set(courseIds)], cohortIds: [...new Set(cohortIds)], teamIds: [] };
 }
 
 /**

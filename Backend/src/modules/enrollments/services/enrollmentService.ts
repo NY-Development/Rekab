@@ -1,14 +1,17 @@
 import { EnrollmentRepository } from '../repositories/enrollmentRepository';
 import { CohortRepository } from '../../cohorts/repositories/cohortRepository';
+import { CourseRepository } from '../../courses/repositories/courseRepository';
 import { CreateEnrollmentDto, UpdateEnrollmentDto } from '../dtos/enrollmentDto';
 import { Enrollment } from '../../../types';
 import { AppError } from '../../../middlewares/errorHandler';
 import { DBStore } from '../../../services/dbStore';
+import { ensureCourseCohorts } from '../../../services/cohortProvisioning.service';
 
 export class EnrollmentService {
   constructor(
     private enrollmentRepository: EnrollmentRepository,
-    private cohortRepository: CohortRepository
+    private cohortRepository: CohortRepository,
+    private courseRepository: CourseRepository
   ) {}
 
   async getEnrollmentById(id: string): Promise<Enrollment> {
@@ -30,16 +33,29 @@ export class EnrollmentService {
     return result.docs;
   }
 
+  /**
+   * Randomly assigns the student to one of the course's cohorts that still
+   * has an open seat. Cohorts are provisioned 4-per-course (5 seats each) at
+   * course-creation time; this call also self-heals courses created before
+   * that behavior existed by topping them up to 4 cohorts on demand.
+   */
   private async resolveCohortId(courseId: string): Promise<string> {
-    const { docs } = await this.cohortRepository.findPaginated({ page: 1, limit: 50, courseId });
-    const openCohorts = docs
-      .filter((c) => c.status === 'upcoming' || c.status === 'active')
-      .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+    const course = await this.courseRepository.findById(courseId);
+    if (!course) {
+      throw new AppError('Course associated with this registration not found', 404);
+    }
+
+    const cohorts = await ensureCourseCohorts(this.cohortRepository, course);
+    const openCohorts = cohorts.filter(
+      (c) => (c.status === 'upcoming' || c.status === 'active') && (!c.students || c.students.length < (c.maxCapacity || 5))
+    );
 
     if (openCohorts.length === 0) {
-      throw new AppError('No open cohort is currently available for this course. Please contact support.', 400);
+      throw new AppError('All cohorts for this course are currently full. Please contact an administrator.', 400);
     }
-    return openCohorts[0].id;
+
+    const randomCohort = openCohorts[Math.floor(Math.random() * openCohorts.length)];
+    return randomCohort.id;
   }
 
   async apply(data: CreateEnrollmentDto): Promise<Enrollment> {

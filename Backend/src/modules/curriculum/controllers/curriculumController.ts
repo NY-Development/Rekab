@@ -42,7 +42,7 @@ export class CurriculumController {
     try {
       const validated = await CreateCurriculumSchema.parseAsync(req.body);
       const cur = await this.curriculumService.createCurriculum(validated);
-      res.status(251).json({ status: 'success', data: cur });
+      res.status(201).json({ status: 'success', data: cur });
     } catch (error) {
       next(error);
     }
@@ -89,7 +89,7 @@ export class CurriculumController {
     try {
       const validated = await CreateModuleSchema.parseAsync(req.body);
       const mod = await this.curriculumService.createModule(validated);
-      res.status(251).json({ status: 'success', data: mod });
+      res.status(201).json({ status: 'success', data: mod });
     } catch (error) {
       next(error);
     }
@@ -135,7 +135,7 @@ export class CurriculumController {
     try {
       const validated = await CreateLessonSchema.parseAsync(req.body);
       const lesson = await this.curriculumService.createLesson(validated);
-      res.status(251).json({ status: 'success', data: lesson });
+      res.status(201).json({ status: 'success', data: lesson });
     } catch (error) {
       next(error);
     }

@@ -70,31 +70,21 @@ export class SubmissionService {
   }
 
   async listSubmissions(filters: { cohortId?: string; studentId?: string; assignmentId?: string }): Promise<any[]> {
-    let submissions = await this.submissionRepository.findAll();
-
-    if (filters.cohortId) {
-      submissions = submissions.filter(s => s.cohortId === filters.cohortId);
-    }
-    if (filters.studentId) {
-      submissions = submissions.filter(s => s.studentId === filters.studentId);
-    }
-    if (filters.assignmentId) {
-      submissions = submissions.filter(s => s.assignmentId === filters.assignmentId);
-    }
+    const submissions = await this.submissionRepository.findFiltered(filters);
 
     const users = await DBStore.getUsers();
     const userMap = new Map(users.map(u => [u.id, u.name]));
 
-    const assignmentIds = [...new Set(submissions.map(s => s.assignmentId))];
+    const assignmentIds = [...new Set(submissions.map(s => s.assignmentId?.toString()))];
     const assignments = await Promise.all(assignmentIds.map(id => this.assignmentRepository.findById(id)));
     const assignmentMap = new Map(assignments.filter((a): a is NonNullable<typeof a> => !!a).map(a => [a.id, a]));
 
     return submissions.map(s => {
-      const assignment = assignmentMap.get(s.assignmentId);
+      const assignment = assignmentMap.get(s.assignmentId?.toString());
       return {
         ...s,
-        studentName: userMap.get(s.studentId) || 'Unknown Student',
-        gradedByName: s.gradedBy ? userMap.get(s.gradedBy) : undefined,
+        studentName: userMap.get(s.studentId?.toString()) || 'Unknown Student',
+        gradedByName: s.gradedBy ? userMap.get(s.gradedBy.toString()) : undefined,
         assignmentTitle: assignment?.title,
         assignmentMaxScore: assignment?.maxScore,
       };

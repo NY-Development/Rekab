@@ -65,7 +65,7 @@ export class CertificateController {
     try {
       const validated = await IssueCertificateSchema.parseAsync(req.body);
       const cert = await this.certificateService.issueCertificate(validated);
-      res.status(251).json({ status: 'success', data: cert });
+      res.status(201).json({ status: 'success', data: cert });
     } catch (error) {
       next(error);
     }

@@ -3,6 +3,7 @@ import { EnrollmentController } from '../controllers/enrollmentController';
 import { EnrollmentService } from '../services/enrollmentService';
 import { EnrollmentRepository } from '../repositories/enrollmentRepository';
 import { CohortRepository } from '../../cohorts/repositories/cohortRepository';
+import { CourseRepository } from '../../courses/repositories/courseRepository';
 import { requireAuthenticated, authorize } from '../../../middlewares/auth';
 import { validateBody } from '../../../middlewares/validation';
 import { UpdateEnrollmentSchema } from '../validators/enrollmentValidator';
@@ -10,7 +11,8 @@ import { UpdateEnrollmentSchema } from '../validators/enrollmentValidator';
 const router = Router();
 const enrollmentRepository = new EnrollmentRepository();
 const cohortRepository = new CohortRepository();
-const enrollmentService = new EnrollmentService(enrollmentRepository, cohortRepository);
+const courseRepository = new CourseRepository();
+const enrollmentService = new EnrollmentService(enrollmentRepository, cohortRepository, courseRepository);
 const enrollmentController = new EnrollmentController(enrollmentService);
 
 // Enrollment / registration routes

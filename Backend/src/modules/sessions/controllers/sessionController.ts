@@ -56,7 +56,7 @@ export class SessionController {
       const validated = await CreateSessionSchema.parseAsync(req.body);
       await assertCohortAccess(req.user!, (validated as any).cohortId);
       const session = await this.sessionService.createSession(validated);
-      res.status(251).json({ status: 'success', data: session });
+      res.status(201).json({ status: 'success', data: session });
     } catch (error) {
       next(error);
     }

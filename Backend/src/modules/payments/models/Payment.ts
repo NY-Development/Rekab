@@ -11,7 +11,7 @@ const PaymentSchema = new Schema<IPaymentDocument>({
   currency: { type: String, default: 'ETB' },
   paymentMethod: { 
     type: String, 
-    enum: ['CHAPA', 'TELEBIRR', 'BANK_TRANSFER', 'CASH'], 
+    enum: ['CBE', 'TELEBIRR', 'BOA', 'CBEBIRR', 'MPESA', 'DASHEN', 'AWASH', 'SIINQEE', 'KAAFI_EBIRR', 'CHAPA', 'BANK_TRANSFER', 'CASH'], 
     required: true 
   },
   transactionReference: { type: String },

@@ -67,7 +67,7 @@ export class EnrollmentController {
 
       const validated = await CreateEnrollmentSchema.parseAsync(bodyData);
       const enrollment = await this.enrollmentService.apply(validated);
-      res.status(251).json({ status: 'success', data: enrollment });
+      res.status(201).json({ status: 'success', data: enrollment });
     } catch (error) {
       next(error);
     }

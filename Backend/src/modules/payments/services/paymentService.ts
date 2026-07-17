@@ -1,16 +1,18 @@
 import { PaymentRepository } from '../repositories/paymentRepository';
 import { EnrollmentRepository } from '../../enrollments/repositories/enrollmentRepository';
 import { CourseRepository } from '../../courses/repositories/courseRepository';
+import { CohortRepository } from '../../cohorts/repositories/cohortRepository';
 import { PaymentVerificationService } from '../../../services/paymentVerification.service';
 import { SubmitPaymentDto, AdminVerifyPaymentDto } from '../dtos/paymentDto';
-import { Payment } from '../../../types';
+import { Payment, Cohort } from '../../../types';
 import { AppError } from '../../../middlewares/errorHandler';
 
 export class PaymentService {
   constructor(
     private paymentRepository: PaymentRepository,
     private enrollmentRepository: EnrollmentRepository,
-    private courseRepository: CourseRepository
+    private courseRepository: CourseRepository,
+    private cohortRepository: CohortRepository
   ) {}
 
   async getPaymentById(id: string): Promise<Payment> {
@@ -21,7 +23,7 @@ export class PaymentService {
     return payment;
   }
 
-  async submitAndVerify(studentId: string, data: SubmitPaymentDto): Promise<Payment> {
+  async submitAndVerify(studentId: string, data: SubmitPaymentDto): Promise<{ payment: Payment; cohort: Cohort | null }> {
     // 1. Retrieve the enrollment
     const enrollment = await this.enrollmentRepository.findById(data.enrollmentId);
     if (!enrollment) {
@@ -104,13 +106,28 @@ export class PaymentService {
       notes: data.notes || 'Auto-verified successfully via Verify.ET Integration.',
     });
 
-    // 6. Payment verified — registration now awaits admin approval
+    // 6. Payment verified — registration is directly activated (skip pending approval)
     await this.enrollmentRepository.update(data.enrollmentId, {
       paymentId: payment.id,
-      status: 'PENDING_APPROVAL',
+      status: 'ACTIVE',
+      enrolledAt: new Date().toISOString(),
     });
 
-    return payment;
+    // 7. Add student directly to the associated cohort
+    let cohort: Cohort | null = null;
+    if (enrollment.cohortId) {
+      const cohortId = enrollment.cohortId.toString();
+      cohort = await this.cohortRepository.findById(cohortId);
+      if (cohort) {
+        const students = cohort.students || [];
+        if (!students.includes(studentId)) {
+          students.push(studentId);
+          cohort = await this.cohortRepository.update(cohortId, { students });
+        }
+      }
+    }
+
+    return { payment, cohort };
   }
 
   async adminUpdatePayment(id: string, adminId: string, data: AdminVerifyPaymentDto): Promise<Payment> {

@@ -51,7 +51,7 @@ export class NotificationController {
     try {
       const validated = await CreateNotificationSchema.parseAsync(req.body);
       const notification = await this.notificationService.createNotification(validated);
-      res.status(251).json({ status: 'success', data: notification });
+      res.status(201).json({ status: 'success', data: notification });
     } catch (error) {
       next(error);
     }

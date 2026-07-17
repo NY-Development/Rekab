@@ -66,7 +66,7 @@ export class AttendanceController {
       const validated = await SaveAttendanceSchema.parseAsync(req.body);
       await assertSessionCohortAccess(req.user, (validated as any).sessionId);
       const record = await this.attendanceService.markAttendance(req.user.id, validated);
-      res.status(251).json({ status: 'success', data: record });
+      res.status(201).json({ status: 'success', data: record });
     } catch (error) {
       next(error);
     }
@@ -81,7 +81,7 @@ export class AttendanceController {
       const validated = await BulkAttendanceSchema.parseAsync(req.body);
       await assertSessionCohortAccess(req.user, (validated as any).sessionId);
       const records = await this.attendanceService.bulkMarkAttendance(req.user.id, validated);
-      res.status(251).json({ status: 'success', data: records });
+      res.status(201).json({ status: 'success', data: records });
     } catch (error) {
       next(error);
     }

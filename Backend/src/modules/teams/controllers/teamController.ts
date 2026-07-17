@@ -40,7 +40,7 @@ export class TeamController {
       const validated = await CreateTeamSchema.parseAsync(req.body);
       await assertCohortAccess(req.user!, (validated as any).cohortId);
       const team = await this.teamService.createTeam(validated);
-      res.status(251).json({ status: 'success', data: team });
+      res.status(201).json({ status: 'success', data: team });
     } catch (error) {
       next(error);
     }

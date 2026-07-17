@@ -68,8 +68,17 @@ export interface Course {
   prerequisites: string[];
   learningOutcomes: string[];
   syllabusSummary: string;
+  modules?: CourseModule[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface CourseModule {
+  id: string;
+  title: string;
+  description?: string;
+  order?: number;
+  lessons?: { id: string; title: string; content?: string }[];
 }
 
 // ─── Cohort ───
@@ -183,7 +192,7 @@ export interface Payment {
   amount: number;
   currency: string;
   transactionReference: string;
-  paymentMethod: 'CHAPA' | 'TELEBIRR' | 'BANK_TRANSFER' | 'CASH';
+  paymentMethod: 'CBE' | 'TELEBIRR' | 'BOA' | 'CBEBIRR' | 'MPESA' | 'DASHEN' | 'AWASH' | 'SIINQEE' | 'KAAFI_EBIRR' | 'CHAPA' | 'BANK_TRANSFER' | 'CASH';
   status: 'PENDING' | 'VERIFIED' | 'FAILED';
   verificationDate?: string;
   notes?: string;
@@ -199,12 +208,12 @@ export interface Session {
   courseId: string;
   cohortId: string;
   instructorId: string;
-  type: 'LECTURE' | 'LAB' | 'WORKSHOP' | 'STANDUP' | 'REVIEW' | 'OTHER';
+  type?: 'LECTURE' | 'LAB' | 'WORKSHOP' | 'STANDUP' | 'REVIEW' | 'OTHER';
   meetLink: string;
-  scheduledAt: string;
+  sessionDate: string;
   duration: number;
-  status: 'SCHEDULED' | 'LIVE' | 'COMPLETED' | 'CANCELLED';
-  recordingUrl?: string;
+  status: 'UPCOMING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
+  recordingLink?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -255,7 +264,7 @@ export interface Resource {
   description: string;
   courseId: string;
   moduleId?: string;
-  type: 'PDF' | 'VIDEO' | 'LINK' | 'DOCUMENT' | 'CODE' | 'OTHER';
+  resourceType: 'PDF' | 'VIDEO' | 'LINK' | 'ZIP' | 'GITHUB' | 'SLIDES';
   url: string;
   fileSize?: number;
   createdAt: string;

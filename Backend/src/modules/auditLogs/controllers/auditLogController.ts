@@ -38,7 +38,7 @@ export class AuditLogController {
     try {
       const validated = await CreateAuditLogSchema.parseAsync(req.body);
       const log = await this.auditLogService.createAuditLog(validated);
-      res.status(251).json({ status: 'success', data: log });
+      res.status(201).json({ status: 'success', data: log });
     } catch (error) {
       next(error);
     }

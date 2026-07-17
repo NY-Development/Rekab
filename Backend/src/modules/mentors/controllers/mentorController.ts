@@ -38,7 +38,7 @@ export class MentorController {
     try {
       const validated = await CreateMentorProfileSchema.parseAsync(req.body);
       const profile = await this.mentorService.createProfile(validated);
-      res.status(251).json({ // 201 Created format
+      res.status(201).json({ // 201 Created format
         status: 'success',
         data: profile,
       });

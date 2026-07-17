@@ -60,7 +60,7 @@ export class ResourceController {
       const validated = await CreateResourceSchema.parseAsync(req.body);
       await assertCourseAccess(req.user, (validated as any).courseId);
       const resource = await this.resourceService.createResource(req.user.id, validated);
-      res.status(251).json({ status: 'success', data: resource });
+      res.status(201).json({ status: 'success', data: resource });
     } catch (error) {
       next(error);
     }

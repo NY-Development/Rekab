@@ -210,10 +210,10 @@ function StudentDashboard() {
                 <>
                   <div className="text-center py-4 border-b border-border/40 mb-4">
                     <p className="text-3xl font-extrabold text-foreground">
-                      {new Date(nextSession.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(nextSession.sessionDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Date: {new Date(nextSession.scheduledAt).toLocaleDateString()} ({nextSession.duration} mins)
+                      Date: {new Date(nextSession.sessionDate).toLocaleDateString()} ({nextSession.duration} mins)
                     </p>
                   </div>
                   <div className="bg-background px-3 py-2.5 rounded-lg border border-border/60 mb-4">

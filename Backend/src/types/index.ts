@@ -290,7 +290,7 @@ export interface Payment {
   courseId: string; // Ref to Course
   amount: number;
   currency: string;
-  paymentMethod: 'CHAPA' | 'TELEBIRR' | 'BANK_TRANSFER' | 'CASH' | string;
+  paymentMethod: 'CBE' | 'TELEBIRR' | 'BOA' | 'CBEBIRR' | 'MPESA' | 'DASHEN' | 'AWASH' | 'SIINQEE' | 'KAAFI_EBIRR' | 'CHAPA' | 'BANK_TRANSFER' | 'CASH' | string;
   transactionReference?: string;
   screenshot?: string;
   paidAt?: string;
@@ -309,6 +309,7 @@ export interface Session {
   instructorId: string; // Ref to User (Instructor)
   title: string;
   description?: string;
+  type?: 'LECTURE' | 'LAB' | 'WORKSHOP' | 'STANDUP' | 'REVIEW' | 'OTHER' | string;
   sessionDate: string;
   duration: number; // minutes
   meetLink?: string;

@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -14,6 +14,7 @@ import { useSubmitPayment } from '@/hooks/usePayments';
 import { useAuthStore } from '@/store/auth.store';
 import { getRegistrationStatusMeta } from '@/utils/registration';
 import type { ApplyRegistrationPayload } from '@/api/enrollments.api';
+import type { Cohort } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -86,7 +87,7 @@ const registrationSchema = z.object({
 
   formRegistrationId: z.string().optional(),
 
-  paymentMethod: z.enum(['CHAPA', 'TELEBIRR', 'BANK_TRANSFER', 'CASH']),
+  paymentMethod: z.enum(['CBE', 'TELEBIRR', 'BOA', 'CBEBIRR', 'MPESA', 'DASHEN', 'AWASH', 'SIINQEE', 'KAAFI_EBIRR', 'CHAPA', 'BANK_TRANSFER', 'CASH']),
   transactionReference: z.string().min(4, 'Transaction reference is required'),
 
   agreedToPayFee: z.boolean(),
@@ -167,6 +168,7 @@ export default function EnrollmentPage() {
   const [intakeMode, setIntakeMode] = useState<IntakeMode>('unset');
   const [step, setStep] = useState(0);
   const [submitted, setSubmitted] = useState(false);
+  const [assignedCohort, setAssignedCohort] = useState<Cohort | null>(null);
   const [enrollmentId, setEnrollmentId] = useState<string | null>(null);
   const [qrDataUri, setQrDataUri] = useState<string | null>(null);
   const qrInputRef = useRef<HTMLInputElement>(null);
@@ -284,13 +286,14 @@ export default function EnrollmentPage() {
         toast.success('Registration submitted successfully.');
       }
 
-      await submitPaymentMutation.mutateAsync({
+      const paymentRes = await submitPaymentMutation.mutateAsync({
         enrollmentId: currentEnrollmentId,
         paymentMethod,
         transactionReference,
       });
 
-      toast.success('Payment verification successful.');
+      setAssignedCohort(paymentRes.data.cohort);
+      toast.success('Payment verification successful. You now have full access to your course.');
       setSubmitted(true);
     } catch (err: any) {
       const message = err?.response?.data?.message || 'Registration failed. Please try again.';
@@ -381,6 +384,14 @@ export default function EnrollmentPage() {
     );
   };
 
+  // Auto-redirect to the dashboard shortly after a successful payment so the
+  // student lands on the page that now reflects their granted course access.
+  useEffect(() => {
+    if (!submitted) return;
+    const timer = setTimeout(() => navigate('/dashboard'), 6000);
+    return () => clearTimeout(timer);
+  }, [submitted, navigate]);
+
   if (isCourseLoading || isEnrollmentsLoading) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
@@ -442,14 +453,22 @@ export default function EnrollmentPage() {
               <CheckCircle className="h-14 w-14 text-emerald-500" />
             </div>
             <div className="space-y-2">
-              <h3 className="text-xl font-bold text-foreground">Registration Submitted!</h3>
+              <h3 className="text-xl font-bold text-foreground">Payment Verified — You're In!</h3>
               <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
-                Your registration for <span className="font-semibold">{course.title}</span> and payment reference have been received.
-                Your payment is being verified, and your registration will move to admin review shortly.
+                Your payment for <span className="font-semibold">{course.title}</span> has been verified and your course access has been granted.
               </p>
             </div>
-            <div className="pt-4 flex justify-center gap-3">
-              <Button onClick={() => navigate('/courses/enrolled')}>View Registration Status</Button>
+            {assignedCohort && (
+              <div className="mx-auto max-w-sm rounded-lg border border-border bg-muted/30 px-5 py-4 text-left">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">Your Cohort</p>
+                <p className="text-base font-bold text-foreground">{assignedCohort.name}</p>
+                <p className="text-xs text-muted-foreground font-mono mt-0.5">{assignedCohort.code}</p>
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground">You'll be redirected to your dashboard shortly...</p>
+            <div className="pt-2 flex justify-center gap-3">
+              <Button variant="outline" onClick={() => navigate('/courses/enrolled')}>View Registration Status</Button>
+              <Button onClick={() => navigate('/dashboard')}>Go to Dashboard</Button>
             </div>
           </CardContent>
         </Card>
@@ -805,9 +824,17 @@ export default function EnrollmentPage() {
                     <Select onValueChange={(v) => setValue('paymentMethod', v as FormValues['paymentMethod'], { shouldValidate: true })}>
                       <SelectTrigger className="w-full"><SelectValue placeholder="Select method" /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="CHAPA">Chapa</SelectItem>
+                        <SelectItem value="CBE">Commercial Bank of Ethiopia (CBE)</SelectItem>
                         <SelectItem value="TELEBIRR">Telebirr</SelectItem>
-                        <SelectItem value="BANK_TRANSFER">Bank Transfer</SelectItem>
+                        <SelectItem value="BOA">Bank of Abyssinia (BOA)</SelectItem>
+                        <SelectItem value="CBEBIRR">CBE Birr</SelectItem>
+                        <SelectItem value="MPESA">M-Pesa</SelectItem>
+                        <SelectItem value="DASHEN">Dashen Bank</SelectItem>
+                        <SelectItem value="AWASH">Awash Bank</SelectItem>
+                        <SelectItem value="SIINQEE">Siinqee Bank</SelectItem>
+                        <SelectItem value="KAAFI_EBIRR">Kaafi eBirr</SelectItem>
+                        <SelectItem value="CHAPA">Chapa</SelectItem>
+                        <SelectItem value="BANK_TRANSFER">Bank Transfer (Other)</SelectItem>
                         <SelectItem value="CASH">Cash</SelectItem>
                       </SelectContent>
                     </Select>
