@@ -5,7 +5,9 @@ import * as LucideIcons from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useThemeStore } from '@/store/theme.store';
+import { SessionExpiryNotice } from '@/components/common/SessionExpiryNotice';
 import { useEffect } from 'react';
+import {toast} from 'sonner';
 
 export function AdminLayout() {
   const { user, logout } = useAuth();
@@ -39,6 +41,7 @@ export function AdminLayout() {
 
   return (
     <div className="flex min-h-screen bg-slate-900 text-slate-100 font-sans">
+      <SessionExpiryNotice />
       {/* Sidebar */}
       <aside className="w-64 border-r border-slate-800 bg-slate-950 flex flex-col fixed inset-y-0 left-0 z-20">
         {/* Title */}

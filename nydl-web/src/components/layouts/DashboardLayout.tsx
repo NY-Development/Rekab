@@ -9,6 +9,7 @@ import { useAuthStore } from '@/store/auth.store';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { EnrollmentGate } from '@/components/common/EnrollmentGate';
+import { SessionExpiryNotice } from '@/components/common/SessionExpiryNotice';
 import { normalizeRole } from '@/lib/permissions';
 import type { UserRole } from '@/types';
 
@@ -28,7 +29,7 @@ const mainNavItems: NavItem[] = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['STUDENT', 'INSTRUCTOR', 'MENTOR'] },
   { to: '/courses/enrolled', label: 'My Courses', icon: BookOpen, roles: ['STUDENT'] },
   { to: '/courses', label: 'Courses', icon: GraduationCap, roles: ['INSTRUCTOR', 'MENTOR'] },
-  { to: '/assignments', label: 'Assignments', icon: ClipboardList, roles: ['STUDENT', 'INSTRUCTOR'] },
+  { to: '/assignments', label: 'Assignments', icon: ClipboardList, roles: ['STUDENT', 'INSTRUCTOR', 'MENTOR'] },
   { to: '/sessions', label: 'Live Sessions', icon: Video, roles: ['STUDENT', 'INSTRUCTOR', 'MENTOR'] },
   { to: '/resources', label: 'Resources', icon: FolderOpen, roles: ['STUDENT', 'INSTRUCTOR', 'MENTOR'] },
   { to: '/announcements', label: 'Announcements', icon: Megaphone, roles: ['STUDENT', 'INSTRUCTOR', 'MENTOR'] },
@@ -67,6 +68,7 @@ export default function DashboardLayout() {
   return (
     <div className="flex min-h-screen bg-background">
       <EnrollmentGate />
+      <SessionExpiryNotice />
       {/* ─── Sidebar ─── */}
       <aside
         className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-border bg-[#0F172A] text-white transition-transform duration-300 md:translate-x-0 ${
@@ -198,9 +200,9 @@ export default function DashboardLayout() {
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>© {new Date().getFullYear()} NYDEV Learning. All rights reserved.</span>
             <div className="flex gap-4">
-              <Link to="#" className="hover:text-foreground">Privacy</Link>
-              <Link to="#" className="hover:text-foreground">Terms</Link>
-              <Link to="#" className="hover:text-foreground">Support</Link>
+              <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
+              <Link to="/terms" className="hover:text-foreground">Terms</Link>
+              <Link to="/help" className="hover:text-foreground">Support</Link>
             </div>
           </div>
         </footer>

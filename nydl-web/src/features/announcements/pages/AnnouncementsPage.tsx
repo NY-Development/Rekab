@@ -3,12 +3,13 @@ import { useAnnouncements, useCreateAnnouncement, useUpdateAnnouncement, useDele
 import { useCourses } from '@/hooks/useCourses';
 import { useCohorts } from '@/hooks/useCohorts';
 import { useAuthStore } from '@/store/auth.store';
+import { isAdminRole, isStaffRole } from '@/lib/permissions';
 import type { Announcement } from '@/types';
 
 export default function AnnouncementsPage() {
   const { user } = useAuthStore();
-  const isStaff = user && ['ADMIN', 'SUPER_ADMIN', 'INSTRUCTOR'].includes(user.role);
-  const isAdmin = user && ['ADMIN', 'SUPER_ADMIN'].includes(user.role);
+  const isStaff = isStaffRole(user?.role);
+  const isAdmin = isAdminRole(user?.role);
 
   const { data: announcementsRes, isLoading, error } = useAnnouncements();
   const { data: coursesRes } = useCourses();
@@ -66,7 +67,7 @@ export default function AnnouncementsPage() {
       case 'NORMAL':
         return 'bg-blue-50 text-blue-750 border-blue-150';
       default:
-        return 'bg-slate-50 text-slate-650 border-slate-200';
+        return 'bg-muted/40 text-muted-foreground border-border';
     }
   };
 
@@ -119,8 +120,8 @@ export default function AnnouncementsPage() {
     <div className="w-full max-w-5xl mx-auto px-4 md:px-8 py-10">
       <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h2 className="text-2xl md:text-3xl font-bold text-slate-900">Announcements</h2>
-          <p className="text-sm text-slate-550 mt-1">Stay updated with the latest program news, updates, and deadlines.</p>
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground">Announcements</h2>
+          <p className="text-sm text-muted-foreground mt-1">Stay updated with the latest program news, updates, and deadlines.</p>
         </div>
         {isStaff && (
           <button
@@ -146,7 +147,7 @@ export default function AnnouncementsPage() {
           Failed to load announcements.
         </div>
       ) : sortedAnnouncements.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-lg p-12 text-center text-slate-500">
+        <div className="bg-card border border-border rounded-lg p-12 text-center text-muted-foreground">
           No announcements published yet.
         </div>
       ) : (
@@ -157,39 +158,39 @@ export default function AnnouncementsPage() {
             return (
               <div
                 key={announcement.id}
-                className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm flex flex-col md:flex-row gap-6 hover:border-slate-300 transition-colors"
+                className="bg-card border border-border rounded-lg p-6 shadow-sm flex flex-col md:flex-row gap-6 hover:border-slate-300 transition-colors"
               >
                 {/* Meta details */}
-                <div className="shrink-0 flex md:flex-col md:items-start items-center justify-between md:justify-start gap-3 md:w-44 border-b md:border-b-0 md:border-r border-slate-100 pb-4 md:pb-0 md:pr-4">
+                <div className="shrink-0 flex md:flex-col md:items-start items-center justify-between md:justify-start gap-3 md:w-44 border-b md:border-b-0 md:border-r border-border pb-4 md:pb-0 md:pr-4">
                   <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-widest uppercase border ${getPriorityStyle(announcement.priority)}`}>
                     {announcement.priority} PRIORITY
                   </span>
 
-                  <div className="text-xs text-slate-400">
-                    <span className="block font-semibold text-slate-500">Published</span>
+                  <div className="text-xs text-muted-foreground">
+                    <span className="block font-semibold text-muted-foreground">Published</span>
                     {pubDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                   </div>
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 space-y-3">
-                  <h3 className="text-lg font-bold text-slate-900 leading-snug">
+                  <h3 className="text-lg font-bold text-foreground leading-snug">
                     {announcement.title}
                   </h3>
 
-                  <div className="text-sm text-slate-600 leading-relaxed space-y-2 whitespace-pre-wrap">
+                  <div className="text-sm text-muted-foreground leading-relaxed space-y-2 whitespace-pre-wrap">
                     {announcement.content}
                   </div>
 
                   {isStaff && (
-                    <div className="flex gap-2 border-t border-slate-100 pt-3">
+                    <div className="flex gap-2 border-t border-border pt-3">
                       <button
                         onClick={() => {
                           setSelectedAnnouncement(announcement);
                           setDialogMode('edit');
                           setIsDialogOpen(true);
                         }}
-                        className="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-semibold text-xs px-3 py-1.5 rounded transition-colors"
+                        className="bg-muted/40 hover:bg-muted border border-border text-foreground font-semibold text-xs px-3 py-1.5 rounded transition-colors"
                       >
                         Edit
                       </button>
@@ -212,15 +213,15 @@ export default function AnnouncementsPage() {
       {/* --- CRUD Dialog Modal --- */}
       {isDialogOpen && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg border border-slate-200 shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="p-5 border-b border-slate-150 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-slate-900">
+          <div className="bg-card rounded-lg border border-border shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-5 border-b border-border flex items-center justify-between">
+              <h3 className="text-lg font-bold text-foreground">
                 {dialogMode === 'create' ? 'New Announcement' : 'Edit Announcement'}
               </h3>
               <button
                 type="button"
                 onClick={() => setIsDialogOpen(false)}
-                className="text-slate-400 hover:text-slate-600"
+                className="text-muted-foreground hover:text-muted-foreground"
               >
                 <span className="material-symbols-outlined">close</span>
               </button>
@@ -229,36 +230,36 @@ export default function AnnouncementsPage() {
             <form onSubmit={handleSubmit} className="p-5 overflow-y-auto space-y-4 flex-1">
               {/* Title */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Title *</label>
+                <label className="block text-xs font-bold text-foreground uppercase mb-1">Title *</label>
                 <input
                   type="text"
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g. Assignment deadline extended"
-                  className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                 />
               </div>
 
               {/* Content */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Content *</label>
+                <label className="block text-xs font-bold text-foreground uppercase mb-1">Content *</label>
                 <textarea
                   required
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="Write the announcement details..."
-                  className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-900 h-28 resize-none focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground h-28 resize-none focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                 />
               </div>
 
               {/* Priority */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Priority</label>
+                <label className="block text-xs font-bold text-foreground uppercase mb-1">Priority</label>
                 <select
                   value={priority}
                   onChange={(e) => setPriority(e.target.value)}
-                  className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-707 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                 >
                   <option value="LOW">Low</option>
                   <option value="NORMAL">Normal</option>
@@ -269,7 +270,7 @@ export default function AnnouncementsPage() {
 
               {/* Course */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                <label className="block text-xs font-bold text-foreground uppercase mb-1">
                   Course {isAdmin ? '(Optional — leave blank for platform-wide)' : '*'}
                 </label>
                 <select
@@ -279,7 +280,7 @@ export default function AnnouncementsPage() {
                     setCourseId(e.target.value);
                     setCohortId('');
                   }}
-                  className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-707 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                 >
                   <option value="">{isAdmin ? 'Platform-wide' : 'Select a Course'}</option>
                   {coursesList.map((c) => (
@@ -292,12 +293,12 @@ export default function AnnouncementsPage() {
 
               {/* Cohort */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Cohort (Optional — narrows to one cohort)</label>
+                <label className="block text-xs font-bold text-foreground uppercase mb-1">Cohort (Optional — narrows to one cohort)</label>
                 <select
                   disabled={!courseId}
                   value={cohortId}
                   onChange={(e) => setCohortId(e.target.value)}
-                  className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-707 disabled:bg-slate-50 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground disabled:bg-muted/40 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                 >
                   <option value="">All cohorts in course</option>
                   {cohortsList.map((c) => (
@@ -309,11 +310,11 @@ export default function AnnouncementsPage() {
               </div>
 
               {/* Submit Buttons */}
-              <div className="border-t border-slate-150 pt-4 flex gap-3 justify-end">
+              <div className="border-t border-border pt-4 flex gap-3 justify-end">
                 <button
                   type="button"
                   onClick={() => setIsDialogOpen(false)}
-                  className="px-4 py-2 border border-slate-205 hover:bg-slate-100 text-slate-700 text-sm font-semibold rounded"
+                  className="px-4 py-2 border border-border hover:bg-muted text-foreground text-sm font-semibold rounded"
                 >
                   Cancel
                 </button>

@@ -103,6 +103,7 @@ export interface Cohort {
   id: string;
   name: string;
   code: string;
+  batch?: string;
   courseId: Populated<Course>;
   startDate: string;
   endDate: string;

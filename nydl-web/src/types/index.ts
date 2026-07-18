@@ -86,6 +86,7 @@ export interface Cohort {
   id: string;
   name: string;
   code: string;
+  batch?: string;
   courseId: string;
   startDate: string;
   endDate: string;
@@ -287,14 +288,25 @@ export interface Announcement {
 }
 
 // ─── Team ───
+/** A user ref as populated by the teams API (falls back to a bare id string). */
+export interface TeamMemberRef {
+  id: string;
+  name?: string;
+  email?: string;
+  role?: string;
+  avatar?: string;
+}
+
 export interface Team {
   id: string;
   name: string;
-  courseId: string;
-  cohortId: string;
-  leaderId?: string;
-  memberIds: string[];
-  mentorId?: string;
+  teamCode?: string;
+  courseId: string | TeamMemberRef;
+  cohortId: string | { id: string; name?: string; code?: string };
+  leaderId?: string | TeamMemberRef;
+  memberIds: (string | TeamMemberRef)[];
+  mentorId?: string | TeamMemberRef;
+  score?: number;
   createdAt: string;
   updatedAt: string;
 }

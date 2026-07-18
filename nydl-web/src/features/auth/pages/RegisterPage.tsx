@@ -55,7 +55,7 @@ export default function RegisterPage() {
     <div className="mx-auto w-full max-w-sm lg:w-96">
       {/* Mobile Logo (hidden on desktop) */}
       <Link to='/' className="flex items-center mb-8 lg:hidden">
-        <img src="/banner-logo.png" alt="NYDL" className="h-9 w-auto" />
+        <img src="/banner-logo.png" alt="NYDL" className="h-14 rounded-full w-auto" />
       </Link>
 
       <div>
@@ -177,9 +177,9 @@ export default function RegisterPage() {
         </p>
 
         <div className="mt-8 flex justify-center gap-4 text-center text-xs text-muted-foreground">
-          <a className="hover:text-foreground transition-colors" href="#">Terms of Service</a>
+          <a className="hover:text-foreground transition-colors" href="/terms">Terms of Service</a>
           <span>•</span>
-          <a className="hover:text-foreground transition-colors" href="#">Privacy Policy</a>
+          <a className="hover:text-foreground transition-colors" href="/privacy">Privacy Policy</a>
         </div>
       </div>
     </div>

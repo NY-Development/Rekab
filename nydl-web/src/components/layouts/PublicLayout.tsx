@@ -23,7 +23,7 @@ export default function PublicLayout() {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-8">
           {/* Logo */}
           <Link to="/" className="flex items-center">
-            <img src="/banner-logo.png" alt="NYDEV Learning" className="h-9 w-auto" />
+            <img src="/banner-logo.png" alt="NYDEV Learning" className="h-12 rounded-full w-auto" />
           </Link>
 
           {/* Desktop Nav */}
@@ -149,8 +149,8 @@ export default function PublicLayout() {
             <div>
               <h4 className="mb-3 text-sm font-semibold">Legal</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link to="#" className="hover:text-foreground">Privacy Policy</Link></li>
-                <li><Link to="#" className="hover:text-foreground">Terms of Service</Link></li>
+                <li><Link to="/privacy" className="hover:text-foreground">Privacy Policy</Link></li>
+                <li><Link to="/terms" className="hover:text-foreground">Terms of Service</Link></li>
               </ul>
             </div>
           </div>

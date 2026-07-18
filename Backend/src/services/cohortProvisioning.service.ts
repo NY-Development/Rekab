@@ -1,52 +1,76 @@
 import { CohortRepository } from '../modules/cohorts/repositories/cohortRepository';
 import { Course, Cohort } from '../types';
 
-export const COHORTS_PER_COURSE = 4;
-export const SEATS_PER_COHORT = 5;
+/**
+ * The active enrollment batch. A cohort is the entire student body for a course
+ * within one batch (e.g. every student taking Mobile in Summer 2026) — exactly
+ * one cohort per course per batch, holding all its students. Teams are the
+ * small 3–6 person project groups that live *inside* a cohort.
+ */
+export const CURRENT_BATCH = 'Summer 2026';
 
-function buildCohortPayload(course: Course, index: number): Omit<Cohort, 'id'> {
+/** Large ceiling so a batch cohort effectively holds the whole course intake. */
+const COHORT_CAPACITY = 1000;
+
+function batchCode(batch: string): string {
+  return batch.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+}
+
+function buildCohortPayload(course: Course, batch: string): Omit<Cohort, 'id'> {
   const now = new Date();
   const endDate = new Date();
-  endDate.setDate(now.getDate() + 84); // 12 weeks duration
+  endDate.setDate(now.getDate() + (course.durationWeeks ? course.durationWeeks * 7 : 84));
 
   const courseCodeClean = (course.code || course.title.substring(0, 4)).replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-  const randSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
 
   return {
     courseId: course.id as any,
-    name: `${course.title} - Cohort ${index}`,
-    code: `${courseCodeClean}-C${index}-${randSuffix}`,
+    name: `${course.title} — ${batch}`,
+    code: `${courseCodeClean}-${batchCode(batch)}`,
+    batch,
     startDate: now.toISOString(),
     endDate: endDate.toISOString(),
     enrollmentStart: now.toISOString(),
-    enrollmentEnd: new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-    capacity: SEATS_PER_COHORT,
-    maxCapacity: SEATS_PER_COHORT,
+    enrollmentEnd: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    capacity: COHORT_CAPACITY,
+    maxCapacity: COHORT_CAPACITY,
     enrolledStudents: [],
     students: [],
     instructorIds: [],
     instructors: [],
     mentorIds: [],
     schedule: 'Flexible Online Schedule',
-    status: 'upcoming' as any,
+    status: 'active' as any,
   };
 }
 
 /**
- * Ensures a course has exactly COHORTS_PER_COURSE cohorts (creating whichever
- * are missing). Called both when a course is created and defensively before
- * enrollment, so courses created before this behavior existed self-heal.
+ * Ensures exactly one cohort exists for the course's current batch, creating it
+ * if missing. Legacy per-course cohorts (created before the batch model) are
+ * adopted as the batch cohort so no student data is orphaned.
  */
-export async function ensureCourseCohorts(cohortRepository: CohortRepository, course: Course): Promise<Cohort[]> {
-  const { docs: existing } = await cohortRepository.findPaginated({ page: 1, limit: 50, courseId: course.id });
-  if (existing.length >= COHORTS_PER_COURSE) {
-    return existing;
+export async function ensureCourseCohort(
+  cohortRepository: CohortRepository,
+  course: Course,
+  batch: string = CURRENT_BATCH
+): Promise<Cohort> {
+  const { docs: existing } = await cohortRepository.findPaginated({ page: 1, limit: 100, courseId: course.id });
+
+  const batchCohort = existing.find((c) => (c.batch || '').toLowerCase() === batch.toLowerCase());
+  if (batchCohort) return batchCohort;
+
+  // Adopt a legacy (batch-less) cohort as this batch's cohort if one exists.
+  const legacy = existing.find((c) => !c.batch);
+  if (legacy) {
+    const updated = await cohortRepository.update(legacy.id, {
+      batch,
+      name: `${course.title} — ${batch}`,
+      maxCapacity: COHORT_CAPACITY,
+      capacity: COHORT_CAPACITY,
+      status: 'active' as any,
+    });
+    return updated || legacy;
   }
 
-  const created: Cohort[] = [];
-  for (let i = existing.length + 1; i <= COHORTS_PER_COURSE; i++) {
-    created.push(await cohortRepository.create(buildCohortPayload(course, i)));
-  }
-
-  return [...existing, ...created];
+  return cohortRepository.create(buildCohortPayload(course, batch));
 }

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useResources, useCreateResource, useUpdateResource, useDeleteResource } from '@/hooks/useResources';
 import { useCourses } from '@/hooks/useCourses';
 import { useAuthStore } from '@/store/auth.store';
+import { isStaffRole } from '@/lib/permissions';
 import type { Resource } from '@/types';
 
 export default function ResourcesPage() {
@@ -10,7 +11,7 @@ export default function ResourcesPage() {
   
   // Auth and query hooks
   const { user } = useAuthStore();
-  const isStaff = user && ['ADMIN', 'SUPER_ADMIN', 'INSTRUCTOR'].includes(user.role);
+  const isStaff = isStaffRole(user?.role);
   
   const { data: resourcesRes, isLoading, error } = useResources();
   const { data: coursesRes } = useCourses();
@@ -131,16 +132,16 @@ export default function ResourcesPage() {
   return (
     <div className="w-full max-w-7xl mx-auto px-4 md:px-8 py-10 relative">
       {/* Header Area */}
-      <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-slate-100 pb-6">
+      <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-border pb-6">
         <div>
-          <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">Course Resources</h2>
-          <p className="text-sm text-slate-550">Access program video lectures, slides, documents and starter codes.</p>
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Course Resources</h2>
+          <p className="text-sm text-muted-foreground">Access program video lectures, slides, documents and starter codes.</p>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
           <div className="relative w-full sm:w-64">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">search</span>
             <input
-              className="w-full bg-white border border-slate-205 text-sm text-slate-900 rounded-md pl-10 pr-4 py-2 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all font-body-sm"
+              className="w-full bg-card border border-border text-sm text-foreground rounded-md pl-10 pr-4 py-2 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all font-body-sm"
               placeholder="Search resources..."
               type="text"
               value={search}
@@ -150,7 +151,7 @@ export default function ResourcesPage() {
           <select
             value={moduleFilter}
             onChange={(e) => setModuleFilter(e.target.value)}
-            className="w-full sm:w-auto bg-white border border-slate-205 text-sm rounded-md py-2 px-3 focus:ring-blue-600 focus:border-blue-600 text-slate-700 font-body-sm"
+            className="w-full sm:w-auto bg-card border border-border text-sm rounded-md py-2 px-3 focus:ring-blue-600 focus:border-blue-600 text-foreground font-body-sm"
           >
             <option>All Modules</option>
             <option value="m1">Module 1</option>
@@ -181,7 +182,7 @@ export default function ResourcesPage() {
           Failed to load course resources.
         </div>
       ) : filteredResources.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-lg p-12 text-center text-slate-500">
+        <div className="bg-card border border-border rounded-lg p-12 text-center text-muted-foreground">
           No resources match search / filter settings.
         </div>
       ) : (
@@ -190,22 +191,22 @@ export default function ResourcesPage() {
           
           {/* Video Lectures Section (Left Column) */}
           <div className="col-span-12 lg:col-span-8 space-y-6">
-            <div className="flex items-center gap-2 mb-4 border-b border-slate-100 pb-2">
+            <div className="flex items-center gap-2 mb-4 border-b border-border pb-2">
               <span className="material-symbols-outlined text-blue-600">video_library</span>
-              <h3 className="text-lg font-bold text-slate-900">Video Lectures</h3>
+              <h3 className="text-lg font-bold text-foreground">Video Lectures</h3>
             </div>
             
             {videos.length === 0 ? (
-              <p className="text-xs text-slate-400 py-4 italic">No lecture videos match current filters.</p>
+              <p className="text-xs text-muted-foreground py-4 italic">No lecture videos match current filters.</p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {videos.map((vid) => (
                   <div
                     key={vid.id}
-                    className="bg-white border border-slate-200 rounded-lg overflow-hidden group hover:shadow-md transition-all flex flex-col pt-1"
+                    className="bg-card border border-border rounded-lg overflow-hidden group hover:shadow-md transition-all flex flex-col pt-1"
                   >
-                    <div className="h-36 bg-slate-100 flex items-center justify-center relative">
-                      <span className="material-symbols-outlined text-4xl text-slate-400 group-hover:text-blue-600 transition-all cursor-pointer">
+                    <div className="h-36 bg-muted flex items-center justify-center relative">
+                      <span className="material-symbols-outlined text-4xl text-muted-foreground group-hover:text-blue-600 transition-all cursor-pointer">
                         play_circle
                       </span>
                     </div>
@@ -213,8 +214,8 @@ export default function ResourcesPage() {
                       <div className="text-[10px] font-bold text-blue-600 mb-1 uppercase tracking-widest">
                         {vid.moduleId ? `Module ${vid.moduleId.toUpperCase()}` : 'General'}
                       </div>
-                      <h4 className="text-base font-bold text-slate-900 mb-1 line-clamp-1">{vid.title}</h4>
-                      <p className="text-xs text-slate-500 mb-4 line-clamp-2 leading-relaxed">{vid.description}</p>
+                      <h4 className="text-base font-bold text-foreground mb-1 line-clamp-1">{vid.title}</h4>
+                      <p className="text-xs text-muted-foreground mb-4 line-clamp-2 leading-relaxed">{vid.description}</p>
                       
                       <div className="flex gap-2 mt-auto">
                         <a
@@ -229,14 +230,14 @@ export default function ResourcesPage() {
                       </div>
                       
                       {isStaff && (
-                        <div className="flex gap-2 mt-2 border-t border-slate-100 pt-2">
+                        <div className="flex gap-2 mt-2 border-t border-border pt-2">
                           <button
                             onClick={() => {
                               setSelectedResource(vid);
                               setDialogMode('edit');
                               setIsDialogOpen(true);
                             }}
-                            className="flex-grow bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold py-1.5 rounded transition-colors"
+                            className="flex-grow bg-muted hover:bg-muted text-foreground text-xs font-semibold py-1.5 rounded transition-colors"
                           >
                             Edit
                           </button>
@@ -260,19 +261,19 @@ export default function ResourcesPage() {
             
             {/* Readings Category */}
             <div>
-              <div className="flex items-center gap-2 mb-4 border-b border-slate-100 pb-2">
+              <div className="flex items-center gap-2 mb-4 border-b border-border pb-2">
                 <span className="material-symbols-outlined text-red-600">picture_as_pdf</span>
-                <h3 className="text-lg font-bold text-slate-900">Readings & Guides</h3>
+                <h3 className="text-lg font-bold text-foreground">Readings & Guides</h3>
               </div>
               
               {readings.length === 0 ? (
-                <p className="text-xs text-slate-400 py-2 italic text-left">No PDF guidelines uploaded.</p>
+                <p className="text-xs text-muted-foreground py-2 italic text-left">No PDF guidelines uploaded.</p>
               ) : (
                 <ul className="space-y-3">
                   {readings.map((doc) => (
                     <li
                       key={doc.id}
-                      className="bg-white border border-slate-200 rounded-lg p-3 flex flex-col gap-2 hover:bg-slate-50 transition-colors group"
+                      className="bg-card border border-border rounded-lg p-3 flex flex-col gap-2 hover:bg-muted/40 transition-colors group"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3 overflow-hidden">
@@ -280,8 +281,8 @@ export default function ResourcesPage() {
                             <span className="material-symbols-outlined">description</span>
                           </div>
                           <div className="min-w-0">
-                            <p className="text-xs font-semibold text-slate-900 truncate">{doc.title}</p>
-                            <p className="text-[10px] text-slate-450 uppercase">{doc.resourceType}</p>
+                            <p className="text-xs font-semibold text-foreground truncate">{doc.title}</p>
+                            <p className="text-[10px] text-muted-foreground uppercase">{doc.resourceType}</p>
                           </div>
                         </div>
                         <div className="flex gap-1">
@@ -289,7 +290,7 @@ export default function ResourcesPage() {
                             href={doc.url}
                             target="_blank"
                             rel="noreferrer"
-                            className="p-1.5 text-slate-400 hover:text-blue-600 rounded hover:bg-slate-100 transition-colors"
+                            className="p-1.5 text-muted-foreground hover:text-blue-600 rounded hover:bg-muted transition-colors"
                             title="View"
                           >
                             <span className="material-symbols-outlined text-sm">visibility</span>
@@ -298,20 +299,20 @@ export default function ResourcesPage() {
                       </div>
 
                       {isStaff && (
-                        <div className="flex justify-end gap-1.5 border-t border-slate-100 pt-2">
+                        <div className="flex justify-end gap-1.5 border-t border-border pt-2">
                           <button
                             onClick={() => {
                               setSelectedResource(doc);
                               setDialogMode('edit');
                               setIsDialogOpen(true);
                             }}
-                            className="px-2 py-1 text-slate-500 hover:text-blue-650 hover:bg-blue-50 border border-transparent hover:border-blue-100 rounded text-[11px] font-semibold transition-colors"
+                            className="px-2 py-1 text-muted-foreground hover:text-blue-650 hover:bg-blue-50 border border-transparent hover:border-blue-100 rounded text-[11px] font-semibold transition-colors"
                           >
                             Edit
                           </button>
                           <button
                             onClick={() => handleDelete(doc.id)}
-                            className="px-2 py-1 text-slate-500 hover:text-red-650 hover:bg-red-50 border border-transparent hover:border-red-100 rounded text-[11px] font-semibold transition-colors"
+                            className="px-2 py-1 text-muted-foreground hover:text-red-650 hover:bg-red-50 border border-transparent hover:border-red-100 rounded text-[11px] font-semibold transition-colors"
                           >
                             Delete
                           </button>
@@ -325,13 +326,13 @@ export default function ResourcesPage() {
 
             {/* Code Starters */}
             <div>
-              <div className="flex items-center gap-2 mb-4 border-b border-slate-100 pb-2">
+              <div className="flex items-center gap-2 mb-4 border-b border-border pb-2">
                 <span className="material-symbols-outlined text-emerald-600">code</span>
-                <h3 className="text-lg font-bold text-slate-900">Code Starters</h3>
+                <h3 className="text-lg font-bold text-foreground">Code Starters</h3>
               </div>
               
               {codeStarters.length === 0 ? (
-                <p className="text-xs text-slate-400 py-2 italic text-left">No codebase ZIPs / links.</p>
+                <p className="text-xs text-muted-foreground py-2 italic text-left">No codebase ZIPs / links.</p>
               ) : (
                 <ul className="space-y-3">
                   {codeStarters.map((code) => (
@@ -346,14 +347,14 @@ export default function ResourcesPage() {
                           </div>
                           <div className="min-w-0">
                             <p className="text-xs font-semibold truncate text-slate-100">{code.title}</p>
-                            <p className="text-[10px] text-slate-400 uppercase">{code.resourceType}</p>
+                            <p className="text-[10px] text-muted-foreground uppercase">{code.resourceType}</p>
                           </div>
                         </div>
                         <a
                           href={code.url}
                           target="_blank"
                           rel="noreferrer"
-                          className="p-1.5 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition-colors"
+                          className="p-1.5 text-muted-foreground hover:text-white rounded hover:bg-slate-800 transition-colors"
                           title="Link"
                         >
                           <span className="material-symbols-outlined text-sm">open_in_new</span>
@@ -368,13 +369,13 @@ export default function ResourcesPage() {
                               setDialogMode('edit');
                               setIsDialogOpen(true);
                             }}
-                            className="px-2 py-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded text-[11px] font-semibold transition-colors"
+                            className="px-2 py-1 text-muted-foreground hover:text-white hover:bg-slate-800 rounded text-[11px] font-semibold transition-colors"
                           >
                             Edit
                           </button>
                           <button
                             onClick={() => handleDelete(code.id)}
-                            className="px-2 py-1 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded text-[11px] font-semibold transition-colors"
+                            className="px-2 py-1 text-muted-foreground hover:text-red-400 hover:bg-slate-800 rounded text-[11px] font-semibold transition-colors"
                           >
                             Delete
                           </button>
@@ -392,15 +393,15 @@ export default function ResourcesPage() {
       {/* --- CRUD Slideover/Dialog Modal --- */}
       {isDialogOpen && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg border border-slate-200 shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="p-5 border-b border-slate-150 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-slate-900">
+          <div className="bg-card rounded-lg border border-border shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-5 border-b border-border flex items-center justify-between">
+              <h3 className="text-lg font-bold text-foreground">
                 {dialogMode === 'create' ? 'Add Class Resource' : 'Edit Class Resource'}
               </h3>
               <button
                 type="button"
                 onClick={() => setIsDialogOpen(false)}
-                className="text-slate-400 hover:text-slate-600"
+                className="text-muted-foreground hover:text-muted-foreground"
               >
                 <span className="material-symbols-outlined">close</span>
               </button>
@@ -409,25 +410,25 @@ export default function ResourcesPage() {
             <form onSubmit={handleSubmit} className="p-5 overflow-y-auto space-y-4 flex-1">
               {/* Title */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Resource Title *</label>
+                <label className="block text-xs font-bold text-foreground uppercase mb-1">Resource Title *</label>
                 <input
                   type="text"
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g. Intro to Node.js Guide"
-                  className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                 />
               </div>
 
               {/* Course */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Course *</label>
+                <label className="block text-xs font-bold text-foreground uppercase mb-1">Course *</label>
                 <select
                   required
                   value={courseId}
                   onChange={(e) => setCourseId(e.target.value)}
-                  className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                 >
                   <option value="">Select a Course</option>
                   {coursesList.map((c) => (
@@ -440,11 +441,11 @@ export default function ResourcesPage() {
 
               {/* Module Filter/ID */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Module ID (Optional)</label>
+                <label className="block text-xs font-bold text-foreground uppercase mb-1">Module ID (Optional)</label>
                 <select
                   value={moduleId}
                   onChange={(e) => setModuleId(e.target.value)}
-                  className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                 >
                   <option value="">None / General</option>
                   <option value="m1">Module 1</option>
@@ -455,22 +456,22 @@ export default function ResourcesPage() {
 
               {/* Description */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Description</label>
+                <label className="block text-xs font-bold text-foreground uppercase mb-1">Description</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Tell students about this lecture slides, helper files or codes..."
-                  className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-900 h-20 resize-none focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground h-20 resize-none focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                 />
               </div>
 
               {/* Resource Type */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Resource Type</label>
+                <label className="block text-xs font-bold text-foreground uppercase mb-1">Resource Type</label>
                 <select
                   value={resourceType}
                   onChange={(e) => setResourceType(e.target.value)}
-                  className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-705 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                 >
                   <option value="VIDEO">Video Lecture</option>
                   <option value="PDF">PDF Guideline</option>
@@ -483,9 +484,9 @@ export default function ResourcesPage() {
 
               {/* Source Mode Toggle (File upload to Cloudinary vs direct link insertion) */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Upload Method</label>
+                <label className="block text-xs font-bold text-foreground uppercase mb-1">Upload Method</label>
                 <div className="flex gap-4 mb-2">
-                  <label className="flex items-center gap-1.5 text-xs text-slate-650 cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
                     <input
                       type="radio"
                       name="sourceType"
@@ -494,7 +495,7 @@ export default function ResourcesPage() {
                     />
                     Provide Web Link / URL
                   </label>
-                  <label className="flex items-center gap-1.5 text-xs text-slate-650 cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
                     <input
                       type="radio"
                       name="sourceType"
@@ -511,15 +512,15 @@ export default function ResourcesPage() {
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
                     placeholder="https://example.com/resources/file"
-                    className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                    className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                   />
                 ) : (
-                  <div className="border-2 border-dashed border-slate-200 rounded p-4 flex flex-col items-center justify-center bg-slate-50">
-                    <span className="material-symbols-outlined text-slate-400 text-3xl mb-1">upload_file</span>
+                  <div className="border-2 border-dashed border-border rounded p-4 flex flex-col items-center justify-center bg-muted/40">
+                    <span className="material-symbols-outlined text-muted-foreground text-3xl mb-1">upload_file</span>
                     <input
                       type="file"
                       onChange={(e) => setFile(e.target.files?.[0] || null)}
-                      className="text-xs text-slate-500 focus:outline-none"
+                      className="text-xs text-muted-foreground focus:outline-none"
                     />
                     {file && (
                       <p className="text-[10px] text-emerald-600 mt-2 font-semibold">
@@ -531,11 +532,11 @@ export default function ResourcesPage() {
               </div>
 
               {/* Submit Buttons */}
-              <div className="border-t border-slate-150 pt-4 flex gap-3 justify-end">
+              <div className="border-t border-border pt-4 flex gap-3 justify-end">
                 <button
                   type="button"
                   onClick={() => setIsDialogOpen(false)}
-                  className="px-4 py-2 border border-slate-205 hover:bg-slate-100 text-slate-700 text-sm font-semibold rounded"
+                  className="px-4 py-2 border border-border hover:bg-muted text-foreground text-sm font-semibold rounded"
                 >
                   Cancel
                 </button>

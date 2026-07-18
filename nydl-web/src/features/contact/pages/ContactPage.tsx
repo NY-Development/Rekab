@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
+import { Mail, HelpCircle, Phone, Clock, ArrowRight } from 'lucide-react';
+import { SUPPORT_EMAIL, SUPPORT_PHONE } from '@/components/common/SupportContactModal';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -7,7 +10,7 @@ export default function ContactPage() {
     lastName: '',
     email: '',
     interest: '',
-    message: ''
+    message: '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -16,62 +19,66 @@ export default function ContactPage() {
       toast.error('Please fill in all required fields.');
       return;
     }
-    toast.success('Your message has been sent successfully!');
+    toast.success("Thanks! Your message has been sent — we'll get back to you shortly.");
     setFormData({ firstName: '', lastName: '', email: '', interest: '', message: '' });
   };
 
+  const inputClass =
+    'w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary';
+  const labelClass = 'block text-xs font-semibold uppercase tracking-wider text-muted-foreground';
+
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 md:px-8 py-12 md:py-16">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Contact Form */}
+    <div className="mx-auto w-full max-w-7xl px-4 py-12 md:px-8 md:py-16">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+        {/* Form */}
         <div className="lg:col-span-7">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">Get in touch</h1>
-            <p className="text-slate-600">We'd love to hear from you. Please fill out this form or shoot us an email.</p>
+            <h1 className="mb-2 text-3xl font-bold text-foreground">Get in touch</h1>
+            <p className="text-muted-foreground">
+              We'd love to hear from you. Fill out the form below or reach us directly.
+            </p>
           </div>
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 md:p-8">
+          <div className="rounded-xl border border-border bg-card p-6 shadow-sm md:p-8">
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block" htmlFor="first-name">First name</label>
+                  <label className={labelClass} htmlFor="first-name">First name</label>
                   <input
-                    className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors"
+                    className={inputClass}
                     id="first-name"
                     placeholder="Jane"
-                    type="text"
                     value={formData.firstName}
                     onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                     required
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block" htmlFor="last-name">Last name</label>
+                  <label className={labelClass} htmlFor="last-name">Last name</label>
                   <input
-                    className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors"
+                    className={inputClass}
                     id="last-name"
                     placeholder="Doe"
-                    type="text"
                     value={formData.lastName}
                     onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                   />
                 </div>
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block" htmlFor="email">Email</label>
+                <label className={labelClass} htmlFor="email">Email</label>
                 <input
-                  className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors"
+                  className={inputClass}
                   id="email"
-                  placeholder="you@example.com"
                   type="email"
+                  placeholder="you@example.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block" htmlFor="interest">What can we help you with?</label>
+                <label className={labelClass} htmlFor="interest">What can we help you with?</label>
                 <select
-                  className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors"
+                  className={inputClass}
                   id="interest"
                   value={formData.interest}
                   onChange={(e) => setFormData({ ...formData, interest: e.target.value })}
@@ -79,64 +86,79 @@ export default function ContactPage() {
                 >
                   <option value="" disabled>Select a topic</option>
                   <option value="courses">Course Information</option>
-                  <option value="admissions">Admissions & Applications</option>
-                  <option value="billing">Billing & Payments</option>
+                  <option value="admissions">Registration & Enrollment</option>
+                  <option value="billing">Payments</option>
                   <option value="technical">Technical Support</option>
                   <option value="other">Other</option>
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block" htmlFor="message">Message</label>
+                <label className={labelClass} htmlFor="message">Message</label>
                 <textarea
-                  className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-colors resize-none"
+                  className={`${inputClass} resize-none`}
                   id="message"
-                  placeholder="Leave us a message..."
+                  placeholder="Leave us a message…"
                   rows={5}
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                   required
                 />
               </div>
-              <button className="w-full bg-blue-650 hover:bg-blue-700 text-white rounded-md py-2 px-3 font-semibold text-sm transition-colors shadow-sm" type="submit">
+              <button
+                type="submit"
+                className="w-full rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+              >
                 Send message
               </button>
             </form>
           </div>
         </div>
 
-        {/* Support & Office Contact Info */}
-        <div className="lg:col-span-5 space-y-6 pt-6 lg:pt-0">
-          <div className="bg-slate-50 rounded-xl border border-slate-200 p-6 flex flex-col gap-4">
-            <h3 className="text-lg font-semibold text-slate-900">Support</h3>
-            <div className="flex items-start gap-3">
-              <span className="material-symbols-outlined text-blue-600 bg-blue-100 p-1.5 rounded-full text-base">mail</span>
+        {/* Contact info */}
+        <div className="space-y-6 pt-6 lg:col-span-5 lg:pt-0">
+          <div className="flex flex-col gap-4 rounded-xl border border-border bg-muted/40 p-6">
+            <h3 className="text-lg font-semibold text-foreground">Reach us directly</h3>
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="flex items-start gap-3 group">
+              <span className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <Mail className="size-4" />
+              </span>
               <div>
-                <p className="text-sm font-semibold text-slate-900">Email Us</p>
-                <a className="text-xs text-slate-500 hover:text-blue-600 transition-colors" href="mailto:support@nydl.edu">support@nydl.edu</a>
+                <p className="text-sm font-semibold text-foreground">Email us</p>
+                <p className="text-xs text-muted-foreground group-hover:text-primary">{SUPPORT_EMAIL}</p>
               </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="material-symbols-outlined text-blue-600 bg-blue-100 p-1.5 rounded-full text-base">help_center</span>
+            </a>
+            <a href={`tel:${SUPPORT_PHONE}`} className="flex items-start gap-3 group">
+              <span className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <Phone className="size-4" />
+              </span>
               <div>
-                <p className="text-sm font-semibold text-slate-900">Help Center</p>
-                <p className="text-xs text-slate-500 mb-1">Find answers to common questions.</p>
-                <a className="text-xs text-blue-600 hover:underline flex items-center gap-1" href="#/help">Visit Help Center <span className="material-symbols-outlined text-[14px]">arrow_forward</span></a>
+                <p className="text-sm font-semibold text-foreground">Call or text</p>
+                <p className="text-xs text-muted-foreground group-hover:text-primary">{SUPPORT_PHONE}</p>
+              </div>
+            </a>
+            <div className="flex items-start gap-3">
+              <span className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <HelpCircle className="size-4" />
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-foreground">Help Center</p>
+                <p className="mb-1 text-xs text-muted-foreground">Find answers to common questions.</p>
+                <Link to="/help" className="flex items-center gap-1 text-xs text-primary hover:underline">
+                  Visit Help Center <ArrowRight className="size-3" />
+                </Link>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-            <div className="p-6">
-              <h3 className="text-lg font-semibold text-slate-900 mb-2 flex items-center gap-1">
-                <span className="material-symbols-outlined text-slate-500">location_on</span>
-                NYDL Headquarters
-              </h3>
-              <address className="text-xs text-slate-550 not-italic space-y-1">
-                <p>123 Learning Avenue, Suite 400</p>
-                <p>New York, NY 10012</p>
-                <p className="pt-2 font-semibold">Office Hours:</p>
-                <p>Mon-Fri, 9:00 AM - 6:00 PM EST (UTC-5)</p>
-              </address>
+          <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+            <h3 className="mb-2 flex items-center gap-2 text-lg font-semibold text-foreground">
+              <Clock className="size-5 text-primary" />
+              Availability
+            </h3>
+            <div className="space-y-1 text-xs text-muted-foreground">
+              <p>We're an online-first program serving students across Ethiopia and beyond.</p>
+              <p className="pt-2 font-semibold text-foreground">Support hours:</p>
+              <p>Monday – Saturday, 9:00 AM – 7:00 PM (EAT)</p>
             </div>
           </div>
         </div>

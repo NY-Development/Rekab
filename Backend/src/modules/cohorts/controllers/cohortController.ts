@@ -40,7 +40,7 @@ export class CohortController {
   }
 
   async createCohort(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
-    const { courseId, name, code, startDate, endDate, maxCapacity, instructors, schedule } = req.body;
+    const { courseId, name, code, batch, startDate, endDate, maxCapacity, instructors, schedule } = req.body;
     try {
       const cohort = await this.cohortService.createCohort(
         req.user!.id,
@@ -49,6 +49,7 @@ export class CohortController {
           courseId,
           name,
           code,
+          batch,
           startDate,
           endDate,
           maxCapacity,

@@ -7,6 +7,7 @@ const CohortSchema = new Schema<ICohortDocument>({
   courseId: { type: Schema.Types.ObjectId as any, ref: 'Course', required: true, index: true },
   name: { type: String, required: true },
   code: { type: String, required: true, unique: true, index: true },
+  batch: { type: String, index: true },
   startDate: { type: String, required: true },
   endDate: { type: String, required: true },
   enrollmentStart: { type: String },

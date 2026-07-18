@@ -164,6 +164,7 @@ export interface Cohort {
   courseId: string; // Ref to Course
   name: string;
   code: string; // e.g. NYDL-2026-FS-A
+  batch?: string; // e.g. "Summer 2026" — one cohort per course per batch
   startDate: string;
   endDate: string;
   status: 'upcoming' | 'active' | 'completed' | 'cancelled' | 'UPCOMING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED' | string;

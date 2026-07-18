@@ -20,6 +20,12 @@ const ContactPage = lazy(
 const HelpPage = lazy(
   () => import("@/features/help/pages/HelpPage")
 );
+const PrivacyPolicyPage = lazy(
+  () => import("@/features/legal/pages/PrivacyPolicyPage")
+);
+const TermsOfServicePage = lazy(
+  () => import("@/features/legal/pages/TermsOfServicePage")
+);
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -31,6 +37,8 @@ export const publicRoutes: RouteObject[] = [
       { path: "/about", element: <AboutPage /> },
       { path: "/contact", element: <ContactPage /> },
       { path: "/help", element: <HelpPage /> },
+      { path: "/privacy", element: <PrivacyPolicyPage /> },
+      { path: "/terms", element: <TermsOfServicePage /> },
     ],
   },
 ];

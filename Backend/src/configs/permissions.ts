@@ -139,9 +139,23 @@ export function normalizeRole(role: string): Role {
   return role.toUpperCase() as Role;
 }
 
+/**
+ * Instructor and mentor are the same thing on this platform. Mentor is kept as
+ * an accepted alias but resolves to the instructor policy/scope everywhere.
+ */
+export function effectiveRole(role: string): Role {
+  const normalized = normalizeRole(role);
+  return normalized === 'MENTOR' ? 'INSTRUCTOR' : normalized;
+}
+
+/** True for instructor or its mentor alias. */
+export function isInstructorRole(role: string): boolean {
+  return effectiveRole(role) === 'INSTRUCTOR';
+}
+
 /** Returns the scope a role has for an action, or 'none' when forbidden. */
 export function can(role: string, resource: Resource, action: Action): Scope {
-  return PERMISSIONS[resource]?.[normalizeRole(role)]?.[action] ?? 'none';
+  return PERMISSIONS[resource]?.[effectiveRole(role)]?.[action] ?? 'none';
 }
 
 export function isAdminRole(role: string): boolean {

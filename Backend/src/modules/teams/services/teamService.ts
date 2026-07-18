@@ -18,6 +18,12 @@ export class TeamService {
     return this.teamRepository.findByCohortId(cohortId);
   }
 
+  /** The team the given student belongs to (or null if unassigned). */
+  async getMyTeam(userId: string): Promise<Team | null> {
+    const teams = await this.teamRepository.findByMemberUserId(userId);
+    return teams[0] || null;
+  }
+
   async createTeam(data: CreateTeamDto): Promise<Team> {
     const existing = await this.teamRepository.findByTeamCode(data.teamCode);
     if (existing) {

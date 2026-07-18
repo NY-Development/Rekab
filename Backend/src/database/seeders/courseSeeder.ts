@@ -1,6 +1,6 @@
 import { CourseModel } from '@/modules/courses/models/Course';
 import { CohortRepository } from '@/modules/cohorts/repositories/cohortRepository';
-import { ensureCourseCohorts } from '@/services/cohortProvisioning.service';
+import { ensureCourseCohort } from '@/services/cohortProvisioning.service';
 import { COURSE_SEEDS, withIds } from './courseCurriculumData';
 
 const cohortRepository = new CohortRepository();
@@ -42,8 +42,8 @@ export async function seedCourses(): Promise<void> {
       await CourseModel.updateOne({ _id: existing._id }, { $set: fields });
     }
 
-    // Every course keeps exactly 4 cohorts (5 seats each) ready for registration.
-    await ensureCourseCohorts(cohortRepository, courseDoc!.toJSON() as any);
+    // Every course keeps one batch-wide cohort ready for registration.
+    await ensureCourseCohort(cohortRepository, courseDoc!.toJSON() as any);
   }
 }
 

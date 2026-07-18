@@ -4,6 +4,7 @@ export const CohortSchema = z.object({
   courseId: z.string().min(1, 'Course ID is required'),
   name: z.string().min(3, 'Cohort name must be at least 3 characters'),
   code: z.string().min(3, 'Cohort code must be at least 3 characters'),
+  batch: z.string().optional(),
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Start date must be in YYYY-MM-DD format'),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'End date must be in YYYY-MM-DD format'),
   maxCapacity: z.number().int().positive('Max capacity must be a positive number'),
@@ -14,6 +15,7 @@ export const CohortSchema = z.object({
 export const UpdateCohortSchema = z.object({
   name: z.string().min(3).optional(),
   code: z.string().min(3).optional(),
+  batch: z.string().optional(),
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   maxCapacity: z.number().int().positive().optional(),

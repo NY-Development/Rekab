@@ -5,7 +5,7 @@ import { CreateEnrollmentDto, UpdateEnrollmentDto } from '../dtos/enrollmentDto'
 import { Enrollment } from '../../../types';
 import { AppError } from '../../../middlewares/errorHandler';
 import { DBStore } from '../../../services/dbStore';
-import { ensureCourseCohorts } from '../../../services/cohortProvisioning.service';
+import { ensureCourseCohort } from '../../../services/cohortProvisioning.service';
 
 export class EnrollmentService {
   constructor(
@@ -34,10 +34,10 @@ export class EnrollmentService {
   }
 
   /**
-   * Randomly assigns the student to one of the course's cohorts that still
-   * has an open seat. Cohorts are provisioned 4-per-course (5 seats each) at
-   * course-creation time; this call also self-heals courses created before
-   * that behavior existed by topping them up to 4 cohorts on demand.
+   * A cohort is the whole student body for a course in the current batch, so
+   * every student registering for a course joins that one batch cohort (created
+   * on demand if it doesn't exist yet). Teams — the small project groups within
+   * a cohort — are assigned separately by instructors.
    */
   private async resolveCohortId(courseId: string): Promise<string> {
     const course = await this.courseRepository.findById(courseId);
@@ -45,17 +45,8 @@ export class EnrollmentService {
       throw new AppError('Course associated with this registration not found', 404);
     }
 
-    const cohorts = await ensureCourseCohorts(this.cohortRepository, course);
-    const openCohorts = cohorts.filter(
-      (c) => (c.status === 'upcoming' || c.status === 'active') && (!c.students || c.students.length < (c.maxCapacity || 5))
-    );
-
-    if (openCohorts.length === 0) {
-      throw new AppError('All cohorts for this course are currently full. Please contact an administrator.', 400);
-    }
-
-    const randomCohort = openCohorts[Math.floor(Math.random() * openCohorts.length)];
-    return randomCohort.id;
+    const cohort = await ensureCourseCohort(this.cohortRepository, course);
+    return cohort.id;
   }
 
   async apply(data: CreateEnrollmentDto): Promise<Enrollment> {

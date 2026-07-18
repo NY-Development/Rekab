@@ -16,6 +16,15 @@ export class TeamController {
     }
   }
 
+  async getMyTeam(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const team = await this.teamService.getMyTeam(req.user!.id);
+      res.status(200).json({ status: 'success', data: team });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async listTeams(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       const validated = await TeamFilterSchema.parseAsync(req.query);

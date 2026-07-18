@@ -23,6 +23,17 @@ export function isAdminRole(role: string | undefined | null): boolean {
   return normalized === 'ADMIN' || normalized === 'SUPER_ADMIN';
 }
 
+/** Instructor and mentor are the same role on this platform. */
+export function isInstructorRole(role: string | undefined | null): boolean {
+  const normalized = normalizeRole(role);
+  return normalized === 'INSTRUCTOR' || normalized === 'MENTOR';
+}
+
+/** Staff = admins + instructors/mentors; used to gate management UI. */
+export function isStaffRole(role: string | undefined | null): boolean {
+  return isAdminRole(role) || isInstructorRole(role);
+}
+
 export const ADMIN_APP_URL: string =
   (import.meta.env.VITE_ADMIN_URL as string | undefined) || 'https://nydl-admin-v1.vercel.app';
 
@@ -37,7 +48,7 @@ export type Capability =
 const CAPABILITIES: Record<Capability, UserRole[]> = {
   'enroll-in-courses': ['STUDENT'],
   'submit-assignments': ['STUDENT'],
-  'manage-content': ['INSTRUCTOR'],
+  'manage-content': ['INSTRUCTOR', 'MENTOR'],
   'review-submissions': ['INSTRUCTOR', 'MENTOR'],
   'view-own-progress': ['STUDENT'],
 };

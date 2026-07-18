@@ -1,87 +1,88 @@
-
 export default function AboutPage() {
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 md:px-8 py-12 md:py-20 flex flex-col gap-16">
-      {/* Zero configuration hero section matching Design specs */}
-      <section className="flex flex-col items-center text-center max-w-3xl mx-auto space-y-6">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-100 font-medium text-xs uppercase tracking-wider">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-16 px-4 py-12 md:px-8 md:py-20">
+      {/* Hero */}
+      <section className="mx-auto flex max-w-3xl flex-col items-center space-y-6 text-center">
+        <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium uppercase tracking-wider text-primary">
           <span className="material-symbols-outlined text-[16px]">flag</span>
           Our Mission
         </div>
-        <h1 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight leading-tight">
+        <h1 className="text-3xl font-bold leading-tight tracking-tight text-foreground md:text-4xl">
           Empowering engineers through cohort-based accountability.
         </h1>
-        <p className="text-base md:text-lg text-slate-600 max-w-2xl">
-          We believe that great software engineers aren't built in isolation. NYDEV Learning provides the structure, peer network, and mentorship necessary to transform passive learners into active builders.
+        <p className="max-w-2xl text-base text-muted-foreground md:text-lg">
+          We believe great software engineers aren't built in isolation. NYDEV Learning provides the structure, peer
+          network, and mentorship needed to transform passive learners into active builders.
         </p>
       </section>
 
-      {/* Philosophy Section */}
+      {/* Philosophy */}
       <section className="space-y-8">
         <div className="flex flex-col gap-2">
-          <h2 className="text-2xl font-semibold text-slate-900">Learning Philosophy</h2>
-          <p className="text-slate-600">Moving beyond passive video watching.</p>
+          <h2 className="text-2xl font-semibold text-foreground">Learning Philosophy</h2>
+          <p className="text-muted-foreground">Moving beyond passive video watching.</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white border border-slate-200 rounded-lg p-6 md:p-8 flex flex-col justify-between min-h-[240px] md:col-span-2 shadow-sm hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center mb-6">
-              <span className="material-symbols-outlined text-blue-600 text-[28px]">construction</span>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <div className="flex min-h-[240px] flex-col justify-between rounded-lg border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-md md:col-span-2 md:p-8">
+            <div className="mb-6 flex size-12 items-center justify-center rounded-lg border border-border bg-muted">
+              <span className="material-symbols-outlined text-[28px] text-primary">construction</span>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-slate-955 mb-2">Active, Team-Based Building</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">
-                Tutorial hell ends here. Our curriculum is designed around building real-world projects in small, cross-functional teams. You learn by doing, reviewing PRs, and resolving merge conflicts together.
+              <h3 className="mb-2 text-lg font-semibold text-foreground">Active, Team-Based Building</h3>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Tutorial hell ends here. Our curriculum is built around real-world projects in small,
+                cross-functional teams. You learn by doing — reviewing PRs and resolving merge conflicts together.
               </p>
             </div>
           </div>
-          <div className="bg-white border border-slate-200 rounded-lg p-6 md:p-8 flex flex-col justify-between min-h-[240px] shadow-sm hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center mb-6">
-              <span className="material-symbols-outlined text-blue-600 text-[28px]">speed</span>
+          <div className="flex min-h-[240px] flex-col justify-between rounded-lg border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-md md:p-8">
+            <div className="mb-6 flex size-12 items-center justify-center rounded-lg border border-border bg-muted">
+              <span className="material-symbols-outlined text-[28px] text-primary">speed</span>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">High Velocity</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">
-                Intense, focused sprints designed to mimic the pace of high-performing engineering teams.
+              <h3 className="mb-2 text-lg font-semibold text-foreground">High Velocity</h3>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Focused, intense sprints designed to mirror the pace of high-performing engineering teams.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Cohort Steps */}
+      {/* Cohort system */}
       <section className="space-y-8">
-        <div className="flex flex-col gap-2 border-b border-slate-200 pb-4">
-          <h2 className="text-2xl font-semibold text-slate-900">The Cohort System</h2>
-          <p className="text-slate-600">Structure designed for completion and mastery.</p>
+        <div className="flex flex-col gap-2 border-b border-border pb-4">
+          <h2 className="text-2xl font-semibold text-foreground">The Cohort System</h2>
+          <p className="text-muted-foreground">Structure designed for completion and mastery.</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="flex flex-col gap-4">
-            <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-700 font-bold flex items-center justify-center">1</div>
-            <div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">Teams</h3>
-              <p className="text-sm text-slate-500">
-                Placed in pods of 4-6 engineers, ensuring you always have peers to pair-program with, unblock issues, and hold you accountable to weekly goals.
-              </p>
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+          {[
+            {
+              n: 1,
+              title: 'Cohorts & Teams',
+              body: 'You join a cohort — everyone taking your course this batch — and get placed in a small team of 3–6 so you always have peers to pair with, unblock issues, and stay accountable to weekly goals.',
+            },
+            {
+              n: 2,
+              title: 'Mentorship',
+              body: 'Live sessions, code reviews, and guidance from experienced instructors. Real feedback on your work, not just automated test results.',
+            },
+            {
+              n: 3,
+              title: 'Deadlines',
+              body: 'Clear weekly milestones. Real deadlines replicate engineering sprint cycles, curing procrastination and keeping momentum.',
+            },
+          ].map((step) => (
+            <div key={step.n} className="flex flex-col gap-4">
+              <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 font-bold text-primary">
+                {step.n}
+              </div>
+              <div>
+                <h3 className="mb-2 text-lg font-semibold text-foreground">{step.title}</h3>
+                <p className="text-sm text-muted-foreground">{step.body}</p>
+              </div>
             </div>
-          </div>
-          <div className="flex flex-col gap-4">
-            <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-700 font-bold flex items-center justify-center">2</div>
-            <div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">Mentorship</h3>
-              <p className="text-sm text-slate-500">
-                Weekly 1:1s and code reviews from Senior Engineers working at top tech companies. Real feedback, not just automated test results.
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-col gap-4">
-            <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-700 font-bold flex items-center justify-center">3</div>
-            <div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">Deadlines</h3>
-              <p className="text-sm text-slate-500">
-                Strict weekly milestones. Hard deadlines replicate real engineering sprint cycles, curing procrastination and ensuring continuous progress.
-              </p>
-            </div>
-          </div>
+          ))}
         </div>
       </section>
     </div>

@@ -13,6 +13,8 @@ const teamController = new TeamController(teamService);
 
 // Team routes
 router.get('/', requireAuthenticated, (req, res, next) => teamController.listTeams(req, res, next));
+// Must precede '/:id' so "my-team" isn't treated as a team id.
+router.get('/my-team', requireAuthenticated, (req, res, next) => teamController.getMyTeam(req, res, next));
 router.get('/:id', requireAuthenticated, (req, res, next) => teamController.getTeamById(req, res, next));
 router.post('/', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN', 'INSTRUCTOR'), validateBody(CreateTeamSchema), (req, res, next) => teamController.createTeam(req, res, next));
 router.put('/:id', requireAuthenticated, authorize('ADMIN', 'SUPER_ADMIN', 'INSTRUCTOR', 'MENTOR'), validateBody(UpdateTeamSchema), (req, res, next) => teamController.updateTeam(req, res, next));

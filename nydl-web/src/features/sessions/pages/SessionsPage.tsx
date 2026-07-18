@@ -3,6 +3,7 @@ import { useSessions, useCreateSession, useUpdateSession, useDeleteSession } fro
 import { useCourses } from '@/hooks/useCourses';
 import { useCohorts } from '@/hooks/useCohorts';
 import { useAuthStore } from '@/store/auth.store';
+import { isStaffRole } from '@/lib/permissions';
 import type { Session } from '@/types';
 
 export default function SessionsPage() {
@@ -10,7 +11,7 @@ export default function SessionsPage() {
   
   // Auth and query hooks
   const { user } = useAuthStore();
-  const isStaff = user && ['ADMIN', 'SUPER_ADMIN', 'INSTRUCTOR'].includes(user.role);
+  const isStaff = isStaffRole(user?.role);
 
   const { data: sessionsRes, isLoading, error } = useSessions();
   const { data: coursesRes } = useCourses();
@@ -132,21 +133,21 @@ export default function SessionsPage() {
   return (
     <div className="w-full max-w-7xl mx-auto px-4 md:px-8 py-10 relative">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 pb-6 border-b border-slate-100">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 pb-6 border-b border-border">
         <div>
-          <h2 className="text-2xl md:text-3xl font-bold text-slate-900">Live Sessions</h2>
-          <p className="text-sm text-slate-550 mt-1">Access and manage your upcoming classes for the week.</p>
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground">Live Sessions</h2>
+          <p className="text-sm text-muted-foreground mt-1">Access and manage your upcoming classes for the week.</p>
         </div>
         
         {/* View Toggles & Add Button */}
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-          <div className="flex bg-slate-100 border border-slate-200 rounded-lg p-1 w-full sm:w-auto">
+          <div className="flex bg-muted border border-border rounded-lg p-1 w-full sm:w-auto">
             <button
               onClick={() => setViewMode('list')}
               className={`flex-1 sm:flex-initial px-4 py-1.5 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                 viewMode === 'list'
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-slate-500 hover:text-blue-600'
+                  ? 'bg-card text-blue-600 shadow-sm'
+                  : 'text-muted-foreground hover:text-blue-600'
               }`}
             >
               <span className="material-symbols-outlined text-[18px]">list</span>
@@ -156,8 +157,8 @@ export default function SessionsPage() {
               onClick={() => setViewMode('calendar')}
               className={`flex-1 sm:flex-initial px-4 py-1.5 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                 viewMode === 'calendar'
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-slate-500 hover:text-blue-600'
+                  ? 'bg-card text-blue-600 shadow-sm'
+                  : 'text-muted-foreground hover:text-blue-600'
               }`}
             >
               <span className="material-symbols-outlined text-[18px]">calendar_month</span>
@@ -189,19 +190,19 @@ export default function SessionsPage() {
           Failed to load live sessions.
         </div>
       ) : viewMode === 'calendar' ? (
-        <div className="bg-white border border-slate-200 rounded-lg p-12 text-center text-slate-500">
-          <span className="material-symbols-outlined text-4xl text-slate-400 mb-2">calendar_today</span>
+        <div className="bg-card border border-border rounded-lg p-12 text-center text-muted-foreground">
+          <span className="material-symbols-outlined text-4xl text-muted-foreground mb-2">calendar_today</span>
           <p className="text-sm">Interactive calendar grid showing scheduled times. Please refer to List View for join links.</p>
         </div>
       ) : sortedSessions.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-lg p-12 text-center text-slate-500">
+        <div className="bg-card border border-border rounded-lg p-12 text-center text-muted-foreground">
           No live sessions scheduled.
         </div>
       ) : (
         /* Sessions List */
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-8 space-y-4">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">This Week</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-4">This Week</h3>
             {sortedSessions.map((session) => {
               const scheduledDate = new Date(session.sessionDate);
               const isToday = scheduledDate.toDateString() === new Date().toDateString();
@@ -215,21 +216,21 @@ export default function SessionsPage() {
               return (
                 <div
                   key={session.id}
-                  className="bg-white border border-slate-205 rounded-lg p-6 hover:shadow-sm transition-all flex flex-col md:flex-row gap-6 relative overflow-hidden group"
+                  className="bg-card border border-border rounded-lg p-6 hover:shadow-sm transition-all flex flex-col md:flex-row gap-6 relative overflow-hidden group"
                 >
                   {(isToday || isLive) && (
                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600"></div>
                   )}
                   
                   {/* Left date/time circle */}
-                  <div className="flex-shrink-0 flex flex-col items-center justify-center bg-slate-50 rounded-md w-24 h-24 border border-slate-200">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                  <div className="flex-shrink-0 flex flex-col items-center justify-center bg-muted/40 rounded-md w-24 h-24 border border-border">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                       {isToday ? 'Today' : scheduledDate.toLocaleDateString(undefined, { weekday: 'short' })}
                     </span>
                     <span className="text-lg font-bold text-blue-650 mt-1">
                       {timeStr.split(' ')[0]}
                     </span>
-                    <span className="text-xs text-slate-500">
+                    <span className="text-xs text-muted-foreground">
                       {timeStr.split(' ')[1]}
                     </span>
                   </div>
@@ -240,28 +241,28 @@ export default function SessionsPage() {
                       <span className="bg-blue-50 text-blue-700 border border-blue-100 px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider">
                         {session.type || 'Lecture'}
                       </span>
-                      <span className="bg-slate-100 text-slate-655 border border-slate-200 px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider">
+                      <span className="bg-muted text-muted-foreground border border-border px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider">
                         {session.status}
                       </span>
-                      <span className="flex items-center text-slate-400 text-xs">
+                      <span className="flex items-center text-muted-foreground text-xs">
                         <span className="material-symbols-outlined text-[16px] mr-1">schedule</span>
                         {session.duration} min
                       </span>
                     </div>
-                    <h4 className="text-lg font-bold text-slate-900 mb-1">{session.title}</h4>
-                    <p className="text-slate-500 text-sm leading-relaxed mb-4">
+                    <h4 className="text-lg font-bold text-foreground mb-1">{session.title}</h4>
+                    <p className="text-muted-foreground text-sm leading-relaxed mb-4">
                       {session.description}
                     </p>
 
                     {isStaff && (
-                      <div className="flex gap-2 border-t border-slate-100 pt-3">
+                      <div className="flex gap-2 border-t border-border pt-3">
                         <button
                           onClick={() => {
                             setSelectedSession(session);
                             setDialogMode('edit');
                             setIsDialogOpen(true);
                           }}
-                          className="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-semibold text-xs px-3 py-1.5 rounded transition-colors"
+                          className="bg-muted/40 hover:bg-muted border border-border text-foreground font-semibold text-xs px-3 py-1.5 rounded transition-colors"
                         >
                           Edit Details
                         </button>
@@ -277,7 +278,7 @@ export default function SessionsPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center justify-end md:border-l border-slate-100 md:pl-6 mt-4 md:mt-0">
+                  <div className="flex items-center justify-end md:border-l border-border md:pl-6 mt-4 md:mt-0">
                     {session.meetLink ? (
                       <a
                         href={session.meetLink}
@@ -290,7 +291,7 @@ export default function SessionsPage() {
                       </a>
                     ) : (
                       <button
-                        className="w-full md:w-auto bg-slate-100 text-slate-400 cursor-not-allowed text-xs font-semibold px-5 py-3 rounded-md flex items-center justify-center gap-2 font-medium"
+                        className="w-full md:w-auto bg-muted text-muted-foreground cursor-not-allowed text-xs font-semibold px-5 py-3 rounded-md flex items-center justify-center gap-2 font-medium"
                         disabled
                       >
                         <span className="material-symbols-outlined text-sm opacity-50">videocam</span>
@@ -305,9 +306,9 @@ export default function SessionsPage() {
 
           {/* Right Panel Widget */}
           <div className="lg:col-span-4 space-y-6">
-            <div className="bg-white border border-slate-205 rounded-lg p-6 shadow-sm">
-              <h3 className="text-base font-semibold text-slate-900 mb-4">Live Session Guidelines</h3>
-              <ul className="space-y-3 text-xs text-slate-500 leading-relaxed border-t border-slate-100 pt-4">
+            <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+              <h3 className="text-base font-semibold text-foreground mb-4">Live Session Guidelines</h3>
+              <ul className="space-y-3 text-xs text-muted-foreground leading-relaxed border-t border-border pt-4">
                 <li className="flex gap-2">
                   <span className="material-symbols-outlined text-blue-600 text-base leading-none">arrow_forward</span>
                   Please join live classes 5 minutes before scheduled start time.
@@ -329,15 +330,15 @@ export default function SessionsPage() {
       {/* --- CRUD Dialog Modal --- */}
       {isDialogOpen && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg border border-slate-200 shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="p-5 border-b border-slate-150 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-slate-900">
+          <div className="bg-card rounded-lg border border-border shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-5 border-b border-border flex items-center justify-between">
+              <h3 className="text-lg font-bold text-foreground">
                 {dialogMode === 'create' ? 'Schedule Live Session' : 'Edit Live Session'}
               </h3>
               <button
                 type="button"
                 onClick={() => setIsDialogOpen(false)}
-                className="text-slate-400 hover:text-slate-600"
+                className="text-muted-foreground hover:text-muted-foreground"
               >
                 <span className="material-symbols-outlined">close</span>
               </button>
@@ -346,20 +347,20 @@ export default function SessionsPage() {
             <form onSubmit={handleSubmit} className="p-5 overflow-y-auto space-y-4 flex-1">
               {/* Title */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Session Title *</label>
+                <label className="block text-xs font-bold text-foreground uppercase mb-1">Session Title *</label>
                 <input
                   type="text"
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g. Node.js Middleware Deep Dive"
-                  className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                 />
               </div>
 
               {/* Course */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Course *</label>
+                <label className="block text-xs font-bold text-foreground uppercase mb-1">Course *</label>
                 <select
                   required
                   value={courseId}
@@ -367,7 +368,7 @@ export default function SessionsPage() {
                     setCourseId(e.target.value);
                     setCohortId(''); // reset cohort
                   }}
-                  className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-707 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                 >
                   <option value="">Select a Course</option>
                   {coursesList.map((c) => (
@@ -380,13 +381,13 @@ export default function SessionsPage() {
 
               {/* Cohort */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Target Cohort *</label>
+                <label className="block text-xs font-bold text-foreground uppercase mb-1">Target Cohort *</label>
                 <select
                   required
                   disabled={!courseId}
                   value={cohortId}
                   onChange={(e) => setCohortId(e.target.value)}
-                  className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-707 disabled:bg-slate-50 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground disabled:bg-muted/40 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                 >
                   <option value="">Select a Cohort</option>
                   {cohortsList.map((c) => (
@@ -399,22 +400,22 @@ export default function SessionsPage() {
 
               {/* Description */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Description</label>
+                <label className="block text-xs font-bold text-foreground uppercase mb-1">Description</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Detail the agenda, prerequisites or materials for the class..."
-                  className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-900 h-20 resize-none focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground h-20 resize-none focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                 />
               </div>
 
               {/* Session Type */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Session Type</label>
+                <label className="block text-xs font-bold text-foreground uppercase mb-1">Session Type</label>
                 <select
                   value={type}
                   onChange={(e) => setType(e.target.value)}
-                  className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-707 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                 >
                   <option value="LECTURE">Video Lecture</option>
                   <option value="LAB">Practical Lab Session</option>
@@ -427,34 +428,34 @@ export default function SessionsPage() {
 
               {/* Date & Time */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Scheduled Date & Time *</label>
+                <label className="block text-xs font-bold text-foreground uppercase mb-1">Scheduled Date & Time *</label>
                 <input
                   type="datetime-local"
                   required
                   value={scheduledAt}
                   onChange={(e) => setScheduledAt(e.target.value)}
-                  className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                 />
               </div>
 
               {/* Duration & Google Meet Link */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Duration (Minutes)</label>
+                  <label className="block text-xs font-bold text-foreground uppercase mb-1">Duration (Minutes)</label>
                   <input
                     type="number"
                     min="5"
                     value={duration}
                     onChange={(e) => setDuration(Number(e.target.value))}
-                    className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                    className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Status</label>
+                  <label className="block text-xs font-bold text-foreground uppercase mb-1">Status</label>
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
-                    className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-707 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                    className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                   >
                     <option value="UPCOMING">Upcoming</option>
                     <option value="ACTIVE">Active / Live Now</option>
@@ -466,22 +467,22 @@ export default function SessionsPage() {
 
               {/* Google Meet Link */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Google Meet URL</label>
+                <label className="block text-xs font-bold text-foreground uppercase mb-1">Google Meet URL</label>
                 <input
                   type="url"
                   value={meetLink}
                   onChange={(e) => setMeetLink(e.target.value)}
                   placeholder="https://meet.google.com/abc-defg-hij"
-                  className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                 />
               </div>
 
               {/* Submit Buttons */}
-              <div className="border-t border-slate-150 pt-4 flex gap-3 justify-end">
+              <div className="border-t border-border pt-4 flex gap-3 justify-end">
                 <button
                   type="button"
                   onClick={() => setIsDialogOpen(false)}
-                  className="px-4 py-2 border border-slate-205 hover:bg-slate-100 text-slate-700 text-sm font-semibold rounded"
+                  className="px-4 py-2 border border-border hover:bg-muted text-foreground text-sm font-semibold rounded"
                 >
                   Cancel
                 </button>

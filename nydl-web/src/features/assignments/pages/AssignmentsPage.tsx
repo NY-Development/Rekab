@@ -12,6 +12,7 @@ import {
 import { useCourses } from '@/hooks/useCourses';
 import { useCohorts } from '@/hooks/useCohorts';
 import { useAuthStore } from '@/store/auth.store';
+import { isStaffRole } from '@/lib/permissions';
 import type { Assignment } from '@/types';
 
 export default function AssignmentsPage() {
@@ -20,7 +21,7 @@ export default function AssignmentsPage() {
   const [sortOrder, setSortOrder] = useState('Due Date (Soonest)');
 
   const { user } = useAuthStore();
-  const isStaff = user && ['ADMIN', 'SUPER_ADMIN', 'INSTRUCTOR'].includes(user.role);
+  const isStaff = isStaffRole(user?.role);
 
   const { data: assignmentsRes, isLoading: isAssignmentsLoading, error: assignmentsError } = useAssignments();
   const { data: submissionsRes, isLoading: isSubmissionsLoading } = useSubmissions();
@@ -172,14 +173,14 @@ export default function AssignmentsPage() {
       {/* Page Header & Filters */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">Assignments</h2>
-          <p className="text-sm text-slate-500">Manage and track your active coursework.</p>
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Assignments</h2>
+          <p className="text-sm text-muted-foreground">Manage and track your active coursework.</p>
         </div>
         <div className="flex gap-2">
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="bg-white border border-slate-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-600 text-slate-700"
+            className="bg-card border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-600 text-foreground"
           >
             <option>All Types</option>
             <option>Individual</option>
@@ -188,7 +189,7 @@ export default function AssignmentsPage() {
           <select
             value={sortOrder}
             onChange={(e) => setSortOrder(e.target.value)}
-            className="bg-white border border-slate-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-600 text-slate-700"
+            className="bg-card border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-600 text-foreground"
           >
             <option>Due Date (Soonest)</option>
             <option>Due Date (Latest)</option>
@@ -221,7 +222,7 @@ export default function AssignmentsPage() {
               Failed to load assignments.
             </div>
           ) : sortedAssignments.length === 0 ? (
-            <div className="bg-white border border-slate-205 rounded-lg p-12 text-center text-slate-500">
+            <div className="bg-card border border-border rounded-lg p-12 text-center text-muted-foreground">
               No assignments found matching the criteria.
             </div>
           ) : (
@@ -249,7 +250,7 @@ export default function AssignmentsPage() {
                 <div
                   key={assignment.id}
                   onClick={() => !isStaff && navigate(`/assignments/${assignment.id}/submit`)}
-                  className={`bg-white rounded-lg border border-slate-200 p-6 flex flex-col gap-4 shadow-sm hover:shadow-md hover:border-slate-350 transition-all relative overflow-hidden group ${!isStaff ? 'cursor-pointer' : ''}`}
+                  className={`bg-card rounded-lg border border-border p-6 flex flex-col gap-4 shadow-sm hover:shadow-md hover:border-border transition-all relative overflow-hidden group ${!isStaff ? 'cursor-pointer' : ''}`}
                 >
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
@@ -260,29 +261,29 @@ export default function AssignmentsPage() {
                           {isStaff ? assignment.assignmentType : statusLabel}
                         </span>
                         {!isStaff && (
-                          <span className="bg-slate-100 text-slate-550 border border-slate-200 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-widest">
+                          <span className="bg-muted text-muted-foreground border border-border px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-widest">
                             {assignment.assignmentType}
                           </span>
                         )}
                       </div>
-                      <h3 className="text-lg font-bold text-slate-905 mt-2 group-hover:text-blue-600 transition-colors">
+                      <h3 className="text-lg font-bold text-foreground mt-2 group-hover:text-blue-600 transition-colors">
                         {assignment.title}
                       </h3>
-                      <p className="text-xs text-slate-450">Max Score: {assignment.maxScore} points</p>
+                      <p className="text-xs text-muted-foreground">Max Score: {assignment.maxScore} points</p>
                     </div>
                     <div className="text-right">
-                      <span className={`text-xs font-semibold block ${isOverdue && !submission ? 'text-red-600' : 'text-slate-500'}`}>
+                      <span className={`text-xs font-semibold block ${isOverdue && !submission ? 'text-red-600' : 'text-muted-foreground'}`}>
                         Due {new Date(assignment.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
                   </div>
 
-                  <p className="text-sm text-slate-500 leading-relaxed line-clamp-2">
+                  <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
                     {assignment.description}
                   </p>
 
-                  <div className="flex items-center justify-between border-t border-slate-100 pt-4 mt-2">
-                    <div className="flex items-center gap-2 text-xs text-slate-400">
+                  <div className="flex items-center justify-between border-t border-border pt-4 mt-2">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <span className="material-symbols-outlined text-[16px]">info</span>
                       <span>Requires {assignment.submissionType || 'github'} submission</span>
                     </div>
@@ -310,7 +311,7 @@ export default function AssignmentsPage() {
                             setDialogMode('edit');
                             setIsDialogOpen(true);
                           }}
-                          className="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold px-3 py-1.5 rounded transition-colors"
+                          className="bg-muted/40 hover:bg-muted border border-border text-foreground text-xs font-semibold px-3 py-1.5 rounded transition-colors"
                         >
                           Edit
                         </button>
@@ -331,26 +332,26 @@ export default function AssignmentsPage() {
 
         {/* Column 4: Stats Card */}
         <div className="lg:col-span-4 space-y-6">
-          <div className="bg-white rounded-lg border border-slate-205 p-6 shadow-sm relative overflow-hidden">
+          <div className="bg-card rounded-lg border border-border p-6 shadow-sm relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-transparent pointer-events-none"></div>
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">Total Progress</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-4">Total Progress</h3>
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-slate-50 border border-slate-150 rounded-md p-3 text-center">
+              <div className="bg-muted/40 border border-border rounded-md p-3 text-center">
                 <span className="block text-2xl font-bold text-blue-600">{totalCount}</span>
-                <span className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Assigned</span>
+                <span className="block text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Assigned</span>
               </div>
-              <div className="bg-slate-50 border border-slate-150 rounded-md p-3 text-center">
+              <div className="bg-muted/40 border border-border rounded-md p-3 text-center">
                 <span className="block text-2xl font-bold text-emerald-600">{completedCount}</span>
-                <span className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Completed</span>
+                <span className="block text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Completed</span>
               </div>
             </div>
             {totalCount > 0 && (
               <div className="mt-6 space-y-1">
-                <div className="flex justify-between text-xs text-slate-500 font-medium">
+                <div className="flex justify-between text-xs text-muted-foreground font-medium">
                   <span>Completion Rate</span>
                   <span>{Math.round((completedCount / totalCount) * 100)}%</span>
                 </div>
-                <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                <div className="w-full bg-muted h-2 rounded-full overflow-hidden">
                   <div className="bg-blue-600 h-full rounded-full transition-all duration-300" style={{ width: `${(completedCount / totalCount) * 100}%` }}></div>
                 </div>
               </div>
@@ -362,42 +363,42 @@ export default function AssignmentsPage() {
       {/* --- Create/Edit Dialog --- */}
       {isDialogOpen && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg border border-slate-200 shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="p-5 border-b border-slate-150 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-slate-900">
+          <div className="bg-card rounded-lg border border-border shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-5 border-b border-border flex items-center justify-between">
+              <h3 className="text-lg font-bold text-foreground">
                 {dialogMode === 'create' ? 'New Assignment' : 'Edit Assignment'}
               </h3>
-              <button type="button" onClick={() => setIsDialogOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <button type="button" onClick={() => setIsDialogOpen(false)} className="text-muted-foreground hover:text-muted-foreground">
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
 
             <form onSubmit={handleSubmitForm} className="p-5 overflow-y-auto space-y-4 flex-1">
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Title *</label>
+                <label className="block text-xs font-bold text-foreground uppercase mb-1">Title *</label>
                 <input
                   type="text"
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g. Build a responsive landing page"
-                  className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Description *</label>
+                <label className="block text-xs font-bold text-foreground uppercase mb-1">Description *</label>
                 <textarea
                   required
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Describe the requirements..."
-                  className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-900 h-24 resize-none focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground h-24 resize-none focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Course *</label>
+                <label className="block text-xs font-bold text-foreground uppercase mb-1">Course *</label>
                 <select
                   required
                   value={courseId}
@@ -406,7 +407,7 @@ export default function AssignmentsPage() {
                     setCohortId('');
                     setModuleId('');
                   }}
-                  className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-707 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                 >
                   <option value="">Select a Course</option>
                   {coursesList.map((c) => (
@@ -416,13 +417,13 @@ export default function AssignmentsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Cohort *</label>
+                <label className="block text-xs font-bold text-foreground uppercase mb-1">Cohort *</label>
                 <select
                   required
                   disabled={!courseId}
                   value={cohortId}
                   onChange={(e) => setCohortId(e.target.value)}
-                  className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-707 disabled:bg-slate-50 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground disabled:bg-muted/40 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                 >
                   <option value="">Select a Cohort</option>
                   {cohortsList.map((c) => (
@@ -432,14 +433,14 @@ export default function AssignmentsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Module *</label>
+                <label className="block text-xs font-bold text-foreground uppercase mb-1">Module *</label>
                 {modulesList.length > 0 ? (
                   <select
                     required
                     disabled={!courseId}
                     value={moduleId}
                     onChange={(e) => setModuleId(e.target.value)}
-                    className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-707 disabled:bg-slate-50 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                    className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground disabled:bg-muted/40 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                   >
                     <option value="">Select a Module</option>
                     {modulesList.map((m) => (
@@ -454,29 +455,29 @@ export default function AssignmentsPage() {
                     value={moduleId}
                     onChange={(e) => setModuleId(e.target.value)}
                     placeholder="This course has no modules yet — enter a module reference"
-                    className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-900 disabled:bg-slate-50 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                    className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground disabled:bg-muted/40 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                   />
                 )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Type</label>
+                  <label className="block text-xs font-bold text-foreground uppercase mb-1">Type</label>
                   <select
                     value={assignmentType}
                     onChange={(e) => setAssignmentType(e.target.value as 'INDIVIDUAL' | 'TEAM')}
-                    className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-707 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                    className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                   >
                     <option value="INDIVIDUAL">Individual</option>
                     <option value="TEAM">Team</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Submission Type</label>
+                  <label className="block text-xs font-bold text-foreground uppercase mb-1">Submission Type</label>
                   <select
                     value={submissionType}
                     onChange={(e) => setSubmissionType(e.target.value as 'github' | 'text' | 'file')}
-                    className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-707 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                    className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                   >
                     <option value="github">GitHub Repo</option>
                     <option value="text">Text</option>
@@ -487,29 +488,29 @@ export default function AssignmentsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Max Score</label>
+                  <label className="block text-xs font-bold text-foreground uppercase mb-1">Max Score</label>
                   <input
                     type="number"
                     min="1"
                     value={maxScore}
                     onChange={(e) => setMaxScore(Number(e.target.value))}
-                    className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                    className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Due Date *</label>
+                  <label className="block text-xs font-bold text-foreground uppercase mb-1">Due Date *</label>
                   <input
                     type="datetime-local"
                     required
                     value={dueDate}
                     onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                    className="w-full bg-card border border-border rounded px-3 py-2 text-sm text-foreground focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                   />
                 </div>
               </div>
 
-              <div className="border-t border-slate-150 pt-4 flex gap-3 justify-end">
-                <button type="button" onClick={() => setIsDialogOpen(false)} className="px-4 py-2 border border-slate-205 hover:bg-slate-100 text-slate-700 text-sm font-semibold rounded">
+              <div className="border-t border-border pt-4 flex gap-3 justify-end">
+                <button type="button" onClick={() => setIsDialogOpen(false)} className="px-4 py-2 border border-border hover:bg-muted text-foreground text-sm font-semibold rounded">
                   Cancel
                 </button>
                 <button
@@ -568,13 +569,13 @@ function MonitorSubmissionsModal({ assignment, onClose }: { assignment: Assignme
 
   return (
     <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg border border-slate-200 shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh]">
-        <div className="p-5 border-b border-slate-150 flex items-center justify-between">
+      <div className="bg-card rounded-lg border border-border shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh]">
+        <div className="p-5 border-b border-border flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-bold text-slate-900">Submissions — {assignment.title}</h3>
-            <p className="text-xs text-slate-500">{submissions.length} submission{submissions.length === 1 ? '' : 's'}</p>
+            <h3 className="text-lg font-bold text-foreground">Submissions — {assignment.title}</h3>
+            <p className="text-xs text-muted-foreground">{submissions.length} submission{submissions.length === 1 ? '' : 's'}</p>
           </div>
-          <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600">
+          <button type="button" onClick={onClose} className="text-muted-foreground hover:text-muted-foreground">
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
@@ -585,14 +586,14 @@ function MonitorSubmissionsModal({ assignment, onClose }: { assignment: Assignme
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             </div>
           ) : submissions.length === 0 ? (
-            <div className="text-center text-slate-500 py-10">No students have submitted yet.</div>
+            <div className="text-center text-muted-foreground py-10">No students have submitted yet.</div>
           ) : (
             submissions.map((sub: any) => (
-              <div key={sub.id} className="border border-slate-200 rounded-lg p-4 space-y-2">
+              <div key={sub.id} className="border border-border rounded-lg p-4 space-y-2">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-bold text-slate-900">{sub.studentName || 'Unknown Student'}</p>
-                    <p className="text-xs text-slate-450">
+                    <p className="text-sm font-bold text-foreground">{sub.studentName || 'Unknown Student'}</p>
+                    <p className="text-xs text-muted-foreground">
                       {sub.status === 'graded' ? `Graded — ${sub.points}/${assignment.maxScore}` : sub.status === 'late' ? 'Submitted Late' : 'Submitted'}
                       {' · '}{new Date(sub.submittedAt).toLocaleString()}
                     </p>
@@ -612,33 +613,33 @@ function MonitorSubmissionsModal({ assignment, onClose }: { assignment: Assignme
                     <span className="material-symbols-outlined text-sm">link</span>{sub.repoUrl}
                   </a>
                 )}
-                {sub.content && <p className="text-xs text-slate-600 whitespace-pre-wrap bg-slate-50 rounded p-2">{sub.content}</p>}
+                {sub.content && <p className="text-xs text-muted-foreground whitespace-pre-wrap bg-muted/40 rounded p-2">{sub.content}</p>}
                 {sub.feedback && gradingId !== sub.id && (
-                  <p className="text-xs text-slate-500 italic">Feedback: {sub.feedback}</p>
+                  <p className="text-xs text-muted-foreground italic">Feedback: {sub.feedback}</p>
                 )}
 
                 {gradingId === sub.id && (
-                  <div className="border-t border-slate-100 pt-3 space-y-2">
+                  <div className="border-t border-border pt-3 space-y-2">
                     <div className="flex items-center gap-2">
-                      <label className="text-xs font-bold text-slate-700 uppercase">Points</label>
+                      <label className="text-xs font-bold text-foreground uppercase">Points</label>
                       <input
                         type="number"
                         min="0"
                         max={assignment.maxScore}
                         value={points}
                         onChange={(e) => setPoints(Number(e.target.value))}
-                        className="w-24 bg-white border border-slate-205 rounded px-2 py-1 text-sm"
+                        className="w-24 bg-card border border-border rounded px-2 py-1 text-sm"
                       />
-                      <span className="text-xs text-slate-450">/ {assignment.maxScore}</span>
+                      <span className="text-xs text-muted-foreground">/ {assignment.maxScore}</span>
                     </div>
                     <textarea
                       value={feedback}
                       onChange={(e) => setFeedback(e.target.value)}
                       placeholder="Feedback for the student..."
-                      className="w-full bg-white border border-slate-205 rounded px-3 py-2 text-sm h-20 resize-none"
+                      className="w-full bg-card border border-border rounded px-3 py-2 text-sm h-20 resize-none"
                     />
                     <div className="flex gap-2 justify-end">
-                      <button onClick={() => setGradingId(null)} className="px-3 py-1.5 border border-slate-205 text-slate-700 text-xs font-semibold rounded">
+                      <button onClick={() => setGradingId(null)} className="px-3 py-1.5 border border-border text-foreground text-xs font-semibold rounded">
                         Cancel
                       </button>
                       <button

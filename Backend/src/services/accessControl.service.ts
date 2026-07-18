@@ -108,8 +108,8 @@ export async function getStudentScope(userId: string): Promise<ContentScope> {
 export async function getContentScope(user: User): Promise<ContentScope | null> {
   const role = normalizeRole(user.role);
   if (isAdminRole(role)) return null;
-  if (role === 'INSTRUCTOR') return getInstructorScope(user.id);
-  if (role === 'MENTOR') return getMentorScope(user.id);
+  // Instructor and mentor are the same role — both scope to assigned cohorts.
+  if (role === 'INSTRUCTOR' || role === 'MENTOR') return getInstructorScope(user.id);
   return getStudentScope(user.id);
 }
 
