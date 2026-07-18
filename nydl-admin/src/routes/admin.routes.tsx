@@ -21,6 +21,7 @@ const AnnouncementsPage = lazy(() => import('@/features/announcements/pages/Anno
 const AnalyticsPage = lazy(() => import('@/features/analytics/pages/AnalyticsPage'));
 const CertificatesPage = lazy(() => import('@/features/certificates/pages/CertificatesPage'));
 const NotificationsPage = lazy(() => import('@/features/notifications/pages/NotificationsPage'));
+const SupportPage = lazy(() => import('@/features/support/pages/SupportPage'));
 const AuditLogsPage = lazy(() => import('@/features/audit-logs/pages/AuditLogsPage'));
 const RiskStudentsPage = lazy(() => import('@/features/risk-students/pages/RiskStudentsPage'));
 const SettingsPage = lazy(() => import('@/features/settings/pages/SettingsPage'));
@@ -97,6 +98,10 @@ export const adminRoutes: RouteObject[] = [
   {
     path: 'certificates',
     element: <CertificatesPage />,
+  },
+  {
+    path: 'support',
+    element: <SupportPage />,
   },
   {
     path: 'notifications',

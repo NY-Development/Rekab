@@ -23,6 +23,7 @@ export const API_ROUTES = {
   AUDIT_LOGS: '/audit-logs',
   CERTIFICATES: '/certificates',
   SETTINGS: '/settings',
+  CONTACTS: '/contacts',
 } as const;
 
 // ─── Status Options ───
@@ -66,6 +67,7 @@ export const NAV_ITEMS: readonly AdminNavItem[] = [
   { label: 'Announcements', path: '/announcements', icon: 'Megaphone' },
   { label: 'Analytics', path: '/analytics', icon: 'BarChart3' },
   { label: 'Certificates', path: '/certificates', icon: 'Award' },
+  { label: 'Support Inbox', path: '/support', icon: 'LifeBuoy' },
   { label: 'Notifications', path: '/notifications', icon: 'Bell' },
   { label: 'Audit Logs', path: '/audit-logs', icon: 'ScrollText' },
   { label: 'Risk Students', path: '/risk-students', icon: 'ShieldAlert' },

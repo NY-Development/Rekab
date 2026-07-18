@@ -3,6 +3,15 @@ import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Mail, HelpCircle, Phone, Clock, ArrowRight } from 'lucide-react';
 import { SUPPORT_EMAIL, SUPPORT_PHONE } from '@/components/common/SupportContactModal';
+import { contactsApi } from '@/api/contacts.api';
+
+const TOPIC_LABELS: Record<string, string> = {
+  courses: 'Course Information',
+  admissions: 'Registration & Enrollment',
+  billing: 'Payments',
+  technical: 'Technical Support',
+  other: 'Other',
+};
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -12,15 +21,33 @@ export default function ContactPage() {
     interest: '',
     message: '',
   });
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.firstName || !formData.email || !formData.message) {
       toast.error('Please fill in all required fields.');
       return;
     }
-    toast.success("Thanks! Your message has been sent — we'll get back to you shortly.");
-    setFormData({ firstName: '', lastName: '', email: '', interest: '', message: '' });
+    if (formData.message.trim().length < 10) {
+      toast.error('Please add a little more detail to your message.');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await contactsApi.submit({
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
+        email: formData.email,
+        topic: TOPIC_LABELS[formData.interest] || 'General',
+        message: formData.message,
+      });
+      toast.success("Thanks! Your message has been sent — we'll get back to you shortly.");
+      setFormData({ firstName: '', lastName: '', email: '', interest: '', message: '' });
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Could not send your message. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const inputClass =
@@ -106,9 +133,10 @@ export default function ContactPage() {
               </div>
               <button
                 type="submit"
-                className="w-full rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+                disabled={submitting}
+                className="w-full rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:opacity-60"
               >
-                Send message
+                {submitting ? 'Sending…' : 'Send message'}
               </button>
             </form>
           </div>

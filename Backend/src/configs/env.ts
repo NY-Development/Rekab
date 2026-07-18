@@ -11,4 +11,13 @@ export const env = {
   // Verify.ET Payment Verification (from TrustPay)
   VERIFY_ET_BASE_URL: process.env.VERIFY_ET_BASE_URL || 'https://api.verify.et',
   VERIFY_ET_API_KEY: process.env.VERIFY_ET_API_KEY || '',
+
+  // Email (Brevo SMTP via nodemailer)
+  SMTP_HOST: process.env.SMTP_HOST || '',
+  SMTP_PORT: process.env.SMTP_PORT || '587',
+  SMTP_USER: process.env.SMTP_USER || '',
+  SMTP_PASS: process.env.SMTP_PASS || '',
+  SENDER_EMAIL: process.env.SENDER_EMAIL || '',
+  // Fallback recipient for admin alerts when no admin users are found in the DB.
+  ADMIN_NOTIFY_EMAIL: process.env.ADMIN_NOTIFY_EMAIL || 'nydevofficial@gmail.com',
 };

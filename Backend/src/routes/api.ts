@@ -26,6 +26,7 @@ import analyticsRoutes from '../modules/analytics/routes/analyticsRoutes';
 import auditLogRoutes from '../modules/auditLogs/routes/auditLogRoutes';
 import certificateRoutes from '../modules/certificates/routes/certificateRoutes';
 import settingRoutes from '../modules/settings/routes/settingRoutes';
+import contactRoutes from '../modules/contacts/routes/contactRoutes';
 
 const router = Router();
 
@@ -55,6 +56,7 @@ router.use('/analytics', analyticsRoutes);
 router.use('/audit-logs', auditLogRoutes);
 router.use('/certificates', certificateRoutes);
 router.use('/settings', settingRoutes);
+router.use('/contacts', contactRoutes);
 
 export default router;
 

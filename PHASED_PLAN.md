@@ -18,11 +18,15 @@ student subset *inside* a cohort, for group projects.
 - [x] Fixed Progress page — was rendering populated `courseId` object as "[object Object]"; now shows course title, real stats, tokens.
 - [x] Dark-mode conversions to index.css tokens: help, about, contact, teams, progress, assignments, resources, sessions, announcements (dashboard was already token-based).
 
-## Phase 3 — Notifications infrastructure (Section 2)
-- [ ] Nodemailer + Brevo SMTP service (env-configurable, nodemailer fallback)
-- [ ] Email to admin on new registration (demographics, batch, cohort, team, course)
-- [ ] Email to admin on contact/help submission
-- [ ] In-app admin notification badge + page/modal for contact/help
+## Phase 3 — Notifications infrastructure ✅ DONE
+- [x] Nodemailer + Brevo SMTP service (`services/email.service.ts`, cached transporter, HTML template, graceful no-SMTP fallback). **SMTP connectivity verified live.**
+- [x] `services/adminNotify.service.ts` — `notifyAdmins()` fans an in-app Notification out to every admin + one email to all admin addresses (never throws). Verified fan-out (0→2 for 2 admins).
+- [x] Email + in-app notification to admins on **new registration** (name, email, phone, gender, DOB, school, grade, location, tech readiness, course, batch, cohort; team = not yet assigned) — wired in `enrollmentService.apply()`.
+- [x] **Contact module** (`modules/contacts`) — public `POST /contacts` (optionalAuth attaches identity), admin `GET /contacts`, `/contacts/unread-count`, `PATCH /:id/handled`; each submission notifies + emails admins.
+- [x] nydl-web ContactPage now actually submits to `POST /contacts`.
+- [x] nydl-admin **Support Inbox** page + route + nav item, plus a header **bell badge** (`NotificationBell`) showing the unhandled-contact count.
+- [x] Added `optionalAuth` middleware; extended `env.ts` with SMTP/SENDER/ADMIN_NOTIFY config.
+- Note: admin's existing Notifications page already lists the fanned-out in-app notifications.
 
 ## Phase 4 — Admin overhaul (Section 2)
 - [ ] Responsive layout, collapsible sidebar, working theme toggle (per Design/NYDL/admin)

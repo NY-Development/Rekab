@@ -9,11 +9,17 @@ import { publicRoutes } from "./public.routes";
 import { studentRoutes } from "./student.routes";
 import { authRoutes } from "./auth.routes";
 import RouteErrorFallback from "@/components/common/RouteErrorFallback"; // Import your error component
+import ScrollToTop from "@/components/common/ScrollToTop";
 
 const router = createBrowserRouter([
   {
     // Pathless layout route acting as a global structural wrapper
-    element: <Outlet />, 
+    element: (
+      <>
+        <ScrollToTop />
+        <Outlet />
+      </>
+    ),
     errorElement: <RouteErrorFallback />, // <-- This catches ALL uncaught errors in child routes
     children: [
       ...publicRoutes,

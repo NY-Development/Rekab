@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useThemeStore } from '@/store/theme.store';
 import { SessionExpiryNotice } from '@/components/common/SessionExpiryNotice';
+import { NotificationBell } from '@/components/common/NotificationBell';
 import { useEffect } from 'react';
 import {toast} from 'sonner';
 
@@ -110,7 +111,8 @@ export function AdminLayout() {
               {NAV_ITEMS.find((n) => n.path === location.pathname)?.label || 'Admin Control'}
             </h2>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <NotificationBell />
             <Button
               variant="outline"
               size="icon"

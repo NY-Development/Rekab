@@ -66,6 +66,34 @@ export async function requireAuthenticated(
 export const authenticate = requireAuthenticated;
 
 /**
+ * Attaches the user when a valid token is present, but never rejects — for
+ * public endpoints (e.g. the contact form) that want to enrich the record with
+ * the submitter's identity when they happen to be signed in.
+ */
+export async function optionalAuth(
+  req: AuthenticatedRequest,
+  _res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+      const userDoc = await (UserModel as any).findById(decoded.userId);
+      if (userDoc) {
+        const user = userDoc.toJSON() as User;
+        delete user.passwordHash;
+        req.user = user;
+      }
+    }
+  } catch {
+    // Ignore any token problems — this endpoint is public.
+  }
+  next();
+}
+
+/**
  * Authorization middleware factory.
  * Restricts access to specific roles.
  * Must be used AFTER requireAuthenticated.

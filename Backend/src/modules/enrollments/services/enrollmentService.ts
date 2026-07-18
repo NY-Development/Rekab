@@ -5,7 +5,9 @@ import { CreateEnrollmentDto, UpdateEnrollmentDto } from '../dtos/enrollmentDto'
 import { Enrollment } from '../../../types';
 import { AppError } from '../../../middlewares/errorHandler';
 import { DBStore } from '../../../services/dbStore';
-import { ensureCourseCohort } from '../../../services/cohortProvisioning.service';
+import { ensureCourseCohort, CURRENT_BATCH } from '../../../services/cohortProvisioning.service';
+import { notifyAdmins } from '../../../services/adminNotify.service';
+import { refId } from '../../../services/accessControl.service';
 
 export class EnrollmentService {
   constructor(
@@ -61,7 +63,66 @@ export class EnrollmentService {
 
     const cohortId = data.cohortId || (await this.resolveCohortId(data.courseId));
 
-    return this.enrollmentRepository.create({ ...data, cohortId });
+    const enrollment = await this.enrollmentRepository.create({ ...data, cohortId });
+
+    // Notify admins of the new registration (in-app + email). Fire-and-forget:
+    // notifyAdmins never throws, so registration is not blocked by email issues.
+    void this.notifyNewRegistration(enrollment, data);
+
+    return enrollment;
+  }
+
+  /** Builds a rich admin alert with the student's demographics, batch, cohort, and course. */
+  private async notifyNewRegistration(enrollment: Enrollment, data: CreateEnrollmentDto): Promise<void> {
+    try {
+      const [course, cohort, student] = await Promise.all([
+        this.courseRepository.findById(data.courseId as string).catch(() => null),
+        this.cohortRepository.findById(refId(enrollment.cohortId) as string).catch(() => null),
+        DBStore.getUserById(data.studentId as string).catch(() => null),
+      ]);
+
+      const pi = (data as any).personalInfo || {};
+      const edu = (data as any).education || {};
+      const loc = (data as any).location || {};
+      const tech = (data as any).technicalReadiness || {};
+      const studentName = pi.fullName || student?.name || 'A student';
+      const courseTitle = course?.title || 'a course';
+
+      const emailBody = [
+        'A new student has registered on NYDL.',
+        '',
+        `Name: ${studentName}`,
+        `Email: ${student?.email || 'N/A'}`,
+        `Phone: ${pi.phone || 'N/A'}`,
+        `Gender: ${pi.gender || 'N/A'}`,
+        `Date of birth: ${pi.dateOfBirth || 'N/A'}${pi.age ? ` (age ${pi.age})` : ''}`,
+        '',
+        `Course: ${courseTitle}`,
+        `Batch: ${CURRENT_BATCH}`,
+        `Cohort: ${cohort?.name || 'N/A'}${cohort?.code ? ` (${cohort.code})` : ''}`,
+        'Team: not yet assigned',
+        '',
+        `School: ${edu.schoolName || 'N/A'}`,
+        `Grade: ${edu.grade || 'N/A'}`,
+        `Location: ${[loc.city, loc.region].filter(Boolean).join(', ') || 'N/A'}`,
+        `Operating system: ${tech.operatingSystem || 'N/A'}`,
+        `Has computer: ${tech.hasPersonalComputer === undefined ? 'N/A' : tech.hasPersonalComputer ? 'Yes' : 'No'}`,
+        `Programming experience: ${tech.programmingExperience || 'N/A'}`,
+        '',
+        `Status: ${enrollment.status} (payment ${enrollment.status === 'ACTIVE' ? 'verified' : 'pending'})`,
+      ].join('\n');
+
+      await notifyAdmins({
+        title: 'New student registration',
+        message: `${studentName} registered for ${courseTitle} (${CURRENT_BATCH})`,
+        type: 'REGISTRATION',
+        actionUrl: '/registrations',
+        emailSubject: `New registration: ${studentName} — ${courseTitle}`,
+        emailBody,
+      });
+    } catch {
+      // Never let a notification failure affect registration.
+    }
   }
 
   async updateEnrollment(id: string, updateData: UpdateEnrollmentDto): Promise<Enrollment> {
