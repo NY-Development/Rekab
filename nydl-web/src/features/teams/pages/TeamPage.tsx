@@ -1,8 +1,66 @@
+import { useState } from 'react';
 import { useMyTeam } from '@/hooks/useTeams';
+import { useCohorts } from '@/hooks/useCohorts';
 import { useAuthStore } from '@/store/auth.store';
+import { isStaffRole } from '@/lib/permissions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { TeamBoard } from '../components/TeamBoard';
 import { Users2, Award, ShieldAlert, GraduationCap, UserCog } from 'lucide-react';
 import type { Team, TeamMemberRef } from '@/types';
+
+/** Instructor/admin view: pick an assigned cohort and drag students into teams. */
+function StaffTeamManager() {
+  const { user } = useAuthStore();
+  const { data: cohortsRes } = useCohorts();
+  const [cohortId, setCohortId] = useState('');
+
+  const allCohorts = cohortsRes?.data?.docs || [];
+  const isAdmin = (user?.role || '').toUpperCase().includes('ADMIN');
+  // Instructors only manage cohorts they're assigned to; admins see all.
+  const cohorts = isAdmin
+    ? allCohorts
+    : allCohorts.filter((c) => (c.instructors || []).includes(user?.id || ''));
+
+  return (
+    <div className="w-full max-w-6xl mx-auto px-4 md:px-8 py-10">
+      <div className="mb-6">
+        <h2 className="text-2xl md:text-3xl font-bold text-foreground">Team Formation</h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Pick a cohort, then drag students between the pool and teams to form project groups.
+        </p>
+      </div>
+
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Cohort</span>
+        <Select value={cohortId} onValueChange={(v) => setCohortId(v ?? '')}>
+          <SelectTrigger className="w-72"><SelectValue placeholder="Select a cohort" /></SelectTrigger>
+          <SelectContent>
+            {cohorts.length === 0 ? (
+              <div className="px-3 py-2 text-xs text-muted-foreground">No cohorts assigned to you yet.</div>
+            ) : (
+              cohorts.map((c) => (
+                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+              ))
+            )}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {cohortId ? (
+        <TeamBoard cohortId={cohortId} />
+      ) : (
+        <p className="py-10 text-center text-sm text-muted-foreground">Select a cohort above to begin forming teams.</p>
+      )}
+    </div>
+  );
+}
 
 /** Reads a possibly-populated ref into a stable display shape. */
 function asMember(ref: string | TeamMemberRef | undefined): TeamMemberRef | null {
@@ -17,6 +75,17 @@ function initials(name?: string, fallback = '?') {
 }
 
 export default function TeamPage() {
+  const { user } = useAuthStore();
+
+  // Instructors and admins get the team-formation board; students see their own team.
+  if (isStaffRole(user?.role)) {
+    return <StaffTeamManager />;
+  }
+
+  return <MyTeamView />;
+}
+
+function MyTeamView() {
   const { data: teamRes, isLoading, error } = useMyTeam();
   const { user } = useAuthStore();
 

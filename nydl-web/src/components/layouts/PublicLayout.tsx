@@ -126,7 +126,7 @@ export default function PublicLayout() {
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
             <div className="col-span-2 md:col-span-1">
               <Link to="/" className="flex items-center">
-                <img src="/banner-logo.png" alt="NYDEV Learning" className="h-8 w-auto" />
+                <img src="/banner-logo.png" alt="NYDEV Learning" className="h-12 rounded-full w-auto" />
               </Link>
               <p className="mt-3 text-sm text-muted-foreground">
                 Professional cohort-based technology training.

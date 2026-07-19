@@ -4,6 +4,8 @@ import { useCourses } from '@/hooks/useCourses';
 import { useCohorts } from '@/hooks/useCohorts';
 import { useAuthStore } from '@/store/auth.store';
 import { isStaffRole } from '@/lib/permissions';
+import { attendanceApi } from '@/api/attendance.api';
+import { AttendanceModal } from '../components/AttendanceModal';
 import type { Session } from '@/types';
 
 export default function SessionsPage() {
@@ -27,6 +29,14 @@ export default function SessionsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
+  const [attendanceSession, setAttendanceSession] = useState<Session | null>(null);
+
+  // Records a student's join click, then opens the meeting (best-effort — never blocks the link).
+  const handleJoin = (session: Session) => {
+    if (!isStaff) {
+      attendanceApi.recordJoin(session.id).catch(() => {});
+    }
+  };
 
   // Form State
   const [title, setTitle] = useState('');
@@ -267,6 +277,13 @@ export default function SessionsPage() {
                           Edit Details
                         </button>
                         <button
+                          onClick={() => setAttendanceSession(session)}
+                          className="bg-muted/40 hover:bg-muted border border-border text-foreground font-semibold text-xs px-3 py-1.5 rounded transition-colors flex items-center gap-1"
+                        >
+                          <span className="material-symbols-outlined text-sm">fact_check</span>
+                          Attendance
+                        </button>
+                        <button
                           onClick={() => handleDelete(session.id)}
                           className="bg-red-50 hover:bg-red-600 hover:text-white border border-red-100 text-red-650 font-semibold text-xs px-3 py-1.5 rounded transition-colors flex items-center gap-1"
                         >
@@ -284,6 +301,7 @@ export default function SessionsPage() {
                         href={session.meetLink}
                         target="_blank"
                         rel="noreferrer"
+                        onClick={() => handleJoin(session)}
                         className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-5 py-3 rounded-md transition-colors flex items-center justify-center gap-2 font-medium shadow-sm"
                       >
                         <span className="material-symbols-outlined text-sm">videocam</span>
@@ -500,6 +518,10 @@ export default function SessionsPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {attendanceSession && (
+        <AttendanceModal session={attendanceSession} onClose={() => setAttendanceSession(null)} />
       )}
     </div>
   );

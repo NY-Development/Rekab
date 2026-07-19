@@ -39,6 +39,17 @@ export class CohortController {
     }
   }
 
+  async getRoster(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      // Instructors may only view rosters for their assigned cohorts.
+      await assertCohortAccess(req.user!, req.params.id);
+      const roster = await this.cohortService.getRoster(req.params.id);
+      res.json({ status: 'success', data: roster });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async createCohort(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     const { courseId, name, code, batch, startDate, endDate, maxCapacity, instructors, schedule } = req.body;
     try {

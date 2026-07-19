@@ -48,6 +48,24 @@ export function AttendancePage() {
     { id: 'session', header: 'Lecture / Session', cell: (info) => <span>{getPopulated(info.row.original.sessionId)?.title || 'N/A'}</span> },
     { accessorKey: 'status', header: 'Status', cell: (info) => <StatusBadge status={info.getValue() as string} /> },
     {
+      id: 'duration',
+      header: 'Duration',
+      cell: (info) => {
+        const sec = (info.row.original as any).durationSeconds as number | undefined;
+        if (!sec) return <span className="text-slate-500">—</span>;
+        const m = Math.round(sec / 60);
+        return <span>{m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`}</span>;
+      },
+    },
+    {
+      id: 'source',
+      header: 'Source',
+      cell: (info) => {
+        const src = ((info.row.original as any).source as string) || 'MANUAL';
+        return <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5 text-[10px] font-semibold uppercase text-slate-300">{src}</span>;
+      },
+    },
+    {
       accessorKey: 'checkInTime',
       header: 'Checked In At',
       cell: (info) => <span>{info.getValue() ? new Date(info.getValue() as string).toLocaleTimeString() : '-'}</span>,

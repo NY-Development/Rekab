@@ -41,7 +41,7 @@ export class HealthScoreService {
 
     // 1. Calculate Attendance Score
     const attendanceLogs = await this.attendanceRepository.findByStudentId(studentId);
-    const cohortAttendance = attendanceLogs.filter(a => a.enrollmentId.toString() === enrollmentId);
+    const cohortAttendance = attendanceLogs.filter(a => a.enrollmentId?.toString() === enrollmentId);
     
     let attendanceScore = 100;
     if (cohortAttendance.length > 0) {

@@ -24,6 +24,7 @@ interface DataTableProps<TData, TValue> {
   onPaginationChange?: (pagination: PaginationState) => void;
   searchPlaceholder?: string;
   onSearchChange?: (search: string) => void;
+  onRowClick?: (row: TData) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -33,6 +34,7 @@ export function DataTable<TData, TValue>({
   onPaginationChange,
   searchPlaceholder = 'Search...',
   onSearchChange,
+  onRowClick,
 }: DataTableProps<TData, TValue>) {
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -107,7 +109,8 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className="border-slate-800 hover:bg-slate-900/50"
+                  onClick={onRowClick ? () => onRowClick(row.original) : undefined}
+                  className={`border-slate-800 hover:bg-slate-900/50 ${onRowClick ? 'cursor-pointer' : ''}`}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id} className="py-3 text-slate-300">

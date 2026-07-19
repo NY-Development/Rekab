@@ -13,4 +13,8 @@ export const teamsApi = {
     api.put<ApiResponse<Team>>(`${API_ROUTES.TEAMS}/${id}`, data),
   delete: (id: string) =>
     api.delete(`${API_ROUTES.TEAMS}/${id}`),
+  addMember: (id: string, userId: string) =>
+    api.post<ApiResponse<Team>>(`${API_ROUTES.TEAMS}/${id}/members`, { userId }),
+  removeMember: (id: string, userId: string) =>
+    api.delete<ApiResponse<Team>>(`${API_ROUTES.TEAMS}/${id}/members`, { data: { userId } }),
 };

@@ -53,7 +53,6 @@ export const NAV_ITEMS: readonly AdminNavItem[] = [
   { label: 'Users', path: '/users', icon: 'Users' },
   { label: 'Students', path: '/students', icon: 'GraduationCap' },
   { label: 'Instructors', path: '/instructors', icon: 'BookUser' },
-  { label: 'Mentors', path: '/mentors', icon: 'Heart' },
   { label: 'Courses', path: '/courses', icon: 'BookOpen' },
   { label: 'Cohorts', path: '/cohorts', icon: 'CalendarDays' },
   { label: 'Teams', path: '/teams', icon: 'Users2' },

@@ -1,16 +1,29 @@
+import { useState } from 'react';
 import { useTeams, useTeamMutations } from '@/hooks/useTeams';
+import { useCohorts } from '@/hooks/useCohorts';
 import { DataTable } from '@/components/common/DataTable';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { TeamBoard } from '../components/TeamBoard';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { ColumnDef } from '@tanstack/react-table';
 import { Team } from '@/types';
 import { getPopulated } from '@/utils/registration';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash, Users2 } from 'lucide-react';
+import { Trash } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function TeamsPage() {
-  const { data, isLoading, isError } = useTeams();
+  const { data, isLoading, isError } = useTeams({ limit: 100 });
   const { deleteTeam } = useTeamMutations();
+  const { data: cohortsData } = useCohorts({ limit: 100 });
+  const cohorts = cohortsData?.docs || [];
+  const [cohortId, setCohortId] = useState('');
 
   const handleDelete = async (id: string) => {
     try {
@@ -28,7 +41,7 @@ export function TeamsPage() {
       accessorKey: 'memberIds',
       header: 'Members',
       cell: (info) => {
-        const list = info.getValue() as string[];
+        const list = info.getValue() as unknown[];
         return <span className="font-semibold text-slate-300">{list?.length || 0} students</span>;
       },
     },
@@ -39,11 +52,7 @@ export function TeamsPage() {
         <div className="flex gap-2">
           <ConfirmDialog
             trigger={
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 h-8 w-8"
-              />
+              <Button variant="ghost" size="icon" className="text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 h-8 w-8" />
             }
             title="Delete Team?"
             description="This action cannot be undone. The team and its member assignments will be permanently removed."
@@ -57,24 +66,50 @@ export function TeamsPage() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-xl font-bold text-white uppercase tracking-wider">Team Structures</h1>
-          <p className="text-sm text-slate-400 font-medium">Control research project teams, leaders, member list rosters, and assigned mentors.</p>
-        </div>
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold">
-          <Plus className="mr-2 h-4 w-4" /> Create Team
-        </Button>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-xl font-bold uppercase tracking-wider text-white">Team Formation</h1>
+        <p className="text-sm font-medium text-slate-400">
+          Pick a cohort, then drag students between the pool and teams to form project groups.
+        </p>
       </div>
 
-      {isLoading ? (
-        <div className="text-slate-400">Loading team rosters...</div>
-      ) : isError ? (
-        <div className="text-rose-400">Failed to load teams. Please try again later.</div>
-      ) : (
-        <DataTable columns={columns} data={data?.docs || []} pageCount={data?.totalPages || 1} />
-      )}
+      {/* ─── Drag-and-drop board ─── */}
+      <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-5">
+        <div className="mb-4 flex flex-wrap items-center gap-3">
+          <span className="text-xs font-semibold uppercase tracking-widest text-slate-500">Cohort</span>
+          <Select value={cohortId} onValueChange={(v) => setCohortId(v ?? '')}>
+            <SelectTrigger className="w-72 border-slate-700 bg-slate-900 text-white">
+              <SelectValue placeholder="Select a cohort to manage teams" />
+            </SelectTrigger>
+            <SelectContent className="border-slate-700 bg-slate-900 text-white">
+              {cohorts.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.name} {getPopulated(c.courseId)?.title ? `· ${getPopulated(c.courseId)?.title}` : ''}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {cohortId ? (
+          <TeamBoard cohortId={cohortId} />
+        ) : (
+          <p className="py-10 text-center text-sm text-slate-500">Select a cohort above to begin forming teams.</p>
+        )}
+      </div>
+
+      {/* ─── All teams overview ─── */}
+      <div className="space-y-3">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-300">All Teams</h2>
+        {isLoading ? (
+          <div className="text-slate-400">Loading team rosters...</div>
+        ) : isError ? (
+          <div className="text-rose-400">Failed to load teams. Please try again later.</div>
+        ) : (
+          <DataTable columns={columns} data={data?.docs || []} pageCount={data?.totalPages || 1} />
+        )}
+      </div>
     </div>
   );
 }

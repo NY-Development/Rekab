@@ -28,28 +28,35 @@ student subset *inside* a cohort, for group projects.
 - [x] Added `optionalAuth` middleware; extended `env.ts` with SMTP/SENDER/ADMIN_NOTIFY config.
 - Note: admin's existing Notifications page already lists the fanned-out in-app notifications.
 
-## Phase 4 — Admin overhaul (Section 2)
-- [ ] Responsive layout, collapsible sidebar, working theme toggle (per Design/NYDL/admin)
-- [ ] Row-click detail views (users, students, courses, cohorts, instructors, mentors, …)
-- [ ] Payment verifications in payments tab
-- [ ] Session detail: start/status/end/instructor/student count → attendance
-- [ ] Registration statuses: paid / unsuccessful / pending
-- [ ] Consolidate Mentors into Instructors
+## Phase 4 — Admin overhaul (Section 2) — CORE SLICE DONE
+- [x] Responsive layout, collapsible sidebar (persisted), mobile drawer, token-based shell so theme toggle affects the whole chrome — `AdminLayout`
+- [x] Row-click detail infra: `DataTable` `onRowClick` + reusable generic `RowDetailDialog`; wired into Students & Users (+ Registrations already had a rich dialog)
+- [x] Payment verifications in payments tab (already present: verify/fail + StatusBadge)
+- [x] Registration statuses: stat cards (total / new-3-days / paid / pending / unsuccessful) + "New This Week" (last 3 days) section on Registrations
+- [x] Consolidate Mentors into Instructors — removed Mentors nav item (route kept)
+- [ ] REMAINING: token-convert the ~24 feature pages so LIGHT mode is cohesive (dark already is); row-click detail on Instructors/Courses/Cohorts; session detail → attendance (see Phase 7)
 
-## Phase 5 — Team management drag-drop (Section 3)
-- [ ] Per Design/NYDL/admin/team_management_admin
-- [ ] Admin + instructor (nydl-web) drag students within a cohort into teams
+## Phase 5 — Team management drag-drop (Section 3) — DONE
+- [x] Backend `GET /cohorts/:id/roster` → `{ cohort, students (populated), teams }`, gated by `assertCohortAccess` (admin + assigned instructor); `CohortService.getRoster`; team `addMember`/`removeMember` already existed.
+- [x] `TeamBoard` drag-and-drop component (native HTML5 DnD, no new dep): Unassigned pool + one column per team; drag = removeMember(old)+addMember(new); inline "Create Team" (auto teamCode). Built for both apps (admin dark, nydl-web token-based).
+- [x] Admin `TeamsPage`: cohort selector → board + all-teams table below.
+- [x] nydl-web `TeamPage`: staff (instructor/admin) get `StaffTeamManager` (cohort selector filtered to `cohort.instructors` for instructors) + board; students keep the `MyTeamView`.
 
-## Phase 6 — Certificates (Section 2)
-- [ ] Admin uploads template image/PDF
-- [ ] Overlay name/course/batch (pdf-lib)
-- [ ] Checkbox-select students → appears in their certificate portal
+## Phase 6 — Certificates (Section 2) — DONE (blocked only by Cloudinary account)
+- [x] Admin uploads template image/PDF → `POST /certificates/template` (multer→Cloudinary) → hosted URL
+- [x] Overlay name/course/batch with **pdf-lib** — `services/certificateGenerator.service.ts` (template becomes full-page bg; centered text at configurable %-positions; DEFAULT_LAYOUT). Verified: produces a valid `%PDF` locally.
+- [x] `POST /certificates/generate` { templateUrl, courseId, cohortId, batch, studentIds[] } → `CertificateService.generateBatch` → per-student PDF → Cloudinary → Certificate record (metadata: studentName/courseTitle/batch)
+- [x] Admin CertificatesPage: template upload dropzone + course/cohort select + roster checkbox list (`GET /cohorts/:id/roster`) + Generate; issued table shows View link
+- [x] Student portal: nydl-web `/certificates` page + nav (Award, student-only) + `GET /certificates/me` → cards with Download/View
+- ⚠️ **BLOCKER (infra, not code):** Cloudinary account `dmylzrvse` returns **403 on ALL uploads** (verified with the SDK directly — even a 1-level image upload). This breaks cert template upload + generation, AND resource-file / session-recording uploads. Fix: rotate/verify the Cloudinary API secret or check the account is active/within quota, then set CLOUDINARY_* in backend/.env.
 
-## Phase 7 — Attendance (Section 4)
-- [ ] Click-based join tracking
-- [ ] Instructor-uploaded attendance file (CSV/XLSX) merge → present/partial/absent
-- [ ] Admin sees all logs; instructor sees only assigned courses
-- [ ] Google Reports API scaffolded behind env config (inert until paid Workspace)
+## Phase 7 — Attendance (Section 4) — DONE (verified live end-to-end)
+- [x] Click-based join tracking — `POST /attendance/join` (student); recorded PRESENT/source=CLICK; the SessionsPage "Join Meet" link fires it fire-and-forget. A later report never gets downgraded by a click; a click is upgraded to IMPORT by a report.
+- [x] Instructor CSV/XLSX upload — `POST /attendance/session/:id/import` (multer memory + `xlsx`), robust column/duration parser (`45 min`, `1:05:00`, `1h 5m`, bare minutes), matched by email→name; presence vs session length: ≥80% PRESENT, >20% PARTIAL, else ABSENT. Attendance model/type gained PARTIAL, durationSeconds, presenceRatio, source; enrollmentId now optional.
+- [x] Scope — `getSessionAttendance` now `assertSessionCohortAccess`: admin any, instructor only assigned cohorts (verified: unassigned instructor → 403).
+- [x] Google Reports API — `services/googleMeetAttendance.service.ts` scaffolded, inert unless GOOGLE_SA_EMAIL/GOOGLE_SA_PRIVATE_KEY/GOOGLE_ADMIN_EMAIL set (documents the exact setup + scope). **Needs a paid Education/Enterprise Workspace to enable.**
+- [x] UI — nydl-web instructor `AttendanceModal` (upload report + present/partial/absent summary + per-student list); admin AttendancePage gained Duration + Source columns.
+- Verified live: click→PRESENT/CLICK; XLSX import 92%→PRESENT, 33%→PARTIAL, 8%→ABSENT, unmatched row skipped; click upgraded to IMPORT; unassigned instructor 403.
 
 ## Decisions locked in
 - Email: Brevo SMTP via nodemailer (SMTP_* + SENDER_EMAIL in backend/.env).

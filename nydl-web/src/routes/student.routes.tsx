@@ -43,6 +43,9 @@ const SettingsPage = lazy(
 const EnrollmentPage = lazy(
   () => import("@/features/enrollments/pages/EnrollmentPage")
 );
+const CertificatesPage = lazy(
+  () => import("@/features/certificates/pages/CertificatesPage")
+);
 
 export const studentRoutes: RouteObject[] = [
   {
@@ -74,6 +77,14 @@ export const studentRoutes: RouteObject[] = [
             element: (
               <RoleGuard allow={["STUDENT"]} mode="redirect">
                 <ProgressPage />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: "/certificates",
+            element: (
+              <RoleGuard allow={["STUDENT"]} mode="redirect">
+                <CertificatesPage />
               </RoleGuard>
             ),
           },

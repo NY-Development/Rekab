@@ -1,10 +1,12 @@
 import { z } from 'zod';
+import { useState } from 'react';
 import { useUsers, useUserMutations } from '@/hooks/useUsers';
 import { useAuthStore } from '@/store/auth.store';
 import { DataTable } from '@/components/common/DataTable';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { EntityFormDialog } from '@/components/common/EntityFormDialog';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { RowDetailDialog } from '@/components/common/RowDetailDialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { User } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -34,6 +36,7 @@ export function UsersPage() {
   const { data, isLoading, isError } = useUsers();
   const { createUser, updateUser, deleteUser } = useUserMutations();
   const currentUser = useAuthStore((state) => state.user);
+  const [detail, setDetail] = useState<User | null>(null);
   // Role management is a SUPER_ADMIN capability (permission matrix: roles).
   const isSuperAdmin = (currentUser?.role || '').toUpperCase() === 'SUPER_ADMIN';
 
@@ -87,7 +90,7 @@ export function UsersPage() {
         // Role changes: SUPER_ADMIN only. Deleting a super admin: SUPER_ADMIN only.
         const canDelete = isSuperAdmin || !targetIsSuperAdmin;
         return (
-          <div className="flex gap-2">
+          <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
             {isSuperAdmin && (
               <EntityFormDialog
                 triggerLabel="Change Role"
@@ -173,8 +176,17 @@ export function UsersPage() {
       ) : isError ? (
         <div className="text-rose-400">Failed to load users. Please try again later.</div>
       ) : (
-        <DataTable columns={columns} data={data?.docs || []} pageCount={data?.totalPages || 1} />
+        <DataTable columns={columns} data={data?.docs || []} pageCount={data?.totalPages || 1} onRowClick={(u) => setDetail(u)} />
       )}
+
+      <RowDetailDialog
+        open={!!detail}
+        onClose={() => setDetail(null)}
+        title={detail?.name || 'User Detail'}
+        subtitle={detail?.email}
+        data={detail as any}
+        hide={['id']}
+      />
     </div>
   );
 }

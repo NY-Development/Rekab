@@ -7,129 +7,142 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useThemeStore } from '@/store/theme.store';
 import { SessionExpiryNotice } from '@/components/common/SessionExpiryNotice';
 import { NotificationBell } from '@/components/common/NotificationBell';
-import { useEffect } from 'react';
-import {toast} from 'sonner';
+import { useEffect, useState } from 'react';
+
+const COLLAPSE_KEY = 'nydl-admin-sidebar-collapsed';
 
 export function AdminLayout() {
   const { user, logout } = useAuth();
   const location = useLocation();
   const { theme, setTheme } = useThemeStore();
 
-  // Navigation is filtered by admin tier: items with a `roles` restriction
-  // (e.g. system Settings → SUPER_ADMIN) simply don't render for plain admins.
+  const [collapsed, setCollapsed] = useState<boolean>(() => localStorage.getItem(COLLAPSE_KEY) === '1');
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   const currentRole = (user?.role || '').toUpperCase() as 'ADMIN' | 'SUPER_ADMIN';
-  const visibleNavItems = NAV_ITEMS.filter(
-    (item) => !item.roles || item.roles.includes(currentRole)
-  );
+  const visibleNavItems = NAV_ITEMS.filter((item) => !item.roles || item.roles.includes(currentRole));
 
   useEffect(() => {
     const root = window.document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
+    root.classList.toggle('dark', theme === 'dark');
   }, [theme]);
 
-  // Dynamically resolve lucide icons
+  useEffect(() => {
+    localStorage.setItem(COLLAPSE_KEY, collapsed ? '1' : '0');
+  }, [collapsed]);
+
+  // Close the mobile drawer whenever the route changes.
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
+
   const renderIcon = (iconName: string) => {
     const IconComponent = (LucideIcons as any)[iconName];
-    if (IconComponent) {
-      return <IconComponent className="h-4 w-4" />;
-    }
-    return <LucideIcons.HelpCircle className="h-4 w-4" />;
+    return IconComponent ? <IconComponent className="h-4 w-4 shrink-0" /> : <LucideIcons.HelpCircle className="h-4 w-4 shrink-0" />;
   };
 
-  return (
-    <div className="flex min-h-screen bg-slate-900 text-slate-100 font-sans">
-      <SessionExpiryNotice />
-      {/* Sidebar */}
-      <aside className="w-64 border-r border-slate-800 bg-slate-950 flex flex-col fixed inset-y-0 left-0 z-20">
-        {/* Title */}
-        <div className="h-16 flex items-center px-6 border-b border-slate-800">
-          <Link to="/dashboard" className="flex items-center gap-2">
-            <div className="rounded-md bg-white p-1">
-              <img src="/logo.png" alt="NYDL" className="h-7 w-auto" />
-            </div>
-            <span className="font-bold text-lg tracking-wider text-white">ADMIN</span>
-          </Link>
-        </div>
+  const sidebarWidth = collapsed ? 'lg:w-20' : 'lg:w-64';
+  const contentPad = collapsed ? 'lg:pl-20' : 'lg:pl-64';
 
-        {/* Navigation list */}
-        <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-1 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
-          {visibleNavItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                  isActive
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'text-slate-400 hover:bg-slate-905 hover:text-slate-100 hover:bg-slate-900/60'
-                }`}
-              >
-                {renderIcon(item.icon)}
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
+  const currentLabel = NAV_ITEMS.find((n) => n.path === location.pathname)?.label || 'Admin Control';
 
-        {/* Footer/User detail */}
-        <div className="p-4 border-t border-slate-800 bg-slate-950/80 flex items-center justify-between">
-          <div className="flex items-center gap-3 min-w-0">
-            <Avatar className="h-9 w-9 border border-slate-800">
-              <AvatarImage src={user?.avatar} />
-              <AvatarFallback className="bg-slate-800 text-slate-300 font-bold">
-                {user?.name?.slice(0, 2).toUpperCase() || 'AD'}
-              </AvatarFallback>
-            </Avatar>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-white truncate">{user?.name || 'Admin User'}</p>
-              <p className="text-xs text-slate-400 truncate">{user?.email || 'admin@nydev.org'}</p>
-            </div>
+  const sidebar = (
+    <aside
+      className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-sidebar-border bg-sidebar transition-transform duration-200 lg:z-20 lg:translate-x-0 ${sidebarWidth} ${
+        mobileOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}
+    >
+      {/* Brand */}
+      <div className="flex h-16 items-center gap-2 border-b border-sidebar-border px-4">
+        <Link to="/dashboard" className="flex items-center gap-2 overflow-hidden">
+          <div className="rounded-md bg-white p-1 shrink-0">
+            <img src="/logo.png" alt="NYDL" className="h-7 w-auto" />
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={logout}
-            className="text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 h-8 w-8"
-            title="Logout"
-          >
+          {!collapsed && <span className="text-lg font-bold tracking-wider text-sidebar-foreground">ADMIN</span>}
+        </Link>
+      </div>
+
+      {/* Nav */}
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+        {visibleNavItems.map((item) => {
+          const isActive = location.pathname === item.path;
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              title={collapsed ? item.label : undefined}
+              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
+                isActive
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground'
+              } ${collapsed ? 'justify-center' : ''}`}
+            >
+              {renderIcon(item.icon)}
+              {!collapsed && <span className="truncate">{item.label}</span>}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* User */}
+      <div className="flex items-center justify-between gap-2 border-t border-sidebar-border p-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <Avatar className="h-9 w-9 border border-sidebar-border shrink-0">
+            <AvatarImage src={user?.avatar} />
+            <AvatarFallback className="bg-muted font-bold text-muted-foreground">
+              {user?.name?.slice(0, 2).toUpperCase() || 'AD'}
+            </AvatarFallback>
+          </Avatar>
+          {!collapsed && (
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-sidebar-foreground">{user?.name || 'Admin User'}</p>
+              <p className="truncate text-xs text-muted-foreground">{user?.email || 'admin@nydev.org'}</p>
+            </div>
+          )}
+        </div>
+        {!collapsed && (
+          <Button variant="ghost" size="icon" onClick={logout} className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" title="Logout">
             <LucideIcons.LogOut className="h-4 w-4" />
           </Button>
-        </div>
-      </aside>
+        )}
+      </div>
+    </aside>
+  );
 
-      {/* Main Content Area */}
-      <div className="flex-1 pl-64 flex flex-col min-h-screen">
-        {/* Header Topbar */}
-        <header className="h-16 border-b border-slate-800 bg-slate-950/40 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between px-8">
-          <div>
-            <h2 className="font-semibold text-lg text-white">
-              {NAV_ITEMS.find((n) => n.path === location.pathname)?.label || 'Admin Control'}
-            </h2>
+  return (
+    <div className="min-h-screen bg-background font-sans text-foreground">
+      <SessionExpiryNotice />
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-30 bg-black/50 lg:hidden" onClick={() => setMobileOpen(false)} />
+      )}
+
+      {sidebar}
+
+      <div className={`flex min-h-screen flex-col transition-[padding] duration-200 ${contentPad}`}>
+        {/* Header */}
+        <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-3 border-b border-border bg-background/70 px-4 backdrop-blur-md md:px-8">
+          <div className="flex items-center gap-2">
+            {/* Mobile hamburger */}
+            <Button variant="outline" size="icon" className="h-9 w-9 lg:hidden" onClick={() => setMobileOpen(true)}>
+              <LucideIcons.Menu className="h-4 w-4" />
+            </Button>
+            {/* Desktop collapse toggle */}
+            <Button variant="outline" size="icon" className="hidden h-9 w-9 lg:inline-flex" onClick={() => setCollapsed((c) => !c)} title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
+              {collapsed ? <LucideIcons.PanelLeftOpen className="h-4 w-4" /> : <LucideIcons.PanelLeftClose className="h-4 w-4" />}
+            </Button>
+            <h2 className="truncate text-base font-semibold md:text-lg">{currentLabel}</h2>
           </div>
           <div className="flex items-center gap-3">
             <NotificationBell />
-            <Button
-              variant="outline"
-              size="icon"
-              className="border-slate-800 text-slate-400 hover:bg-slate-900 h-9 w-9 bg-slate-950"
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            >
-              {theme === 'dark' ? (
-                <LucideIcons.Sun className="h-4 w-4" />
-              ) : (
-                <LucideIcons.Moon className="h-4 w-4" />
-              )}
+            <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} title="Toggle theme">
+              {theme === 'dark' ? <LucideIcons.Sun className="h-4 w-4" /> : <LucideIcons.Moon className="h-4 w-4" />}
             </Button>
           </div>
         </header>
 
-        {/* Page content */}
-        <main className="flex-1 p-8 overflow-y-auto bg-slate-900">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8">
           <Outlet />
         </main>
       </div>

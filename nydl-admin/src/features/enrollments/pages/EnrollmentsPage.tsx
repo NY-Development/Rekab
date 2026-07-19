@@ -23,7 +23,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { ColumnDef } from '@tanstack/react-table';
 import { Enrollment } from '@/types';
-import { Eye, Trash, Download } from 'lucide-react';
+import { Eye, Trash, Download, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { getPopulated, getPopulatedPayment, getRegistrationStatusMeta, REGISTRATION_STATUS_FILTERS, PAYMENT_STATUS_FILTERS } from '@/utils/registration';
 
@@ -72,6 +72,26 @@ export function EnrollmentsPage() {
   }, [registrations, search]);
 
   const selected = registrations.find((r) => r.id === selectedId) || null;
+
+  // ── Professional overview: bucket registrations by outcome + surface recent ones ──
+  const stats = useMemo(() => {
+    const threeDaysAgo = Date.now() - 3 * 24 * 60 * 60 * 1000;
+    const paidKeys = ['ACTIVE', 'COMPLETED', 'APPROVED'];
+    const unsuccessfulKeys = ['REJECTED', 'SUSPENDED', 'PAYMENT_FAILED', 'DROPPED'];
+    let paid = 0;
+    let pending = 0;
+    let unsuccessful = 0;
+    const recent: Enrollment[] = [];
+    for (const r of registrations) {
+      const key = getRegistrationStatusMeta(r).key;
+      if (paidKeys.includes(key)) paid++;
+      else if (unsuccessfulKeys.includes(key)) unsuccessful++;
+      else pending++;
+      if (new Date(r.createdAt).getTime() >= threeDaysAgo) recent.push(r);
+    }
+    recent.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return { total: registrations.length, paid, pending, unsuccessful, recent };
+  }, [registrations]);
 
   const closeDialog = () => {
     setSelectedId(null);
@@ -216,7 +236,7 @@ export function EnrollmentsPage() {
       id: 'actions',
       header: 'Actions',
       cell: (info) => (
-        <div className="flex gap-2">
+        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
           <Button
             variant="ghost"
             size="icon"
@@ -256,6 +276,58 @@ export function EnrollmentsPage() {
         </Button>
       </div>
 
+      {/* ─── Overview stat cards ─── */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+        {[
+          { label: 'Total', value: stats.total, accent: 'text-white', ring: 'border-slate-800' },
+          { label: 'New (3 days)', value: stats.recent.length, accent: 'text-blue-400', ring: 'border-blue-500/30' },
+          { label: 'Registered · Paid', value: stats.paid, accent: 'text-emerald-400', ring: 'border-emerald-500/30' },
+          { label: 'Pending', value: stats.pending, accent: 'text-amber-400', ring: 'border-amber-500/30' },
+          { label: 'Unsuccessful', value: stats.unsuccessful, accent: 'text-rose-400', ring: 'border-rose-500/30' },
+        ].map((s) => (
+          <div key={s.label} className={`rounded-xl border ${s.ring} bg-slate-950 p-4`}>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{s.label}</p>
+            <p className={`mt-1 text-2xl font-bold ${s.accent}`}>{s.value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* ─── New this week (registered in the last 3 days) ─── */}
+      {stats.recent.length > 0 && (
+        <div className="rounded-xl border border-blue-500/20 bg-blue-500/[0.04] p-5">
+          <div className="mb-3 flex items-center gap-2">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500/15 text-blue-400">
+              <UserPlus className="h-3.5 w-3.5" />
+            </span>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-white">New This Week</h3>
+            <span className="text-xs text-slate-400">· registered in the last 3 days</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {stats.recent.slice(0, 12).map((r) => {
+              const student = getPopulated(r.studentId);
+              const course = getPopulated(r.courseId);
+              const meta = getRegistrationStatusMeta(r);
+              return (
+                <button
+                  key={r.id}
+                  onClick={() => setSelectedId(r.id)}
+                  className="group flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-left transition-colors hover:border-blue-500/40"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-semibold text-white group-hover:text-blue-300">{student?.name || 'Unknown'}</p>
+                    <p className="truncate text-[10px] text-slate-500">{course?.title || 'N/A'}</p>
+                  </div>
+                  <StatusBadge status={meta.key} />
+                </button>
+              );
+            })}
+            {stats.recent.length > 12 && (
+              <span className="flex items-center px-2 text-xs text-slate-400">+{stats.recent.length - 12} more</span>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-wrap gap-3">
         <Input
           placeholder="Search by student or course..."
@@ -291,7 +363,7 @@ export function EnrollmentsPage() {
       ) : isError ? (
         <div className="text-rose-400">Failed to load registrations. Please try again later.</div>
       ) : (
-        <DataTable columns={columns} data={filteredRegistrations} pageCount={data?.totalPages || 1} />
+        <DataTable columns={columns} data={filteredRegistrations} pageCount={data?.totalPages || 1} onRowClick={(r) => setSelectedId(r.id)} />
       )}
 
       {/* ─── Registration Detail Dialog ─── */}

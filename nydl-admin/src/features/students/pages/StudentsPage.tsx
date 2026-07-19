@@ -1,9 +1,11 @@
 import { z } from 'zod';
+import { useState } from 'react';
 import { useStudents, useStudentMutations } from '@/hooks/useStudents';
 import { useUsers } from '@/hooks/useUsers';
 import { DataTable } from '@/components/common/DataTable';
 import { EntityFormDialog } from '@/components/common/EntityFormDialog';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { RowDetailDialog } from '@/components/common/RowDetailDialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { StudentProfile, User } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -20,6 +22,7 @@ const createStudentSchema = z.object({
 export function StudentsPage() {
   const { data, isLoading, isError } = useStudents();
   const { createStudent, deleteStudent } = useStudentMutations();
+  const [detail, setDetail] = useState<StudentProfile | null>(null);
   const { data: studentUsersData } = useUsers({ role: 'STUDENT', limit: 100 });
   const userOptions = (studentUsersData?.docs || []).map((u) => ({ value: u.id, label: `${u.name} (${u.email})` }));
 
@@ -66,7 +69,7 @@ export function StudentsPage() {
       id: 'actions',
       header: 'Actions',
       cell: (info) => (
-        <div className="flex gap-2">
+        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
           <ConfirmDialog
             trigger={
               <Button
@@ -111,8 +114,17 @@ export function StudentsPage() {
       ) : isError ? (
         <div className="text-rose-400">Failed to load students. Please try again later.</div>
       ) : (
-        <DataTable columns={columns} data={data?.docs || []} pageCount={data?.totalPages || 1} />
+        <DataTable columns={columns} data={data?.docs || []} pageCount={data?.totalPages || 1} onRowClick={(r) => setDetail(r)} />
       )}
+
+      <RowDetailDialog
+        open={!!detail}
+        onClose={() => setDetail(null)}
+        title={getPopulated<User>(detail?.userId)?.name || 'Student Detail'}
+        subtitle={getPopulated<User>(detail?.userId)?.email}
+        data={detail as any}
+        hide={['id', 'userId']}
+      />
     </div>
   );
 }

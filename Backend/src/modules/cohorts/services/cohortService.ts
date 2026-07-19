@@ -1,10 +1,38 @@
 import { CohortRepository } from '../repositories/cohortRepository';
-import { Cohort, Enrollment } from '../../../types';
+import { TeamRepository } from '../../teams/repositories/teamRepository';
+import { Cohort, Enrollment, Team, User } from '../../../types';
 import { AppError } from '../../../middlewares/errorHandler';
 import { DBStore } from '../../../services/dbStore';
 
+export interface CohortRoster {
+  cohort: Cohort;
+  students: Partial<User>[];
+  teams: Team[];
+}
+
 export class CohortService {
-  constructor(private cohortRepository: CohortRepository) {}
+  constructor(
+    private cohortRepository: CohortRepository,
+    private teamRepository?: TeamRepository
+  ) {}
+
+  /**
+   * Team-formation data for a cohort: the full student roster (resolved to
+   * names/avatars) plus every team in the cohort with populated members. Used
+   * by the drag-and-drop team board in both the admin and instructor apps.
+   */
+  async getRoster(cohortId: string): Promise<CohortRoster> {
+    const cohort = await this.getCohortDetails(cohortId);
+    const studentIds = [...new Set((cohort.students || []).map((s) => s.toString()))];
+    const students = (
+      await Promise.all(studentIds.map((id) => DBStore.getUserById(id).catch(() => null)))
+    )
+      .filter((u): u is User => !!u)
+      .map((u) => ({ id: u.id, name: u.name, email: u.email, avatar: u.avatar, role: u.role }));
+
+    const teams = this.teamRepository ? await this.teamRepository.findByCohortId(cohortId) : [];
+    return { cohort, students, teams };
+  }
 
   async listCohorts(filters: {
     page: number;

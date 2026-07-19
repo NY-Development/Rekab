@@ -2,7 +2,7 @@ import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, BookOpen, ClipboardList, Users, TrendingUp,
   Video, FolderOpen, Megaphone, Bell, Settings, HelpCircle,
-  LogOut, Menu, Search, GraduationCap
+  LogOut, Menu, Search, GraduationCap, Award
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthStore } from '@/store/auth.store';
@@ -35,6 +35,7 @@ const mainNavItems: NavItem[] = [
   { to: '/announcements', label: 'Announcements', icon: Megaphone, roles: ['STUDENT', 'INSTRUCTOR', 'MENTOR'] },
   { to: '/teams', label: 'Teams', icon: Users, roles: ['STUDENT', 'INSTRUCTOR', 'MENTOR'] },
   { to: '/progress', label: 'Progress', icon: TrendingUp, roles: ['STUDENT'] },
+  { to: '/certificates', label: 'Certificates', icon: Award, roles: ['STUDENT'] },
 ];
 
 const bottomNavItems: NavItem[] = [

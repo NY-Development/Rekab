@@ -1,7 +1,8 @@
 import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from '../../../middlewares/auth';
 import { CertificateService } from '../services/certificateService';
-import { IssueCertificateSchema, CertificateFilterSchema } from '../validators/certificateValidator';
+import { IssueCertificateSchema, CertificateFilterSchema, GenerateCertificatesSchema } from '../validators/certificateValidator';
+import { UploadedFileRequest } from '../../../middlewares/uploadMiddleware';
 
 export class CertificateController {
   constructor(private certificateService: CertificateService) {}
@@ -66,6 +67,29 @@ export class CertificateController {
       const validated = await IssueCertificateSchema.parseAsync(req.body);
       const cert = await this.certificateService.issueCertificate(validated);
       res.status(201).json({ status: 'success', data: cert });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /** Admin uploads a certificate template (image/PDF); returns the hosted URL. */
+  async uploadTemplate(req: UploadedFileRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      if (!req.fileUrl) {
+        res.status(400).json({ status: 'error', message: 'No template file was uploaded.' });
+        return;
+      }
+      res.status(201).json({ status: 'success', data: { templateUrl: req.fileUrl } });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async generateCertificates(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const validated = await GenerateCertificatesSchema.parseAsync(req.body);
+      const result = await this.certificateService.generateBatch(validated as any);
+      res.status(201).json({ status: 'success', data: result });
     } catch (error) {
       next(error);
     }

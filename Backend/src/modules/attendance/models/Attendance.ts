@@ -6,9 +6,14 @@ export interface IAttendanceDocument extends Omit<Attendance, 'id'>, Document {}
 const AttendanceSchema = new Schema<IAttendanceDocument>({
   studentId: { type: Schema.Types.ObjectId as any, ref: 'User', required: true, index: true },
   sessionId: { type: Schema.Types.ObjectId as any, ref: 'Session', required: true, index: true },
-  enrollmentId: { type: Schema.Types.ObjectId as any, ref: 'Enrollment', required: true, index: true },
-  status: { type: String, enum: ['PRESENT', 'LATE', 'ABSENT'], default: 'PRESENT' },
+  enrollmentId: { type: Schema.Types.ObjectId as any, ref: 'Enrollment', index: true },
+  status: { type: String, enum: ['PRESENT', 'PARTIAL', 'LATE', 'ABSENT'], default: 'PRESENT' },
   checkInTime: { type: String },
+  durationSeconds: { type: Number },
+  presenceRatio: { type: Number },
+  // How the record was captured: a student clicking the join link, an
+  // instructor-uploaded report, a manual edit, or the Google Reports API.
+  source: { type: String, enum: ['CLICK', 'IMPORT', 'MANUAL', 'GOOGLE'], default: 'MANUAL' },
   remarks: { type: String },
   markedBy: { type: Schema.Types.ObjectId as any, ref: 'User' },
   createdAt: { type: String, default: () => new Date().toISOString() },

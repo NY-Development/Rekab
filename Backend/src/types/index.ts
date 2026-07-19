@@ -324,9 +324,12 @@ export interface Attendance {
   id: string;
   studentId: string; // Ref to User
   sessionId: string; // Ref to Session
-  enrollmentId: string; // Ref to Enrollment
-  status: 'PRESENT' | 'LATE' | 'ABSENT' | string;
+  enrollmentId?: string; // Ref to Enrollment
+  status: 'PRESENT' | 'PARTIAL' | 'LATE' | 'ABSENT' | string;
   checkInTime?: string;
+  durationSeconds?: number;
+  presenceRatio?: number;
+  source?: 'CLICK' | 'IMPORT' | 'MANUAL' | 'GOOGLE' | string;
   remarks?: string;
   markedBy?: string; // Ref to User
   createdAt: string;
