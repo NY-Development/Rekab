@@ -24,3 +24,12 @@ export const AdminUpdateUserSchema = z.object({
   isBlocked: z.boolean().optional(),
   blockReason: z.string().optional(),
 });
+
+export const AdminSendEmailSchema = z.object({
+  mode: z.enum(['all', 'selected', 'byRole', 'individual']),
+  subject: z.string().min(1, 'Subject is required'),
+  content: z.string().min(1, 'Email content is required'),
+  recipientIds: z.array(z.string()).optional(),
+  role: z.string().optional(),
+});
+

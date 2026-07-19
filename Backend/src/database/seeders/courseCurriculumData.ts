@@ -943,7 +943,7 @@ const mobileAppDevelopment: CourseSeed = {
 export const COURSE_SEEDS: CourseSeed[] = [
   webDevFoundations,
   intermediateFrontend,
-  advancedFrontend,
+  // advancedFrontend,
   backendFundamentals,
   backendNestJS,
   networkingFoundations,

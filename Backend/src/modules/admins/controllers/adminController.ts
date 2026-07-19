@@ -107,4 +107,19 @@ export class AdminController {
       next(error);
     }
   }
+
+  async sendEmail(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { AdminSendEmailSchema } = require('../validators/adminValidator');
+      const validated = await AdminSendEmailSchema.parseAsync(req.body);
+      const result = await this.adminService.sendBroadcastEmail(validated);
+      res.status(200).json({
+        status: 'success',
+        message: `Email broadcast completed. Sent to ${result.successCount} users. Failed for ${result.failedCount} users.`,
+        data: result
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }

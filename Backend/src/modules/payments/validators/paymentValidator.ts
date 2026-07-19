@@ -8,7 +8,7 @@ export const SubmitPaymentSchema = z.object({
 });
 
 export const AdminVerifyPaymentSchema = z.object({
-  status: z.enum(['PENDING', 'VERIFIED', 'FAILED']),
+  status: z.enum(['PENDING', 'VERIFIED', 'FAILED', 'PARTIAL_PAYMENT']),
   notes: z.string().optional(),
 });
 

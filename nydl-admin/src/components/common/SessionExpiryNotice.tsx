@@ -47,8 +47,8 @@ export function SessionExpiryNotice() {
       if (newToken && user) {
         Cookies.set(TOKEN_KEY, newToken, { expires: 1 / 96, secure: true, sameSite: 'lax' });
         setAuth(user, newToken);
+        toast.success('Session refreshed successfully', { duration: 3000 });
       }
-      toast.success('Session refreshed successfully', { duration: 3000 });
     } catch {
       toast.error('Could not refresh your session. Please sign in again.');
     } finally {

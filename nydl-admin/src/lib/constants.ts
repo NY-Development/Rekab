@@ -70,5 +70,6 @@ export const NAV_ITEMS: readonly AdminNavItem[] = [
   { label: 'Notifications', path: '/notifications', icon: 'Bell' },
   { label: 'Audit Logs', path: '/audit-logs', icon: 'ScrollText' },
   { label: 'Risk Students', path: '/risk-students', icon: 'ShieldAlert' },
+  { label: 'Email Broadcast', path: '/email-broadcast', icon: 'Mail' },
   { label: 'Settings', path: '/settings', icon: 'Settings', roles: ['SUPER_ADMIN'] },
 ] as const;

@@ -4,7 +4,7 @@ import { CourseRepository } from '../../courses/repositories/courseRepository';
 import { CohortRepository } from '../../cohorts/repositories/cohortRepository';
 import { PaymentVerificationService } from '../../../services/paymentVerification.service';
 import { SubmitPaymentDto, AdminVerifyPaymentDto } from '../dtos/paymentDto';
-import { Payment, Cohort } from '../../../types';
+import { Payment, Cohort, Enrollment } from '../../../types';
 import { AppError } from '../../../middlewares/errorHandler';
 import { SETTLEMENT_ACCOUNTS, PAYMENT_METHOD_TO_PROVIDER, deriveAccountSuffix } from '../../../configs/settlementAccounts';
 import { refId } from '../../../services/accessControl.service';
@@ -104,23 +104,34 @@ export class PaymentService {
     }
 
     const minRequired = course.price;
-    if (verification.amount < (minRequired ?? 0)) {
-      // Create failed payment record due to insufficient funds
-      await this.paymentRepository.create({
-        studentId,
-        enrollmentId: data.enrollmentId,
-        courseId: courseId as any,
-        amount: verification.amount,
-        currency: verification.currency,
-        paymentMethod: data.paymentMethod,
-        transactionReference: data.transactionReference,
-        status: 'FAILED',
-        notes: `Insufficient amount paid. Required: ${minRequired} ${course.currency || 'ETB'}, paid: ${verification.amount} ${verification.currency}`,
-      });
-      throw new AppError(`Course requires a payment of at least ${minRequired} ${course.currency || 'ETB'}. You paid ${verification.amount} ${verification.currency}.`, 400);
+    
+    // Sum previous payments for this enrollment
+    const paymentsResult = await this.paymentRepository.findPaginated({
+      page: 1,
+      limit: 100,
+      enrollmentId: enrollment.id,
+      sortBy: 'createdAt',
+      sortOrder: 'asc'
+    });
+    let totalPaidBefore = 0;
+    for (const p of paymentsResult.docs) {
+      if (p.status === 'VERIFIED' || p.status === 'PARTIAL_PAYMENT') {
+        totalPaidBefore += p.amount || 0;
+      }
     }
 
-    // 5. Create verified payment record
+    const currentRemainingDue = Math.max(0, (course.price || 0) - totalPaidBefore);
+    if (currentRemainingDue === 0) {
+      throw new AppError('This enrollment is already fully paid.', 400);
+    }
+
+    // Determine status of this payment
+    let finalStatus = 'PARTIAL_PAYMENT';
+    if (verification.amount >= currentRemainingDue) {
+      finalStatus = 'VERIFIED';
+    }
+
+    // 5. Create payment record
     const payment = await this.paymentRepository.create({
       studentId,
       enrollmentId: data.enrollmentId,
@@ -130,31 +141,97 @@ export class PaymentService {
       paymentMethod: data.paymentMethod,
       transactionReference: data.transactionReference,
       paidAt: verification.timestamp ? new Date(verification.timestamp).toISOString() : new Date().toISOString(),
-      status: 'VERIFIED',
+      status: finalStatus,
       notes: data.notes || 'Auto-verified successfully via Verify.ET Integration.',
     });
 
-    // 6. Payment verified — registration is directly activated (skip pending approval)
-    await this.enrollmentRepository.update(data.enrollmentId, {
-      paymentId: payment.id,
-      status: 'ACTIVE',
-      enrolledAt: new Date().toISOString(),
-    });
+    // 6. Recalculate enrollment payment state and adjust status
+    await this.recalculateEnrollmentPayments(enrollment.id);
 
-    // 7. Add the student to the course's batch cohort
+    // 7. Get final cohort details
     let cohort: Cohort | null = null;
     if (enrollmentCohortId) {
       cohort = await this.cohortRepository.findById(enrollmentCohortId);
-      if (cohort) {
-        const students = cohort.students || [];
-        if (!students.includes(studentId)) {
-          students.push(studentId);
-          cohort = await this.cohortRepository.update(enrollmentCohortId, { students });
+    }
+
+    return { payment, cohort };
+  }
+
+  async recalculateEnrollmentPayments(enrollmentId: string): Promise<void> {
+    const enrollment = await this.enrollmentRepository.findById(enrollmentId);
+    if (!enrollment) return;
+
+    const courseId = refId(enrollment.courseId);
+    if (!courseId) return;
+
+    const course = await this.courseRepository.findById(courseId);
+    if (!course) return;
+
+    const paymentsResult = await this.paymentRepository.findPaginated({
+      page: 1,
+      limit: 100,
+      enrollmentId,
+      sortBy: 'createdAt',
+      sortOrder: 'asc'
+    });
+
+    let totalPaid = 0;
+    for (const p of paymentsResult.docs) {
+      if (p.status === 'VERIFIED' || p.status === 'PARTIAL_PAYMENT') {
+        totalPaid += p.amount || 0;
+      }
+    }
+
+    const coursePrice = course.price || 0;
+    const remainingDue = Math.max(0, coursePrice - totalPaid);
+
+    const updateFields: Partial<Enrollment> = {
+      amountPaid: totalPaid,
+      remainingDue: remainingDue
+    };
+
+    if (paymentsResult.docs.length > 0) {
+      const latestPayment = paymentsResult.docs[paymentsResult.docs.length - 1];
+      updateFields.paymentId = latestPayment.id;
+    }
+
+    if (remainingDue === 0 && totalPaid > 0) {
+      updateFields.status = 'ACTIVE';
+      updateFields.enrolledAt = new Date().toISOString();
+
+      // Add to Cohort
+      const studentId = refId(enrollment.studentId);
+      const cohortId = refId(enrollment.cohortId);
+      if (cohortId && studentId) {
+        const cohort = await this.cohortRepository.findById(cohortId);
+        if (cohort) {
+          const students = cohort.students || [];
+          if (!students.includes(studentId)) {
+            students.push(studentId);
+            await this.cohortRepository.update(cohortId, { students });
+          }
+        }
+      }
+    } else {
+      updateFields.status = 'PENDING';
+
+      // Remove from Cohort
+      const studentId = refId(enrollment.studentId);
+      const cohortId = refId(enrollment.cohortId);
+      if (cohortId && studentId) {
+        const cohort = await this.cohortRepository.findById(cohortId);
+        if (cohort) {
+          const students = cohort.students || [];
+          if (students.includes(studentId)) {
+            const index = students.indexOf(studentId);
+            students.splice(index, 1);
+            await this.cohortRepository.update(cohortId, { students });
+          }
         }
       }
     }
 
-    return { payment, cohort };
+    await this.enrollmentRepository.update(enrollmentId, updateFields);
   }
 
   async adminUpdatePayment(id: string, adminId: string, data: AdminVerifyPaymentDto): Promise<Payment> {
@@ -175,42 +252,13 @@ export class PaymentService {
       throw new AppError('Failed to update payment status', 500);
     }
 
-    // payment.enrollmentId is populated by the repository — pull the raw id.
     const eId = refId(payment.enrollmentId);
-    if (!eId) throw new AppError('Payment is missing enrollmentId', 400);
-
-    // Admin marking a payment VERIFIED grants access immediately (same as the
-    // auto-verified flow): activate the enrollment and add the student to the
-    // course's batch cohort.
-    if (data.status === 'VERIFIED' && payment.status !== 'VERIFIED') {
-      await this.enrollmentRepository.update(eId, {
-        paymentId: payment.id,
-        status: 'ACTIVE',
-        enrolledAt: new Date().toISOString(),
-      });
-      const enrollment = await this.enrollmentRepository.findById(eId);
-      const cohortId = refId(enrollment?.cohortId);
-      const studentId = refId(enrollment?.studentId);
-      if (cohortId && studentId) {
-        const cohort = await this.cohortRepository.findById(cohortId);
-        if (cohort) {
-          const students = cohort.students || [];
-          if (!students.includes(studentId)) {
-            students.push(studentId);
-            await this.cohortRepository.update(cohortId, { students });
-          }
-        }
-      }
+    if (eId) {
+      await this.recalculateEnrollmentPayments(eId);
     }
 
-    // If status changed from VERIFIED to FAILED/PENDING, transition enrollment back
-    if (data.status !== 'VERIFIED' && payment.status === 'VERIFIED') {
-      await this.enrollmentRepository.update(eId, {
-        status: 'PENDING',
-      });
-    }
-
-    return updated;
+    const finalPayment = await this.paymentRepository.findById(id);
+    return finalPayment || updated;
   }
 
   async listPayments(filters: {

@@ -23,6 +23,9 @@ export default function MyCoursesPage() {
     queryFn: () => coursesApi.getAll({ limit: 50 }).then((res) => res.data),
   });
 
+  console.log('fetched course : ', coursesRes);
+  console.log('enrolled course : ', enrollmentsRes);
+
   const enrollments = enrollmentsRes?.data || [];
   const catalogCourses = coursesRes?.data?.docs || [];
 
@@ -76,7 +79,7 @@ export default function MyCoursesPage() {
             <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
               {enrollments.map((enrollment) => {
                 // Find course detail in catalog
-                const matchingCourse = catalogCourses.find(c => c.id === enrollment.courseId);
+                const matchingCourse = catalogCourses.find(c => c.id === enrollment.courseId?.id);
                 const progressVal = enrollment.progressPercentage || 0;
                 const statusMeta = getRegistrationStatusMeta(enrollment);
                 const hasAccess = enrollment.status === 'ACTIVE' || enrollment.status === 'COMPLETED';
@@ -143,7 +146,7 @@ export default function MyCoursesPage() {
                       )}
 
                       <Link
-                        to={`/courses/${enrollment.courseId}`}
+                        to={`/courses/${enrollment.courseId?.id}`}
                         className={buttonVariants({ variant: 'default', size: 'sm', className: 'w-full text-center flex items-center justify-center' })}
                       >
                         {hasAccess ? 'Continue Learning' : 'View Details'}

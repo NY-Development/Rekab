@@ -136,4 +136,54 @@ export class AdminService {
       pendingGrading: submissions.length - gradedCount
     };
   }
+
+  async sendBroadcastEmail(data: {
+    mode: 'all' | 'selected' | 'byRole' | 'individual';
+    subject: string;
+    content: string;
+    recipientIds?: string[];
+    role?: string;
+  }): Promise<{ successCount: number; failedCount: number }> {
+    const allUsers = await this.userRepository.findAll();
+    let targets: User[] = [];
+
+    if (data.mode === 'all') {
+      targets = allUsers;
+    } else if (data.mode === 'selected' || data.mode === 'individual') {
+      const ids = data.recipientIds || [];
+      targets = allUsers.filter((u) => ids.includes(u.id));
+    } else if (data.mode === 'byRole') {
+      const filterRole = data.role?.toLowerCase();
+      targets = allUsers.filter((u) => u.role && u.role.toLowerCase() === filterRole);
+    }
+
+    const emails = targets.map((t) => t.email).filter(Boolean);
+    if (emails.length === 0) {
+      throw new AppError('No matching recipients found with valid email addresses.', 400);
+    }
+
+    // Import nodemailer service helper
+    const { sendHtmlEmail } = require('../../../services/email.service');
+    
+    let successCount = 0;
+    let failedCount = 0;
+
+    // Send emails in chunks or parallel
+    await Promise.all(
+      emails.map(async (email) => {
+        try {
+          const success = await sendHtmlEmail(email, data.subject, data.content);
+          if (success) {
+            successCount++;
+          } else {
+            failedCount++;
+          }
+        } catch {
+          failedCount++;
+        }
+      })
+    );
+
+    return { successCount, failedCount };
+  }
 }

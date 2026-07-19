@@ -20,7 +20,7 @@ const PaymentSchema = new Schema<IPaymentDocument>({
   verifiedBy: { type: Schema.Types.ObjectId as any, ref: 'User' },
   verificationDate: { type: String },
   notes: { type: String },
-  status: { type: String, enum: ['PENDING', 'VERIFIED', 'FAILED'], default: 'PENDING' },
+  status: { type: String, enum: ['PENDING', 'VERIFIED', 'FAILED', 'PARTIAL_PAYMENT'], default: 'PENDING' },
   createdAt: { type: String, default: () => new Date().toISOString() },
   updatedAt: { type: String, default: () => new Date().toISOString() }
 }, {

@@ -6,6 +6,7 @@ export function useUsers(params?: Record<string, any>) {
     queryKey: ['users', params],
     queryFn: async () => {
       const res = await usersApi.getAll(params);
+      console.log('response users', res.data.data)
       return res.data.data;
     },
   });

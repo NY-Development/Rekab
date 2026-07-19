@@ -25,6 +25,8 @@ const SupportPage = lazy(() => import('@/features/support/pages/SupportPage'));
 const AuditLogsPage = lazy(() => import('@/features/audit-logs/pages/AuditLogsPage'));
 const RiskStudentsPage = lazy(() => import('@/features/risk-students/pages/RiskStudentsPage'));
 const SettingsPage = lazy(() => import('@/features/settings/pages/SettingsPage'));
+const EmailBroadcastPage = lazy(() => import('@/features/email/pages/EmailBroadcastPage'));
+
 
 export const adminRoutes: RouteObject[] = [
   {
@@ -114,6 +116,10 @@ export const adminRoutes: RouteObject[] = [
   {
     path: 'risk-students',
     element: <RiskStudentsPage />,
+  },
+  {
+    path: 'email-broadcast',
+    element: <EmailBroadcastPage />,
   },
   {
     // System settings are SUPER_ADMIN-only (permission matrix: platform configuration).

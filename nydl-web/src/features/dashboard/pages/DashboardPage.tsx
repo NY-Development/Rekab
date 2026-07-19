@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import {
-  BookOpen, Video, Calendar, AlertTriangle, CheckCircle, Megaphone
+  BookOpen, Video, Calendar, AlertTriangle, AlertCircle, CheckCircle, Megaphone,
 } from 'lucide-react';
 import { useEnrollments } from '@/hooks/useEnrollments';
 import { profileApi } from '@/api/profile.api';
@@ -15,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { normalizeRole } from '@/lib/permissions';
 import StaffDashboard from './StaffDashboard';
+import { PartialPaymentModal } from '@/components/common/PartialPaymentModal';
 
 // Role-aware entry point: staff get their own dashboard; students get the
 // learning dashboard below. Split into separate components so student-only
@@ -29,6 +31,9 @@ export default function DashboardPage() {
 
 function StudentDashboard() {
   const { user } = useAuthStore();
+
+  // Partial payment modal state
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   // Queries
   const { data: profileRes, isLoading: isProfileLoading } = useQuery({
@@ -60,6 +65,11 @@ function StudentDashboard() {
   const announcements = announcementsRes?.data?.docs || [];
   const assignments = assignmentsRes?.data?.docs || [];
 
+  // Detect partial payment enrollment
+  const partialEnrollment = myEnrollments.find(
+    (e) => (e.status === 'PARTIAL_PAYMENT' || e.status === 'PENDING') && e.remainingDue && e.remainingDue > 0
+  );
+
   const handleJoinMeet = (url?: string) => {
     if (!url) {
       toast.error('Google Meet link is not set yet. Please check back later.');
@@ -80,6 +90,32 @@ function StudentDashboard() {
 
   return (
     <div className="space-y-8">
+      {/* ─── Partial Payment Enforcement Banner ─── */}
+      {partialEnrollment && !showPaymentModal && (
+        <div className="relative rounded-xl border border-amber-300/60 bg-amber-50 dark:bg-amber-950/20 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="flex size-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-600 shrink-0">
+            <AlertCircle className="h-5 w-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-bold text-foreground">Outstanding Balance</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              You have a remaining balance of <span className="font-bold text-amber-600 dark:text-amber-400">{partialEnrollment.remainingDue} {(partialEnrollment.courseId as any)?.currency || 'ETB'}</span> for <span className="font-semibold">{(partialEnrollment.courseId as any)?.title || 'your course'}</span>. Your course access will be <strong className='text-red-600 dark:text-red-400'>revoked</strong> unless the remaining balance is paid in 24 hours.
+            </p>
+          </div>
+          <Button size="sm" onClick={() => setShowPaymentModal(true)} className="shrink-0">
+            Pay Now
+          </Button>
+        </div>
+      )}
+
+      {/* ─── Partial Payment Modal ─── */}
+      {showPaymentModal && partialEnrollment && (
+        <PartialPaymentModal
+          enrollment={partialEnrollment}
+          onClose={() => setShowPaymentModal(false)}
+        />
+      )}
+
       {/* ─── Header ─── */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
@@ -103,10 +139,10 @@ function StudentDashboard() {
                     Active Cohort
                   </Badge>
                   <CardTitle className="text-2xl font-bold text-foreground">
-                    Full-Stack Software Development
+                    {(activeEnrollment.courseId as any)?.title || 'My Course'}
                   </CardTitle>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Level: {studentProfile?.currentLevel || 'Intermediate-II'}
+                    Level: {(activeEnrollment.courseId as any)?.category || studentProfile?.currentLevel || 'N/A'}
                   </p>
                 </div>
               </CardHeader>

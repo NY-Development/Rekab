@@ -168,6 +168,8 @@ export interface Enrollment {
   progressPercentage: number;
   createdAt: string;
   updatedAt: string;
+  amountPaid?: number;
+  remainingDue?: number;
 
   personalInfo?: RegistrationPersonalInfo;
   education?: RegistrationEducation;
@@ -194,7 +196,7 @@ export interface Payment {
   currency: string;
   transactionReference: string;
   paymentMethod: 'CBE' | 'TELEBIRR' | 'BOA' | 'CBEBIRR' | 'MPESA' | 'DASHEN' | 'AWASH' | 'SIINQEE' | 'KAAFI_EBIRR' | 'CHAPA' | 'BANK_TRANSFER' | 'CASH';
-  status: 'PENDING' | 'VERIFIED' | 'FAILED';
+  status: 'PENDING' | 'VERIFIED' | 'FAILED' | 'PARTIAL_PAYMENT';
   verificationDate?: string;
   notes?: string;
   createdAt: string;

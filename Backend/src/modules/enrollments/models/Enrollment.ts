@@ -67,6 +67,9 @@ const EnrollmentSchema = new Schema<IEnrollmentDocument>({
   rejectedAt: { type: String },
   rejectionReason: { type: String },
 
+  amountPaid: { type: Number, default: 0 },
+  remainingDue: { type: Number, default: 0 },
+
   createdAt: { type: String, default: () => new Date().toISOString() },
   updatedAt: { type: String, default: () => new Date().toISOString() }
 }, {

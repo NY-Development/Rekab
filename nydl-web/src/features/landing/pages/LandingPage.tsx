@@ -13,7 +13,7 @@ export default function LandingPage() {
           <div className="flex flex-col gap-6 z-10">
             <div className="inline-flex items-center gap-2 bg-muted rounded-full px-3 py-1 w-max border border-border">
               <span className="bg-primary text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded-full tracking-wider">New</span>
-              <span className="text-xs text-muted-foreground pr-2 font-medium">Winter 2026 Cohorts Now Open</span>
+              <span className="text-xs text-muted-foreground pr-2 font-medium">Summer 2026 Cohorts Now Open</span>
             </div>
             <h1 className="text-4xl lg:text-6xl font-bold tracking-tight text-foreground leading-tight">
               Learn Tech Through <span className="text-primary relative inline-block">Real Cohorts <span className="absolute left-0 bottom-1 h-2 w-full bg-primary/20 -z-10 rounded-full" /></span> & Accountability

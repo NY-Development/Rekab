@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
   Loader2, ArrowRight, ArrowLeft, CheckCircle, AlertCircle, Clock,
@@ -14,6 +15,7 @@ import { useSubmitPayment } from '@/hooks/usePayments';
 import { useAuthStore } from '@/store/auth.store';
 import { getRegistrationStatusMeta } from '@/utils/registration';
 import { SupportContactButton } from '@/components/common/SupportContactModal';
+import { PartialPaymentModal } from '@/components/common/PartialPaymentModal';
 import type { ApplyRegistrationPayload } from '@/api/enrollments.api';
 import type { Cohort } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -116,8 +118,6 @@ type StepLabel =
   | 'Payment & Agreements';
 
 const FULL_STEPS: StepLabel[] = ['Personal Information', 'Education', 'Location', 'Course Selection', 'Technical Readiness', 'Interests', 'Payment & Agreements'];
-// Fast-track: the NYDev Form already collected steps 1–6, so we only need
-// proof of that registration plus the payment step.
 const FAST_STEPS: StepLabel[] = ['NYDev Form Verification', 'Payment & Agreements'];
 
 const STEP_FIELDS: Partial<Record<StepLabel, (keyof FormValues)[]>> = {
@@ -154,6 +154,7 @@ export default function EnrollmentPage() {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
+  const queryClient = useQueryClient();
 
   const { data: courseRes, isLoading: isCourseLoading } = useCourse(courseId || '');
   const { data: enrollmentsRes, isLoading: isEnrollmentsLoading } = useEnrollments();
@@ -173,6 +174,8 @@ export default function EnrollmentPage() {
   const [enrollmentId, setEnrollmentId] = useState<string | null>(null);
   const [qrDataUri, setQrDataUri] = useState<string | null>(null);
   const qrInputRef = useRef<HTMLInputElement>(null);
+
+  const [showModal, setShowModal] = useState(false);
 
   const steps = intakeMode === 'fast' ? FAST_STEPS : FULL_STEPS;
   const currentStep = steps[step];
@@ -293,16 +296,39 @@ export default function EnrollmentPage() {
         transactionReference,
       });
 
-      setAssignedCohort(paymentRes.data.cohort);
-      toast.success('Payment verification successful. You now have full access to your course.');
-      setSubmitted(true);
+      const paymentStatus = paymentRes.data?.payment?.status;
+
+      if (paymentStatus === 'VERIFIED') {
+        // Fully paid — enrollment is now ACTIVE
+        setAssignedCohort(paymentRes.data.cohort);
+        toast.success('Payment verified! You now have full access to your course.');
+        setSubmitted(true);
+      } else {
+        // Partial payment — enrollment stays PENDING, student needs to pay more
+        toast.warning('Partial payment recorded. You still have a remaining balance to pay before your course access is activated.');
+        // Invalidate enrollments query so the page re-renders with updated data
+        queryClient.invalidateQueries({ queryKey: ['enrollments'] });
+      }
     } catch (err: any) {
+      const status = err?.response?.status;
       const message = err?.response?.data?.message || 'Registration failed. Please try again.';
-      if (message.toLowerCase().includes('transaction reference has already been submitted')) {
-        toast.error('Invalid transaction ID: this reference has already been used.');
-      } else if (message.toLowerCase().includes('verification failed') || message.toLowerCase().includes('requires a payment')) {
-        toast.error(message);
-        toast.warning('Payment verification pending. You can correct the transaction ID and resubmit.');
+      
+      if (status === 409) {
+        if (message.toLowerCase().includes('transaction reference has already been submitted')) {
+          toast.error('Invalid transaction ID: this reference has already been used.');
+        } else if (message.toLowerCase().includes('already registered') || message.toLowerCase().includes('already active')) {
+          toast.info('You are already registered/enrolled in this course.');
+        } else {
+          toast.error(message);
+        }
+      } else if (status === 400) {
+        if (message.toLowerCase().includes('requires a payment') || message.toLowerCase().includes('insufficient')) {
+          toast.warning(message);
+        } else {
+          toast.error(message);
+        }
+      } else if (status === 404) {
+        toast.error('Course or enrollment not found.');
       } else {
         toast.error(message);
       }
@@ -413,8 +439,10 @@ export default function EnrollmentPage() {
   // ─── Already registered: show status instead of the form ───
   if (existingEnrollment && !submitted) {
     const statusMeta = getRegistrationStatusMeta(existingEnrollment);
+    const hasRemainingDue = existingEnrollment.remainingDue !== undefined && existingEnrollment.remainingDue > 0;
+
     return (
-      <div className="w-full max-w-2xl mx-auto px-4 md:px-0 py-16">
+      <div className="w-full max-w-2xl mx-auto px-4 md:px-0 py-16 relative">
         <Card className="text-center py-12 px-6">
           <CardContent className="space-y-6">
             <div className="flex justify-center">
@@ -427,12 +455,44 @@ export default function EnrollmentPage() {
               )}
             </div>
             <div className="space-y-2">
-              <h3 className="text-xl font-bold text-foreground">{statusMeta.label}</h3>
+              <h3 className="text-xl font-bold text-foreground">
+                {hasRemainingDue ? 'Registration Pending (Partial Payment)' : statusMeta.label}
+              </h3>
               <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
-                You already have a registration for <span className="font-semibold">{course.title}</span>. {statusMeta.description}
+                You already have a registration for <span className="font-semibold">{course.title}</span>.{' '}
+                {hasRemainingDue 
+                  ? 'Your enrollment will be activated once the remaining balance is paid off.' 
+                  : statusMeta.description}
               </p>
             </div>
+
+            {existingEnrollment.amountPaid !== undefined && existingEnrollment.amountPaid > 0 && (
+              <div className="mx-auto max-w-md rounded-lg border border-border bg-muted/40 p-4 text-left space-y-2">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Payment Summary</p>
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">Total Course Fee:</span>
+                  <span className="font-semibold text-foreground">{course.price} {course.currency || 'ETB'}</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">Amount Paid:</span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">{existingEnrollment.amountPaid} {course.currency || 'ETB'}</span>
+                </div>
+                <div className="flex justify-between text-xs border-t border-border pt-2">
+                  <span className="text-muted-foreground font-semibold">Remaining Due:</span>
+                  <span className="font-bold text-amber-600 dark:text-amber-400">{existingEnrollment.remainingDue} {course.currency || 'ETB'}</span>
+                </div>
+              </div>
+            )}
+
             <div className="pt-4 flex justify-center gap-3">
+              {hasRemainingDue && (
+                <Button 
+                  onClick={() => setShowModal(true)}
+                  className="bg-primary text-primary-foreground font-semibold"
+                >
+                  Pay Remaining Due
+                </Button>
+              )}
               <Button variant="outline" onClick={() => navigate('/courses/enrolled')}>
                 View My Courses
               </Button>
@@ -440,6 +500,13 @@ export default function EnrollmentPage() {
             </div>
           </CardContent>
         </Card>
+
+        {showModal && (
+          <PartialPaymentModal
+            enrollment={existingEnrollment}
+            onClose={() => setShowModal(false)}
+          />
+        )}
       </div>
     );
   }
@@ -858,7 +925,21 @@ export default function EnrollmentPage() {
                 </div>
 
                 <div className="space-y-2 border-t border-border pt-4">
-                  <h4 className="text-xs font-bold text-foreground uppercase tracking-widest mb-2">Terms &amp; Agreements</h4>
+                  <div className="flex justify-between items-center mb-2">
+                    <h4 className="text-xs font-bold text-foreground uppercase tracking-widest">Terms &amp; Agreements</h4>
+                    <label className="flex items-center gap-1.5 text-xs text-primary font-semibold cursor-pointer">
+                      <Checkbox
+                        checked={allAgreed}
+                        onCheckedChange={(checked) => {
+                          const val = checked === true;
+                          AGREEMENT_ITEMS.forEach((item) => {
+                            setValue(item.key, val, { shouldValidate: true });
+                          });
+                        }}
+                      />
+                      Select All
+                    </label>
+                  </div>
                   {AGREEMENT_ITEMS.map((item) => (
                     <label key={item.key} className="flex items-start gap-2.5 text-xs text-muted-foreground leading-relaxed cursor-pointer">
                       <Checkbox

@@ -18,5 +18,7 @@ router.put('/users/:id', requireAuthenticated, requireAdmin, (req, res, next) =>
 router.delete('/users/:id', requireAuthenticated, requireAdmin, (req, res, next) => adminController.deleteUser(req, res, next));
 router.get('/logs', requireAuthenticated, requireAdmin, (req, res, next) => adminController.getSystemLogs(req, res, next));
 router.get('/stats', requireAuthenticated, requireAdmin, (req, res, next) => adminController.getDashboardStats(req, res, next));
+router.post('/email/send', requireAuthenticated, requireAdmin, (req, res, next) => adminController.sendEmail(req, res, next));
 
 export default router;
+

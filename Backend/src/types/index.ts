@@ -282,6 +282,9 @@ export interface Enrollment {
   approvedAt?: string;
   rejectedAt?: string;
   rejectionReason?: string;
+
+  amountPaid?: number;
+  remainingDue?: number;
 }
 
 export interface Payment {
@@ -298,7 +301,7 @@ export interface Payment {
   verifiedBy?: string; // Ref to User (Admin)
   verificationDate?: string;
   notes?: string;
-  status: 'PENDING' | 'VERIFIED' | 'FAILED' | string;
+  status: 'PENDING' | 'VERIFIED' | 'FAILED' | 'PARTIAL_PAYMENT' | string;
   createdAt: string;
   updatedAt: string;
 }
