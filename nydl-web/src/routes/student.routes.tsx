@@ -10,6 +10,9 @@ const DashboardPage = lazy(
 const MyCoursesPage = lazy(
   () => import("@/features/courses/pages/MyCoursesPage")
 );
+const CourseDetailPage = lazy(
+  () => import("@/features/courses/pages/CourseDetailPage")
+);
 const AssignmentsPage = lazy(
   () => import("@/features/assignments/pages/AssignmentsPage")
 );
@@ -61,6 +64,14 @@ export const studentRoutes: RouteObject[] = [
             element: (
               <RoleGuard allow={["STUDENT"]} mode="redirect">
                 <MyCoursesPage />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: "/courses/:id",
+            element: (
+              <RoleGuard allow={["STUDENT"]} mode="redirect">
+                <CourseDetailPage />
               </RoleGuard>
             ),
           },
