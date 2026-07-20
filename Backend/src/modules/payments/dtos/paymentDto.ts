@@ -14,6 +14,6 @@ export type SubmitPaymentDto = {
 };
 
 export type AdminVerifyPaymentDto = {
-  status: 'PENDING' | 'VERIFIED' | 'FAILED';
+  status: 'PENDING' | 'VERIFIED' | 'FAILED' | 'PARTIAL_PAYMENT';
   notes?: string;
 };
