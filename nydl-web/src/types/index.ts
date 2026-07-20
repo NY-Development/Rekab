@@ -158,10 +158,13 @@ export type EnrollmentStatus =
 
 export interface Enrollment {
   id: string;
-  studentId: string;
-  courseId: string;
-  cohortId: string;
-  paymentId?: string;
+  
+  // UPDATED: Allow these fields to be populated objects or string IDs
+  studentId: Partial<User>;
+  courseId: Partial<Course>;
+  cohortId: Partial<Cohort>;
+  paymentId?: Partial<Payment>;
+  
   status: EnrollmentStatus | string;
   enrolledAt: string;
   completedAt?: string;
@@ -170,12 +173,14 @@ export interface Enrollment {
   updatedAt: string;
   amountPaid?: number;
   remainingDue?: number;
+  
+  certificateIssued?: boolean; // NEW: Added based on backend data
 
   personalInfo?: RegistrationPersonalInfo;
   education?: RegistrationEducation;
   location?: RegistrationLocation;
   technicalReadiness?: RegistrationTechnicalReadiness;
-  interests?: string[];
+  interests?: string[]; // Remains a string array based on your payload (e.g., interests: [])
   agreements?: RegistrationAgreements;
   externalForm?: ExternalFormRegistration;
 
@@ -196,8 +201,9 @@ export interface Payment {
   currency: string;
   transactionReference: string;
   paymentMethod: 'CBE' | 'TELEBIRR' | 'BOA' | 'CBEBIRR' | 'MPESA' | 'DASHEN' | 'AWASH' | 'SIINQEE' | 'KAAFI_EBIRR' | 'CHAPA' | 'BANK_TRANSFER' | 'CASH';
-  status: 'PENDING' | 'VERIFIED' | 'FAILED' | 'PARTIAL_PAYMENT';
+  status: 'PENDING' | 'VERIFIED' | 'FAILED' | 'PARTIAL_PAYMENT' | string; // Broadened to support string from payload
   verificationDate?: string;
+  paidAt?: string; // NEW: Added based on backend data
   notes?: string;
   createdAt: string;
   updatedAt: string;

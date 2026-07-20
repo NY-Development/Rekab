@@ -32,7 +32,7 @@ export function PartialPaymentModal({ enrollment, onClose, onSuccess }: PartialP
   const [method, setMethod] = useState<PaymentMethod>('CBE');
   const [txRef, setTxRef] = useState('');
 
-  const course = enrollment.courseId as any;
+  const course = enrollment.courseId;
   const courseName = course?.title || 'your course';
   const coursePrice = course?.price;
   const currency = course?.currency || 'ETB';
@@ -78,7 +78,7 @@ export function PartialPaymentModal({ enrollment, onClose, onSuccess }: PartialP
             Course: <span className="font-semibold text-foreground">{courseName}</span>
           </p>
           <p className="text-xs text-muted-foreground">
-            Remaining due: <span className="font-semibold text-primary">{enrollment.remainingDue} {currency}</span>
+            Remaining due: <span className="font-semibold text-primary">{(course?.price ?? 0) - (enrollment.amountPaid ?? 0)} {currency}</span>
           </p>
           {coursePrice && enrollment.amountPaid !== undefined && (
             <p className="text-[10px] text-muted-foreground mt-1">
