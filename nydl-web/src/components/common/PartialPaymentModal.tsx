@@ -20,13 +20,15 @@ interface PartialPaymentModalProps {
   onClose: () => void;
   /** Called after a successful payment submission */
   onSuccess?: () => void;
+  /** If true, user cannot close/cancel out of this modal */
+  mandatory?: boolean;
 }
 
 /**
  * Reusable modal for submitting remaining payment on a partially-paid enrollment.
  * Used by DashboardPage, EnrollmentPage, and EnrollmentGate.
  */
-export function PartialPaymentModal({ enrollment, onClose, onSuccess }: PartialPaymentModalProps) {
+export function PartialPaymentModal({ enrollment, onClose, onSuccess, mandatory = false }: PartialPaymentModalProps) {
   const queryClient = useQueryClient();
   const submitPaymentMutation = useSubmitPayment();
   const [method, setMethod] = useState<PaymentMethod>('CBE');
@@ -64,13 +66,15 @@ export function PartialPaymentModal({ enrollment, onClose, onSuccess }: PartialP
   return (
     <div className="fixed inset-0 z-110 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div className="w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-lg relative space-y-4 text-left">
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
-        >
-          <X className="size-4" />
-        </button>
+        {!mandatory && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
+          >
+            <X className="size-4" />
+          </button>
+        )}
 
         <div className="space-y-1">
           <h3 className="text-lg font-bold text-foreground">Submit Remaining Payment</h3>
@@ -129,11 +133,14 @@ export function PartialPaymentModal({ enrollment, onClose, onSuccess }: PartialP
         </div>
 
         <div className="flex justify-end gap-2 pt-2">
-          <Button type="button" variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
+          {!mandatory && (
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+          )}
           <Button
             type="button"
+            className={mandatory ? 'w-full' : ''}
             disabled={!txRef.trim() || submitPaymentMutation.isPending}
             onClick={handleSubmit}
           >

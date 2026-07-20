@@ -4,6 +4,13 @@ interface LessonSeed {
   lessonType?: 'VIDEO' | 'TEXT' | 'LIVE' | 'PRACTICE' | 'QUIZ';
   duration?: number;
   resources?: { title: string; url: string }[];
+  learningObjectives?: string[];
+  videoUrl?: string;
+  notesMarkdown?: string;
+  practiceActivities?: { title: string; description: string; completed?: boolean }[];
+  externalLinks?: { title: string; url: string }[];
+  difficulty?: 'Beginner' | 'Intermediate' | 'Advanced';
+  isMandatory?: boolean;
 }
 
 interface ModuleSeed {
@@ -44,6 +51,14 @@ function withIds(modules: ModuleSeed[]) {
       durationMinutes: l.duration || 30,
       order: li + 1,
       resources: l.resources || [],
+      learningObjectives: l.learningObjectives || [],
+      videoUrl: l.videoUrl || '',
+      notesMarkdown: l.notesMarkdown || l.content,
+      practiceActivities: l.practiceActivities || [],
+      externalLinks: l.externalLinks || [],
+      difficulty: l.difficulty || 'Intermediate',
+      isMandatory: l.isMandatory !== false,
+      isPublished: true,
     })),
   }));
 }
@@ -943,7 +958,7 @@ const mobileAppDevelopment: CourseSeed = {
 export const COURSE_SEEDS: CourseSeed[] = [
   webDevFoundations,
   intermediateFrontend,
-  // advancedFrontend,
+  advancedFrontend,
   backendFundamentals,
   backendNestJS,
   networkingFoundations,

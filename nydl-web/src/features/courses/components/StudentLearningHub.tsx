@@ -2,11 +2,12 @@ import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { Variants } from 'framer-motion';
-import { useCourseModules } from '@/hooks/useCourses';
 import { useAssignments, useSubmissions } from '@/hooks/useAssignments';
 import { useSessions } from '@/hooks/useSessions';
 import { useResources } from '@/hooks/useResources';
 import { useAnnouncements } from '@/hooks/useAnnouncements';
+import { useCurriculumDetail } from '@/hooks/useCurriculum';
+import { useContinueLearning } from '@/hooks/useContinueLearning';
 import LearningRoadmap from './LearningRoadmap';
 import HubAssignmentCard from './HubAssignmentCard';
 import HubSessionCard from './HubSessionCard';
@@ -41,14 +42,16 @@ export default function StudentLearningHub({ course, enrollment }: StudentLearni
   const courseId = course.id;
 
   /* ── Data queries ── */
-  const { data: modulesRes } = useCourseModules(courseId);
+  const { data: curriculumRes } = useCurriculumDetail(courseId);
+  const { continueUrl } = useContinueLearning(courseId);
   const { data: assignmentsRes } = useAssignments({ courseId });
   const { data: submissionsRes } = useSubmissions();
   const { data: sessionsRes } = useSessions({ courseId });
   const { data: resourcesRes } = useResources({ courseId });
   const { data: announcementsRes } = useAnnouncements({ courseId });
 
-  const modules = modulesRes?.data?.modules || (modulesRes as any)?.modules || [];
+  const curriculum = curriculumRes?.data?.[0] || (curriculumRes as any)?.[0];
+  const modules = curriculum?.modules || [];
   const assignments: Assignment[] = assignmentsRes?.data?.docs || [];
   const submissions: Submission[] = submissionsRes?.data?.submissions || [];
   const sessions: Session[] = sessionsRes?.data?.docs || [];
@@ -114,7 +117,7 @@ export default function StudentLearningHub({ course, enrollment }: StudentLearni
   const cohortName = cohort?.name || cohort?.code || 'N/A';
 
   return (
-    <div className="space-y-8 pb-12">
+    <div className="space-y-8 pb-12 p-8">
       {/* ═══════ COURSE HEADER ═══════ */}
       <motion.section
         custom={0}
@@ -174,7 +177,7 @@ export default function StudentLearningHub({ course, enrollment }: StudentLearni
       {/* ═══════ QUICK ACTIONS ═══════ */}
       <motion.section custom={1} initial="hidden" animate="visible" variants={sectionAnim}>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <QuickAction icon="play_circle" label="Continue Learning" href={`/courses/${courseId}`} primary />
+          <QuickAction icon="play_circle" label="Continue Learning" href={continueUrl} primary />
           <QuickAction icon="assignment" label="Assignments" href="/assignments" badge={pendingAssignments.length || undefined} />
           <QuickAction icon="folder_open" label="Resources" href="/resources" />
           <QuickAction icon="videocam" label="Live Sessions" href="/sessions" />
@@ -226,7 +229,7 @@ export default function StudentLearningHub({ course, enrollment }: StudentLearni
                     )}
                   </div>
                   <Link
-                    to={`/courses/${courseId}`}
+                    to={continueUrl}
                     className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-semibold hover:bg-primary/90 transition-colors shadow-sm"
                   >
                     <span className="material-symbols-outlined text-[16px]">play_arrow</span>

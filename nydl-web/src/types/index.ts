@@ -73,12 +73,35 @@ export interface Course {
   updatedAt: string;
 }
 
+export interface Lesson {
+  id: string;
+  moduleId: string;
+  title: string;
+  content: string;
+  lessonType?: 'VIDEO' | 'TEXT' | 'LIVE' | 'PRACTICE' | 'QUIZ' | string;
+  duration?: number;
+  durationMinutes?: number;
+  order?: number;
+  resources?: { title: string; url: string }[];
+  learningObjectives?: string[];
+  videoUrl?: string;
+  notesMarkdown?: string;
+  practiceActivities?: { title: string; description: string; completed?: boolean }[];
+  externalLinks?: { title: string; url: string }[];
+  estimatedMinutes?: number;
+  difficulty?: 'Beginner' | 'Intermediate' | 'Advanced';
+  isPublished?: boolean;
+  isMandatory?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface CourseModule {
   id: string;
   title: string;
   description?: string;
   order?: number;
-  lessons?: { id: string; title: string; content?: string }[];
+  lessons?: Lesson[];
 }
 
 // ─── Cohort ───
@@ -242,6 +265,10 @@ export interface Assignment {
   submissionType: 'github' | 'text' | 'file';
   attachments?: string[];
   rubric?: string;
+  category?: 'PRACTICE' | 'GRADED' | 'CAPSTONE' | 'FINAL' | 'CHALLENGE' | string;
+  sessionId?: string;
+  estimatedMinutes?: number;
+  instructions?: string;
   createdAt: string;
   updatedAt: string;
 }

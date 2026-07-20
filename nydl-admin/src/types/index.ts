@@ -47,7 +47,19 @@ export interface Instructor {
   userId: Populated<User>;
   specialization: string;
   bio: string;
+  yearsExperience?: number;
   assignedCourses: string[];
+  certifications?: string[];
+  socialLinks?: {
+    linkedin?: string;
+    github?: string;
+    portfolio?: string;
+    website?: string;
+  };
+  status?: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
+  availability?: string;
+  profilePicture?: string;
+  phone?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -66,6 +78,7 @@ export interface Mentor {
 // ─── Course ───
 export interface Course {
   id: string;
+  code?: string;
   title: string;
   description: string;
   shortDescription: string;
@@ -85,6 +98,30 @@ export interface Course {
   updatedAt: string;
 }
 
+export interface Lesson {
+  id: string;
+  moduleId: string;
+  title: string;
+  description?: string;
+  lessonType: 'VIDEO' | 'TEXT' | 'LIVE' | 'PRACTICE' | 'QUIZ' | string;
+  content: string;
+  duration: number; // in minutes
+  durationMinutes?: number;
+  order: number;
+  resources?: { title: string; url: string }[];
+  learningObjectives?: string[];
+  videoUrl?: string;
+  notesMarkdown?: string;
+  practiceActivities?: { title: string; description: string; completed?: boolean }[];
+  externalLinks?: { title: string; url: string }[];
+  estimatedMinutes?: number;
+  difficulty?: 'Beginner' | 'Intermediate' | 'Advanced';
+  isPublished?: boolean;
+  isMandatory?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ─── Curriculum Module ───
 export interface CurriculumModule {
   id: string;
@@ -92,7 +129,8 @@ export interface CurriculumModule {
   title: string;
   description: string;
   order: number;
-  duration: string;
+  duration?: string;
+  lessons?: Lesson[];
   createdAt: string;
   updatedAt: string;
 }
@@ -281,6 +319,10 @@ export interface Assignment {
   dueDate: string;
   maxScore: number;
   status: 'DRAFT' | 'PUBLISHED' | 'CLOSED';
+  category?: 'PRACTICE' | 'GRADED' | 'CAPSTONE' | 'FINAL' | 'CHALLENGE' | string;
+  sessionId?: string;
+  estimatedMinutes?: number;
+  instructions?: string;
   createdAt: string;
   updatedAt: string;
 }

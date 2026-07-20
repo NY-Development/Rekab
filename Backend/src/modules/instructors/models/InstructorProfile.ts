@@ -13,6 +13,17 @@ const InstructorProfileSchema = new Schema<IInstructorProfileDocument>({
   assignedCohorts: [{ type: Schema.Types.ObjectId as any, ref: 'Cohort' }],
   rating: { type: Number, default: 5 },
   totalStudents: { type: Number, default: 0 },
+  certifications: [{ type: String }],
+  socialLinks: {
+    linkedin: { type: String },
+    github: { type: String },
+    portfolio: { type: String },
+    website: { type: String }
+  },
+  status: { type: String, enum: ['ACTIVE', 'INACTIVE', 'SUSPENDED'], default: 'ACTIVE' },
+  availability: { type: String },
+  profilePicture: { type: String },
+  phone: { type: String },
   createdAt: { type: String, default: () => new Date().toISOString() },
   updatedAt: { type: String, default: () => new Date().toISOString() }
 }, {

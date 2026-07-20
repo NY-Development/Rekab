@@ -176,6 +176,8 @@ export default function EnrollmentPage() {
   const qrInputRef = useRef<HTMLInputElement>(null);
 
   const [showModal, setShowModal] = useState(false);
+  const [isMandatoryModal, setIsMandatoryModal] = useState(false);
+  const [tempEnrollment, setTempEnrollment] = useState<any>(null);
 
   const steps = intakeMode === 'fast' ? FAST_STEPS : FULL_STEPS;
   const currentStep = steps[step];
@@ -287,6 +289,7 @@ export default function EnrollmentPage() {
         const enrollmentRes = await applyMutation.mutateAsync(payload);
         currentEnrollmentId = enrollmentRes.data.id;
         setEnrollmentId(currentEnrollmentId);
+        setTempEnrollment(enrollmentRes.data);
         toast.success('Registration submitted successfully.');
       }
 
@@ -306,8 +309,10 @@ export default function EnrollmentPage() {
       } else {
         // Partial payment — enrollment stays PENDING, student needs to pay more
         toast.warning('Partial payment recorded. You still have a remaining balance to pay before your course access is activated.');
-        // Invalidate enrollments query so the page re-renders with updated data
-        queryClient.invalidateQueries({ queryKey: ['enrollments'] });
+        // Refetch enrollments query so that existingEnrollment is populated, then show mandatory payment modal
+        await queryClient.refetchQueries({ queryKey: ['enrollments'] });
+        setIsMandatoryModal(true);
+        setShowModal(true);
       }
     } catch (err: any) {
       const status = err?.response?.status;
@@ -501,10 +506,14 @@ export default function EnrollmentPage() {
           </CardContent>
         </Card>
 
-        {showModal && (
+        {showModal && existingEnrollment && (
           <PartialPaymentModal
             enrollment={existingEnrollment}
-            onClose={() => setShowModal(false)}
+            onClose={() => {
+              setShowModal(false);
+              setIsMandatoryModal(false);
+            }}
+            mandatory={isMandatoryModal}
           />
         )}
       </div>
@@ -984,6 +993,16 @@ export default function EnrollmentPage() {
           </div>
         </Card>
       </form>
+      {showModal && (existingEnrollment || tempEnrollment) && (
+        <PartialPaymentModal
+          enrollment={existingEnrollment || tempEnrollment}
+          onClose={() => {
+            setShowModal(false);
+            setIsMandatoryModal(false);
+          }}
+          mandatory={isMandatoryModal}
+        />
+      )}
     </div>
   );
 }

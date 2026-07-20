@@ -8,6 +8,7 @@ const StudentsPage = lazy(() => import('@/features/students/pages/StudentsPage')
 const InstructorsPage = lazy(() => import('@/features/instructors/pages/InstructorsPage'));
 const MentorsPage = lazy(() => import('@/features/mentors/pages/MentorsPage'));
 const CoursesPage = lazy(() => import('@/features/courses/pages/CoursesPage'));
+const AdminCurriculumPage = lazy(() => import('@/features/courses/pages/AdminCurriculumPage'));
 const CohortsPage = lazy(() => import('@/features/cohorts/pages/CohortsPage'));
 const TeamsPage = lazy(() => import('@/features/teams/pages/TeamsPage'));
 const EnrollmentsPage = lazy(() => import('@/features/enrollments/pages/EnrollmentsPage'));
@@ -52,6 +53,10 @@ export const adminRoutes: RouteObject[] = [
   {
     path: 'courses',
     element: <CoursesPage />,
+  },
+  {
+    path: 'courses/:id/curriculum',
+    element: <AdminCurriculumPage />,
   },
   {
     path: 'cohorts',

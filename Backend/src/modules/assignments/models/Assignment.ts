@@ -17,6 +17,10 @@ const AssignmentSchema = new Schema<IAssignmentDocument>({
   attachments: [{ type: String }],
   createdBy: { type: Schema.Types.ObjectId as any, ref: 'User' },
   rubric: { type: String },
+  category: { type: String, enum: ['PRACTICE', 'GRADED', 'CAPSTONE', 'FINAL', 'CHALLENGE'], default: 'GRADED' },
+  sessionId: { type: Schema.Types.ObjectId as any, ref: 'Lesson', index: true },
+  estimatedMinutes: { type: Number },
+  instructions: { type: String },
   createdAt: { type: String, default: () => new Date().toISOString() },
   updatedAt: { type: String, default: () => new Date().toISOString() }
 }, {

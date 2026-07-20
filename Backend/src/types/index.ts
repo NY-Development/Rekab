@@ -65,6 +65,17 @@ export interface InstructorProfile {
   assignedCohorts?: string[]; // Cohort IDs
   rating?: number;
   totalStudents?: number;
+  certifications?: string[];
+  socialLinks?: {
+    linkedin?: string;
+    github?: string;
+    portfolio?: string;
+    website?: string;
+  };
+  status?: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
+  availability?: string;
+  profilePicture?: string;
+  phone?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -155,6 +166,14 @@ export interface Lesson {
   lessonType?: 'VIDEO' | 'TEXT' | 'LIVE' | 'PRACTICE' | 'QUIZ' | string;
   duration?: number; // minutes
   order?: number;
+  learningObjectives?: string[];
+  notesMarkdown?: string;
+  practiceActivities?: { title: string; description: string; completed?: boolean }[];
+  externalLinks?: { title: string; url: string }[];
+  estimatedMinutes?: number;
+  difficulty?: 'Beginner' | 'Intermediate' | 'Advanced';
+  isPublished?: boolean;
+  isMandatory?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -356,6 +375,10 @@ export interface Assignment {
   attachments?: string[];
   createdBy?: string; // Ref to User
   rubric?: string;
+  category?: 'PRACTICE' | 'GRADED' | 'CAPSTONE' | 'FINAL' | 'CHALLENGE' | string;
+  sessionId?: string;
+  estimatedMinutes?: number;
+  instructions?: string;
   createdAt?: string;
   updatedAt?: string;
 }

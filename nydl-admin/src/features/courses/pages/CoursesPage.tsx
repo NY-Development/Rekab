@@ -7,8 +7,9 @@ import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { Course } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Trash } from 'lucide-react';
+import { Trash, BookOpen } from 'lucide-react';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 const createCourseSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
@@ -22,6 +23,7 @@ const createCourseSchema = z.object({
 });
 
 export function CoursesPage() {
+  const navigate = useNavigate();
   const { data, isLoading, isError } = useCourses();
   const { createCourse, deleteCourse } = useCourseMutations();
 
@@ -59,6 +61,15 @@ export function CoursesPage() {
       header: 'Actions',
       cell: (info) => (
         <div className="flex gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(`/courses/${info.row.original.id}/curriculum`)}
+            className="text-slate-400 hover:text-primary hover:bg-primary/10 h-8 w-8"
+            title="Manage Curriculum"
+          >
+            <BookOpen className="h-4 w-4" />
+          </Button>
           <ConfirmDialog
             trigger={
               <Button

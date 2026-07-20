@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { LogOut, BookOpen, CreditCard, AlertCircle } from 'lucide-react';
 import { useEnrollments } from '@/hooks/useEnrollments';
@@ -25,17 +25,33 @@ export function EnrollmentGate() {
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const autoOpenedRef = useRef(false);
 
   const isStudent = (user?.role || '').toUpperCase() === 'STUDENT';
 
   const { data: enrollmentsRes, isLoading, isError } = useEnrollments();
   const enrollments = enrollmentsRes?.data || [];
 
+  // Auto-open payment modal when partial payment is detected on mount/auth load
+  useEffect(() => {
+    if (isLoading || isError || !isStudent) return;
+    if (enrollments && enrollments.length > 0 && !autoOpenedRef.current) {
+      const hasPartial = enrollments.some(
+        (e) => e.remainingDue && e.remainingDue > 0
+      );
+      if (hasPartial) {
+        setShowPaymentModal(true);
+        autoOpenedRef.current = true;
+      }
+    }
+  }, [enrollments, isLoading, isError, isStudent]);
+
   // Always allow non-students, enrollment/course routes, and loading states
   const isExemptRoute = pathname.startsWith('/enroll') || pathname.startsWith('/courses');
   if (!isStudent || isExemptRoute || isLoading || isError) {
     return null;
   }
+
 
   // Check if student has at least one fully-granted enrollment
   const hasActiveAccess = enrollments.some(

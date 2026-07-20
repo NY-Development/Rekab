@@ -20,6 +20,22 @@ const LessonSchema = new Schema<ILessonDocument>({
     url: { type: String, required: true }
   }],
   order: { type: Number, default: 1 },
+  learningObjectives: [{ type: String }],
+  videoUrl: { type: String },
+  notesMarkdown: { type: String },
+  practiceActivities: [{
+    title: { type: String, required: true },
+    description: { type: String },
+    completed: { type: Boolean, default: false }
+  }],
+  externalLinks: [{
+    title: { type: String, required: true },
+    url: { type: String, required: true }
+  }],
+  estimatedMinutes: { type: Number },
+  difficulty: { type: String, enum: ['Beginner', 'Intermediate', 'Advanced'] },
+  isPublished: { type: Boolean, default: true },
+  isMandatory: { type: Boolean, default: true },
   createdAt: { type: String, default: () => new Date().toISOString() },
   updatedAt: { type: String, default: () => new Date().toISOString() }
 }, {

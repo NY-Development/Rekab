@@ -6,10 +6,12 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthStore } from '@/store/auth.store';
+import { useEnrollments } from '@/hooks/useEnrollments';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { EnrollmentGate } from '@/components/common/EnrollmentGate';
 import { SessionExpiryNotice } from '@/components/common/SessionExpiryNotice';
+import { PartialPaymentModal } from '@/components/common/PartialPaymentModal';
 import { normalizeRole } from '@/lib/permissions';
 import type { UserRole } from '@/types';
 
@@ -28,7 +30,7 @@ interface NavItem {
 const mainNavItems: NavItem[] = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['STUDENT', 'INSTRUCTOR', 'MENTOR'] },
   { to: '/courses/enrolled', label: 'My Courses', icon: BookOpen, roles: ['STUDENT'] },
-  { to: '/courses', label: 'Courses', icon: GraduationCap, roles: ['INSTRUCTOR', 'MENTOR'] },
+  { to: '/instructor/courses', label: 'Courses', icon: GraduationCap, roles: ['INSTRUCTOR', 'MENTOR'] },
   { to: '/assignments', label: 'Assignments', icon: ClipboardList, roles: ['STUDENT', 'INSTRUCTOR', 'MENTOR'] },
   { to: '/sessions', label: 'Live Sessions', icon: Video, roles: ['STUDENT', 'INSTRUCTOR', 'MENTOR'] },
   { to: '/resources', label: 'Resources', icon: FolderOpen, roles: ['STUDENT', 'INSTRUCTOR', 'MENTOR'] },
@@ -62,6 +64,13 @@ export default function DashboardLayout() {
     navigate('/login');
   };
 
+  const { data: enrollmentsRes } = useEnrollments();
+  const myEnrollments = enrollmentsRes?.data || [];
+  const isStudent = role === 'STUDENT';
+  const partialEnrollment = isStudent
+    ? myEnrollments.find((e: any) => (e.status === 'PARTIAL_PAYMENT' || e.status === 'PENDING') && e.remainingDue && e.remainingDue > 0)
+    : null;
+
   const initials = user?.name
     ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
     : 'U';
@@ -70,6 +79,13 @@ export default function DashboardLayout() {
     <div className="flex min-h-screen bg-background">
       <EnrollmentGate />
       <SessionExpiryNotice />
+      {partialEnrollment && (
+        <PartialPaymentModal
+          enrollment={partialEnrollment}
+          onClose={() => {}}
+          mandatory={true}
+        />
+      )}
       {/* ─── Sidebar ─── */}
       <aside
         className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-border bg-[#0F172A] text-white transition-transform duration-300 md:translate-x-0 ${

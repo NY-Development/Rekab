@@ -13,8 +13,17 @@ const MyCoursesPage = lazy(
 const CourseDetailPage = lazy(
   () => import("@/features/courses/pages/CourseDetailPage")
 );
+const SessionWorkspacePage = lazy(
+  () => import("@/features/courses/pages/SessionWorkspacePage")
+);
 const AssignmentsPage = lazy(
   () => import("@/features/assignments/pages/AssignmentsPage")
+);
+const InstructorCoursesPage = lazy(
+  () => import("@/features/courses/pages/InstructorCoursesPage")
+);
+const InstructorCurriculumPage = lazy(
+  () => import("@/features/courses/pages/InstructorCurriculumPage")
 );
 const SubmitAssignmentPage = lazy(
   () => import("@/features/assignments/pages/SubmitAssignmentPage")
@@ -76,6 +85,14 @@ export const studentRoutes: RouteObject[] = [
             ),
           },
           {
+            path: "/courses/:courseId/sessions/:sessionId",
+            element: (
+              <RoleGuard allow={["STUDENT"]} mode="redirect">
+                <SessionWorkspacePage />
+              </RoleGuard>
+            ),
+          },
+          {
             path: "/assignments/:id/submit",
             element: (
               <RoleGuard allow={["STUDENT"]} mode="redirect">
@@ -104,6 +121,22 @@ export const studentRoutes: RouteObject[] = [
             element: (
               <RoleGuard allow={["STUDENT"]} mode="redirect">
                 <EnrollmentPage />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: "/instructor/courses",
+            element: (
+              <RoleGuard allow={["INSTRUCTOR", "MENTOR"]} mode="redirect">
+                <InstructorCoursesPage />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: "/instructor/courses/:id/curriculum",
+            element: (
+              <RoleGuard allow={["INSTRUCTOR", "MENTOR"]} mode="redirect">
+                <InstructorCurriculumPage />
               </RoleGuard>
             ),
           },

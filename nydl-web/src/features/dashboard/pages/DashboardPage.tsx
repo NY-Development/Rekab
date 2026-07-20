@@ -10,6 +10,7 @@ import { sessionsApi } from '@/api/sessions.api';
 import { announcementsApi } from '@/api/announcements.api';
 import { assignmentsApi } from '@/api/assignments.api';
 import { useAuthStore } from '@/store/auth.store';
+import { useContinueLearning } from '@/hooks/useContinueLearning';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -61,6 +62,8 @@ function StudentDashboard() {
   const studentProfile = profileRes?.data;
   const myEnrollments = enrollmentsRes?.data || [];
   const activeEnrollment = myEnrollments.find((e) => e.status === 'ACTIVE') || myEnrollments[0];
+  const activeCourseId = (activeEnrollment?.courseId as any)?.id || activeEnrollment?.courseId || '';
+  const { continueUrl } = useContinueLearning(activeCourseId);
   const nextSession = sessionsRes?.data?.docs?.[0];
   const announcements = announcementsRes?.data?.docs || [];
   const assignments = assignmentsRes?.data?.docs || [];
@@ -133,7 +136,7 @@ function StudentDashboard() {
         <div className="lg:col-span-8 space-y-6">
           {activeEnrollment ? (
             <Card className="hover:shadow-sm transition-shadow duration-200">
-              <CardHeader className="flex flex-row items-start justify-between pb-4">
+              <CardHeader className="flex flex-row items-center justify-between pb-4 space-y-0">
                 <div>
                   <Badge variant="secondary" className="mb-2 uppercase tracking-wide text-[10px] font-bold bg-primary/10 text-primary">
                     Active Cohort
@@ -145,6 +148,14 @@ function StudentDashboard() {
                     Level: {(activeEnrollment.courseId as any)?.category || studentProfile?.currentLevel || 'N/A'}
                   </p>
                 </div>
+                {activeCourseId && (
+                  <Link
+                    to={continueUrl}
+                    className={buttonVariants({ variant: 'default', size: 'sm', className: 'gap-1.5 shadow-sm' })}
+                  >
+                    <BookOpen className="h-4 w-4" /> Continue Learning
+                  </Link>
+                )}
               </CardHeader>
               <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-3 pt-2">
                 {/* Progress */}

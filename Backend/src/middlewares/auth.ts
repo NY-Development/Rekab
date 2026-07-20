@@ -3,6 +3,10 @@ import jwt from 'jsonwebtoken';
 import UserModel from '../modules/users/models/User';
 import { User, UserRole } from '../types';
 import { AppError } from './errorHandler';
+import InstructorProfileModel from '../modules/instructors/models/InstructorProfile';
+import { CurriculumModel } from '../modules/curriculum/models/Curriculum';
+import { ModuleModel } from '../modules/curriculum/models/Module';
+import { LessonModel } from '../modules/curriculum/models/Lesson';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'nydev-learning-master-secret-key-2026';
 
@@ -120,3 +124,97 @@ export function authorize(...allowedRoles: UserRole[]) {
 
 export const requireAdmin = authorize('ADMIN', 'SUPER_ADMIN');
 export const requireInstructor = authorize('INSTRUCTOR');
+
+/**
+ * Guard to ensure INSTRUCTORS can only access/modify data belonging to their assigned courses.
+ * If user is ADMIN or SUPER_ADMIN, they bypass these checks.
+ */
+export async function instructorCourseGuard(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const user = req.user;
+    if (!user) {
+      throw new AppError('Not authenticated.', 401);
+    }
+
+    const role = user.role.toUpperCase();
+
+    // Admin/Super Admin bypass
+    if (role === 'ADMIN' || role === 'SUPER_ADMIN') {
+      return next();
+    }
+
+    // ONLY instructors are checked. If student/visitor somehow triggers this, throw forbidden.
+    if (role !== 'INSTRUCTOR') {
+      throw new AppError('Forbidden. You do not have permission to perform this action.', 403);
+    }
+
+    // Resolve courseId
+    let courseId: string | undefined = req.body.courseId || req.query.courseId;
+
+    if (!courseId) {
+      const id = req.params.id;
+      const path = req.path.toLowerCase();
+
+      if (id) {
+        if (path.includes('/modules')) {
+          // Module actions
+          const moduleDoc = await ModuleModel.findById(id);
+          if (moduleDoc) {
+            courseId = moduleDoc.courseId?.toString();
+          }
+        } else if (path.includes('/lessons')) {
+          // Lesson actions
+          const lessonDoc = await LessonModel.findById(id);
+          if (lessonDoc) {
+            const moduleDoc = await ModuleModel.findById(lessonDoc.moduleId);
+            if (moduleDoc) {
+              courseId = moduleDoc.courseId?.toString();
+            }
+          }
+        } else {
+          // Curriculum actions
+          const curriculumDoc = await CurriculumModel.findById(id);
+          if (curriculumDoc) {
+            courseId = curriculumDoc.courseId?.toString();
+          }
+        }
+      } else {
+        // No params.id. Check if we have moduleId in body
+        if (req.body.moduleId) {
+          const moduleDoc = await ModuleModel.findById(req.body.moduleId);
+          if (moduleDoc) {
+            courseId = moduleDoc.courseId?.toString();
+          }
+        }
+      }
+    }
+
+    if (!courseId) {
+      // If we couldn't resolve the courseId, it might be a general index request.
+      // Usually, index requests are GETs and don't mutate, but if it is a mutation/post, throw error.
+      if (req.method !== 'GET') {
+        throw new AppError('Could not resolve course scope for this request.', 400);
+      }
+      return next();
+    }
+
+    // Check instructor assigned courses
+    const profile = await InstructorProfileModel.findOne({ userId: user.id || (user as any)._id });
+    if (!profile) {
+      throw new AppError('Instructor profile not found.', 403);
+    }
+
+    const assignedCourses = (profile.assignedCourses || []).map((c: any) => c.toString());
+    if (!assignedCourses.includes(courseId)) {
+      throw new AppError('You are not assigned to manage this course.', 403);
+    }
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+}

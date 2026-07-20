@@ -1,4 +1,4 @@
-import api from '@/lib/axios';
+import api from './axios';
 import type { ApiResponse } from '@/types';
 
 export interface CurriculumModule {
@@ -16,20 +16,12 @@ export interface CurriculumLesson {
   moduleId: string;
   title: string;
   description?: string;
-  lessonType: 'VIDEO' | 'TEXT' | 'LIVE' | 'PRACTICE' | 'QUIZ' | string;
+  lessonType: 'VIDEO' | 'TEXT' | 'LIVE' | 'PRACTICE' | 'QUIZ';
   content: string;
   duration: number;
   durationMinutes?: number;
   order: number;
   resources?: { title: string; url: string }[];
-  learningObjectives?: string[];
-  videoUrl?: string;
-  notesMarkdown?: string;
-  practiceActivities?: { title: string; description: string; completed?: boolean }[];
-  externalLinks?: { title: string; url: string }[];
-  difficulty?: 'Beginner' | 'Intermediate' | 'Advanced';
-  isPublished?: boolean;
-  isMandatory?: boolean;
 }
 
 export interface CurriculumDetail {
@@ -52,17 +44,31 @@ export const curriculumApi = {
     api.put<ApiResponse<CurriculumModule>>(`/curriculum/modules/${id}`, data),
 
   deleteModule: (id: string) =>
-    api.delete(`/curriculum/modules/${id}`),
+    api.delete<ApiResponse<{ message: string }>>(`/curriculum/modules/${id}`),
 
-  createLesson: (data: Partial<CurriculumLesson> & {
+  createLesson: (data: {
     moduleId: string;
     title: string;
+    description?: string;
+    lessonType: string;
+    content: string;
+    duration: number;
+    order: number;
+    resources?: { title: string; url: string }[];
   }) =>
     api.post<ApiResponse<CurriculumLesson>>('/curriculum/lessons', data),
 
-  updateLesson: (id: string, data: Partial<CurriculumLesson>) =>
+  updateLesson: (id: string, data: {
+    title: string;
+    description?: string;
+    lessonType: string;
+    content: string;
+    duration: number;
+    order: number;
+    resources?: { title: string; url: string }[];
+  }) =>
     api.put<ApiResponse<CurriculumLesson>>(`/curriculum/lessons/${id}`, data),
 
   deleteLesson: (id: string) =>
-    api.delete(`/curriculum/lessons/${id}`),
+    api.delete<ApiResponse<{ message: string }>>(`/curriculum/lessons/${id}`),
 };
