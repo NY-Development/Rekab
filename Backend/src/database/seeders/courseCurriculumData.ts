@@ -1,8 +1,10 @@
 interface LessonSeed {
   title: string;
+  description?: string;
   content: string;
   lessonType?: 'VIDEO' | 'TEXT' | 'LIVE' | 'PRACTICE' | 'QUIZ';
   duration?: number;
+  estimatedMinutes?: number;
   resources?: { title: string; url: string }[];
   learningObjectives?: string[];
   videoUrl?: string;
@@ -11,6 +13,7 @@ interface LessonSeed {
   externalLinks?: { title: string; url: string }[];
   difficulty?: 'Beginner' | 'Intermediate' | 'Advanced';
   isMandatory?: boolean;
+  isPublished?: boolean;
 }
 
 interface ModuleSeed {
@@ -45,6 +48,7 @@ function withIds(modules: ModuleSeed[]) {
     lessons: m.lessons.map((l, li) => ({
       id: `m${mi + 1}-l${li + 1}`,
       title: l.title,
+      description: l.description || '',
       content: l.content,
       lessonType: l.lessonType || 'LIVE',
       duration: l.duration || 30,
@@ -56,9 +60,10 @@ function withIds(modules: ModuleSeed[]) {
       notesMarkdown: l.notesMarkdown || l.content,
       practiceActivities: l.practiceActivities || [],
       externalLinks: l.externalLinks || [],
+      estimatedMinutes: l.estimatedMinutes || l.duration || 30,
       difficulty: l.difficulty || 'Intermediate',
       isMandatory: l.isMandatory !== false,
-      isPublished: true,
+      isPublished: l.isPublished !== false,
     })),
   }));
 }

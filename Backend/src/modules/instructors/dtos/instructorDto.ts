@@ -4,6 +4,15 @@ export interface InstructorProfileDto extends InstructorProfile {
   user?: Partial<User>;
 }
 
-export type CreateInstructorProfileDto = Omit<InstructorProfile, 'id' | 'rating' | 'totalStudents' | 'createdAt' | 'updatedAt'>;
+export interface CreateInstructorProfileDto {
+  userId?: string;
+  name?: string;
+  email?: string;
+  specialization?: string;
+  yearsExperience?: number;
+  bio?: string;
+  skills?: string[];
+  assignedCourses?: string[];
+}
 
 export type UpdateInstructorProfileDto = Partial<Omit<InstructorProfile, 'id' | 'userId' | 'createdAt' | 'updatedAt'>>;

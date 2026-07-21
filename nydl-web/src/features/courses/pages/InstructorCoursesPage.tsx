@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCourses } from '@/hooks/useCourses';
+import { useInstructorProfile } from '@/hooks/useProfile';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,9 +11,21 @@ import type { Course } from '@/types';
 export default function InstructorCoursesPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
-  const { data: courses, isLoading, error } = useCourses();
+  const { data: courses, isLoading: coursesLoading, error: coursesError } = useCourses();
+  const { data: profileRes, isLoading: profileLoading, error: profileError } = useInstructorProfile();
+
+  const isLoading = coursesLoading || profileLoading;
+  const error = coursesError || profileError;
+
+  const assignedCoursesList = profileRes?.data?.assignedCourses || [];
+  const assignedCourseIds = assignedCoursesList.map((c: any) => c.id || c._id || c);
 
   const filteredCourses = courses?.data?.docs?.filter((course: Course) => {
+    // Only display courses assigned to the logged-in instructor
+    if (!assignedCourseIds.includes(course.id)) {
+      return false;
+    }
+
     return (
       course.title.toLowerCase().includes(search.toLowerCase()) ||
       course.description.toLowerCase().includes(search.toLowerCase())

@@ -39,6 +39,8 @@ export function UsersPage() {
   const [detail, setDetail] = useState<User | null>(null);
   // Role management is a SUPER_ADMIN capability (permission matrix: roles).
   const isSuperAdmin = (currentUser?.role || '').toUpperCase() === 'SUPER_ADMIN';
+  const isAdmin = (currentUser?.role || '').toUpperCase() === 'ADMIN';
+  const isAdminOrSuperAdmin = isSuperAdmin || isAdmin;
 
   const handleDelete = async (id: string) => {
     try {
@@ -87,11 +89,14 @@ export function UsersPage() {
       header: 'Actions',
       cell: (info) => {
         const targetIsSuperAdmin = info.row.original.role.toUpperCase() === 'SUPER_ADMIN';
-        // Role changes: SUPER_ADMIN only. Deleting a super admin: SUPER_ADMIN only.
+        const targetIsAdmin = info.row.original.role.toUpperCase() === 'ADMIN';
+        // Role changes: SUPER_ADMIN can modify any role. ADMIN can modify student/instructor/mentor roles only.
+        const canChangeRole = isSuperAdmin || (isAdmin && !targetIsAdmin && !targetIsSuperAdmin);
+        // Deleting a super admin: SUPER_ADMIN only.
         const canDelete = isSuperAdmin || !targetIsSuperAdmin;
         return (
           <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-            {isSuperAdmin && (
+            {canChangeRole && (
               <EntityFormDialog
                 triggerLabel="Change Role"
                 title={`Change Role — ${info.row.original.name}`}
@@ -103,7 +108,9 @@ export function UsersPage() {
                     label: 'Role',
                     type: 'select',
                     placeholder: 'Select a role',
-                    options: ROLE_OPTIONS,
+                    options: isSuperAdmin
+                      ? ROLE_OPTIONS
+                      : ROLE_OPTIONS.filter((o) => o.value !== 'ADMIN' && o.value !== 'SUPER_ADMIN'),
                   },
                 ]}
                 onSubmit={(values) => handleRoleUpdate(info.row.original, values)}

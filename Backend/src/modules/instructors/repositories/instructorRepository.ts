@@ -33,8 +33,8 @@ export class InstructorRepository {
         ...data,
         rating: 5,
         totalStudents: 0,
-        assignedCourses: [],
-        assignedCohorts: [],
+        assignedCourses: (data as any).assignedCourses || [],
+        assignedCohorts: (data as any).assignedCohorts || [],
       });
       return doc.toJSON() as InstructorProfile;
     }

@@ -82,7 +82,7 @@ export async function seedCourses(): Promise<void> {
           await LessonModel.create({
             moduleId: moduleDoc._id,
             title: day.title,
-            description: day.description || day.title,
+            description: day?.description as any || day.title || '',
             lessonType: day.lessonType || 'TEXT',
             content: day.content || `Content for ${day.title}`,
             duration: day.duration || 30,

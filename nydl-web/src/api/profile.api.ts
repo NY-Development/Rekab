@@ -10,4 +10,7 @@ export const profileApi = {
 
   getStudentProfile: () =>
     api.get('/students/me'),
+
+  getInstructorProfile: () =>
+    api.get('/instructors/me'),
 };

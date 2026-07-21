@@ -12,7 +12,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { Instructor, User, Course } from '@/types';
 import { Button } from '@/components/ui/button';
 import { getPopulated } from '@/utils/registration';
-import { Trash, Edit, Plus } from 'lucide-react';
+import { Trash, Edit, Plus, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import {
@@ -35,10 +35,12 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 
 const createInstructorSchema = z.object({
-  userId: z.string().min(1, 'User ID is required'),
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email('Please enter a valid email address'),
   specialization: z.string().optional(),
   yearsExperience: z.coerce.number().int().min(0).optional(),
   bio: z.string().optional(),
+  assignedCourses: z.array(z.string()).optional().default([]),
 });
 
 const editInstructorSchema = z.object({
@@ -241,13 +243,127 @@ export function InstructorEditDialog({ instructor, onClose, onSave, courses }: I
               )}
             </div>
           </div>
-
           <DialogFooter className="border-t border-slate-800 pt-4 flex gap-2 justify-end">
             <Button type="button" variant="outline" onClick={onClose} className="border-slate-800 hover:bg-slate-900 hover:text-white">
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold">
               Save Changes
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+interface InstructorCreateDialogProps {
+  courses: Course[];
+  onClose: () => void;
+  onSave: (values: z.infer<typeof createInstructorSchema>) => Promise<void>;
+}
+
+export function InstructorCreateDialog({ courses, onClose, onSave }: InstructorCreateDialogProps) {
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(createInstructorSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      specialization: '',
+      yearsExperience: 0,
+      bio: '',
+      assignedCourses: [] as string[],
+    },
+  });
+
+  const assignedCourses = watch('assignedCourses') || [];
+
+  const handleCourseToggle = (courseId: string) => {
+    if (assignedCourses.includes(courseId)) {
+      setValue(
+        'assignedCourses',
+        assignedCourses.filter((id) => id !== courseId),
+        { shouldValidate: true }
+      );
+    } else {
+      setValue('assignedCourses', [...assignedCourses, courseId], { shouldValidate: true });
+    }
+  };
+
+  return (
+    <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="bg-slate-950 border-slate-800 text-white sm:max-w-xl max-h-[90vh] overflow-y-auto font-sans">
+        <DialogHeader>
+          <DialogTitle className="text-white text-lg font-bold">Add New Instructor</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit(onSave)} className="space-y-4 pt-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-slate-300 font-semibold">Full Name</Label>
+              <Input placeholder="e.g. John Doe" className="bg-slate-900 border-slate-800 text-white" {...register('name')} />
+              {errors.name && <p className="text-xs text-rose-400">{errors.name.message}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-slate-300 font-semibold">Email Address</Label>
+              <Input placeholder="e.g. john@nydev.org" type="email" className="bg-slate-900 border-slate-800 text-white" {...register('email')} />
+              {errors.email && <p className="text-xs text-rose-400">{errors.email.message}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-slate-300 font-semibold">Specialization</Label>
+              <Input placeholder="e.g. Frontend Engineering" className="bg-slate-900 border-slate-800 text-white" {...register('specialization')} />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-slate-300 font-semibold">Years of Experience</Label>
+              <Input type="number" className="bg-slate-900 border-slate-800 text-white" {...register('yearsExperience')} />
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <Label className="text-slate-300 font-semibold">Bio</Label>
+              <Textarea placeholder="Short professional bio..." className="bg-slate-900 border-slate-800 text-white h-24" {...register('bio')} />
+            </div>
+          </div>
+
+          <div className="border-t border-slate-800 pt-4">
+            <Label className="text-slate-300 mb-2 block font-semibold">Assign Courses</Label>
+            <div className="border border-slate-800 rounded-lg p-3 bg-slate-900 max-h-40 overflow-y-auto space-y-2">
+              {courses.length === 0 ? (
+                <p className="text-xs text-slate-500">No courses available</p>
+              ) : (
+                courses.map((course) => {
+                  const checked = assignedCourses.includes(course.id);
+                  return (
+                    <label key={course.id} className="flex items-center gap-3 p-2 hover:bg-slate-850 rounded cursor-pointer text-sm">
+                      <Checkbox
+                        checked={checked}
+                        onCheckedChange={() => handleCourseToggle(course.id)}
+                      />
+                      <div>
+                        <p className="font-medium text-white">{course.title}</p>
+                        <p className="text-xs text-slate-400">{course.category} {course.level}</p>
+                      </div>
+                    </label>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          <DialogFooter className="border-t border-slate-800 pt-4 flex gap-2 justify-end">
+            <Button type="button" variant="outline" onClick={onClose} className="border-slate-800 hover:bg-slate-900 hover:text-white">
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold">
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Add Instructor
             </Button>
           </DialogFooter>
         </form>
@@ -264,6 +380,7 @@ export function InstructorsPage() {
   const allCourses = coursesData?.docs || [];
   const userOptions = (instructorUsersData?.docs || []).map((u) => ({ value: u.id, label: `${u.name} (${u.email})` }));
   const [editingInstructor, setEditingInstructor] = useState<Instructor | null>(null);
+  const [isCreatingInstructor, setIsCreatingInstructor] = useState(false);
 
   const handleDelete = async (id: string) => {
     try {
@@ -351,18 +468,12 @@ export function InstructorsPage() {
           <h1 className="text-xl font-bold text-white uppercase tracking-wider">Instructor Roster</h1>
           <p className="text-sm text-slate-400 font-medium">Manage teacher accounts, course specializations, and professional bios.</p>
         </div>
-        <EntityFormDialog
-          triggerLabel="Add Instructor"
-          title="Add New Instructor"
-          schema={createInstructorSchema}
-          fields={[
-            { name: 'userId', label: 'User', type: 'select', placeholder: 'Select an instructor account', options: userOptions },
-            { name: 'specialization', label: 'Specialization', placeholder: 'Frontend Engineering' },
-            { name: 'yearsExperience', label: 'Years of Experience', type: 'number', placeholder: '5' },
-            { name: 'bio', label: 'Bio', type: 'textarea', placeholder: 'Short professional bio...' },
-          ]}
-          onSubmit={handleCreate}
-        />
+        <Button 
+          onClick={() => setIsCreatingInstructor(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center gap-1.5"
+        >
+          <Plus className="h-4 w-4" /> Add Instructor
+        </Button>
       </div>
 
       {isLoading ? (
@@ -379,6 +490,14 @@ export function InstructorsPage() {
           courses={allCourses}
           onClose={() => setEditingInstructor(null)}
           onSave={handleSaveEdit}
+        />
+      )}
+
+      {isCreatingInstructor && (
+        <InstructorCreateDialog
+          courses={allCourses}
+          onClose={() => setIsCreatingInstructor(false)}
+          onSave={handleCreate}
         />
       )}
     </div>

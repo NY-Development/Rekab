@@ -1,11 +1,14 @@
 import { z } from 'zod';
 
 export const CreateInstructorProfileSchema = z.object({
-  userId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid user ID'),
+  userId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid user ID').optional(),
+  name: z.string().optional(),
+  email: z.string().email('Invalid email address').optional(),
   specialization: z.string().optional(),
   yearsExperience: z.number().int().min(0).optional(),
   bio: z.string().optional(),
   skills: z.array(z.string()).optional(),
+  assignedCourses: z.array(z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid course ID')).optional(),
 });
 
 export const UpdateInstructorProfileSchema = z.object({

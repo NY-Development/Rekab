@@ -9,6 +9,13 @@ export function useStudentProfile() {
   });
 }
 
+export function useInstructorProfile() {
+  return useQuery({
+    queryKey: ['instructor-profile'],
+    queryFn: () => profileApi.getInstructorProfile().then((res) => res.data),
+  });
+}
+
 export function useUserProfile() {
   return useQuery({
     queryKey: ['user-profile'],
